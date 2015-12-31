@@ -21030,6 +21030,10 @@
 				return editValue(state, action);
 			case _actions.SAVE_VALUE_EDIT:
 				return saveEditValue(state, action);
+			case _actions.OPEN_MODAL:
+				return openModal(state, action);
+			case _actions.CLOSE_MODAL:
+				return closeModal(state, action);
 			default:
 				return identity(state);
 		}
@@ -21047,6 +21051,14 @@
 		var modState = (0, _helpers.buildPath)(action.path, { editing: { $set: null },
 			value: { $set: action.value } });
 		return update(state, modState);
+	};
+	
+	var openModal = function openModal(state, action) {
+		return update(state, { modal: { active: { $set: true } } });
+	};
+	
+	var closeModal = function closeModal(state, action) {
+		return update(state, { modal: { active: { $set: false } } });
 	};
 	
 	exports.reducer = reducer;
@@ -21124,7 +21136,7 @@
 	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 	
 	Object.defineProperty(exports, "__esModule", {
-	  value: true
+	    value: true
 	});
 	
 	var _react = __webpack_require__(2);
@@ -21151,6 +21163,10 @@
 	
 	var _health2 = _interopRequireDefault(_health);
 	
+	var _modal = __webpack_require__(202);
+	
+	var _modal2 = _interopRequireDefault(_modal);
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -21160,84 +21176,98 @@
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; } /*jshint esnext:true */
 	
 	var SlashSheet = (function (_React$Component) {
-	  _inherits(SlashSheet, _React$Component);
+	    _inherits(SlashSheet, _React$Component);
 	
-	  function SlashSheet() {
-	    _classCallCheck(this, SlashSheet);
+	    function SlashSheet() {
+	        _classCallCheck(this, SlashSheet);
 	
-	    return _possibleConstructorReturn(this, Object.getPrototypeOf(SlashSheet).apply(this, arguments));
-	  }
-	
-	  _createClass(SlashSheet, [{
-	    key: 'render',
-	    value: function render() {
-	      console.log('props', this.props);
-	      return _react2.default.createElement(
-	        'div',
-	        { className: 'container' },
-	        _react2.default.createElement(
-	          'h1',
-	          null,
-	          _react2.default.createElement(_editableValue2.default, {
-	            value: this.props.name.value,
-	            editing: this.props.name.editing,
-	            editValue: this.props.editValue,
-	            saveValueEdit: this.props.saveValueEdit,
-	            input: 'string',
-	            length: '10',
-	            path: ['name'] })
-	        ),
-	        _react2.default.createElement(
-	          'h2',
-	          null,
-	          _react2.default.createElement(_editableValue2.default, {
-	            value: this.props.title.value,
-	            editing: this.props.title.editing,
-	            editValue: this.props.editValue,
-	            saveValueEdit: this.props.saveValueEdit,
-	            input: 'string',
-	            path: ['title'],
-	            length: '15' })
-	        ),
-	        _react2.default.createElement(
-	          'div',
-	          { className: 'row' },
-	          _react2.default.createElement(
-	            'div',
-	            { className: 'col-sm-2 col-md-1' },
-	            _react2.default.createElement(_stat2.default, { key: 'stats', stats: this.props.stats, path: ['stats'],
-	              editValue: this.props.editValue,
-	              saveValueEdit: this.props.saveValueEdit })
-	          ),
-	          _react2.default.createElement(
-	            'div',
-	            { className: 'col-sm-2 col-md-1' },
-	            _react2.default.createElement(_combatManeuver2.default, {
-	              CMB: this.props.CMB,
-	              CMD: this.props.CMD,
-	              BAB: this.props.BAB,
-	              editValue: this.props.editValue,
-	              saveValueEdit: this.props.saveValueEdit })
-	          ),
-	          _react2.default.createElement(
-	            'div',
-	            { className: 'col-sm-2 col-md-1' },
-	            _react2.default.createElement(_health2.default, {
-	              HP: this.props.HP,
-	              path: ['HP'],
-	              editValue: this.props.editValue,
-	              saveValueEdit: this.props.saveValueEdit })
-	          )
-	        )
-	      );
+	        return _possibleConstructorReturn(this, Object.getPrototypeOf(SlashSheet).apply(this, arguments));
 	    }
-	  }]);
 	
-	  return SlashSheet;
+	    _createClass(SlashSheet, [{
+	        key: 'render',
+	        value: function render() {
+	            console.log('props', this.props);
+	            return _react2.default.createElement(
+	                'div',
+	                { className: 'container' },
+	                _react2.default.createElement(
+	                    'h1',
+	                    null,
+	                    _react2.default.createElement(_editableValue2.default, {
+	                        value: this.props.name.value,
+	                        editing: this.props.name.editing,
+	                        editValue: this.props.editValue,
+	                        saveValueEdit: this.props.saveValueEdit,
+	                        input: 'string',
+	                        length: '10',
+	                        path: ['name'] })
+	                ),
+	                _react2.default.createElement(
+	                    'h2',
+	                    null,
+	                    _react2.default.createElement(_editableValue2.default, {
+	                        value: this.props.title.value,
+	                        editing: this.props.title.editing,
+	                        editValue: this.props.editValue,
+	                        saveValueEdit: this.props.saveValueEdit,
+	                        input: 'string',
+	                        path: ['title'],
+	                        length: '15' })
+	                ),
+	                _react2.default.createElement(
+	                    'div',
+	                    { className: 'row' },
+	                    _react2.default.createElement(
+	                        'div',
+	                        { className: 'col-sm-2 col-md-1' },
+	                        _react2.default.createElement(_stat2.default, { key: 'stats', stats: this.props.stats, path: ['stats'],
+	                            editValue: this.props.editValue,
+	                            saveValueEdit: this.props.saveValueEdit })
+	                    ),
+	                    _react2.default.createElement(
+	                        'div',
+	                        { className: 'col-sm-2 col-md-1' },
+	                        _react2.default.createElement(_combatManeuver2.default, {
+	                            CMB: this.props.CMB,
+	                            CMD: this.props.CMD,
+	                            BAB: this.props.BAB,
+	                            editValue: this.props.editValue,
+	                            saveValueEdit: this.props.saveValueEdit })
+	                    ),
+	                    _react2.default.createElement(
+	                        'div',
+	                        { className: 'col-sm-2 col-md-1' },
+	                        _react2.default.createElement(_health2.default, {
+	                            HP: this.props.HP,
+	                            path: ['HP'],
+	                            editValue: this.props.editValue,
+	                            saveValueEdit: this.props.saveValueEdit })
+	                    )
+	                ),
+	                this.renderModal()
+	            );
+	        }
+	    }, {
+	        key: 'renderModal',
+	        value: function renderModal() {
+	            if (this.props.modal.active) {
+	                return _react2.default.createElement(_modal2.default, {
+	                    closeModal: this.props.closeModal });
+	            }
+	            return _react2.default.createElement(
+	                'button',
+	                { className: 'btn', onClick: this.props.openModal },
+	                ' open modal '
+	            );
+	        }
+	    }]);
+	
+	    return SlashSheet;
 	})(_react2.default.Component);
 	
 	exports.default = (0, _reactRedux.connect)(function (state) {
-	  return state;
+	    return state;
 	}, _actions.mapDispatchToProps)(SlashSheet);
 
 /***/ },
@@ -21842,6 +21872,82 @@
 	};
 	
 	exports.default = initialState;
+
+/***/ },
+/* 202 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+	
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+	
+	var _react = __webpack_require__(2);
+	
+	var _react2 = _interopRequireDefault(_react);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	var Modal = (function (_React$Component) {
+		_inherits(Modal, _React$Component);
+	
+		function Modal() {
+			_classCallCheck(this, Modal);
+	
+			return _possibleConstructorReturn(this, Object.getPrototypeOf(Modal).apply(this, arguments));
+		}
+	
+		_createClass(Modal, [{
+			key: 'render',
+			value: function render() {
+				var _this2 = this;
+	
+				console.log('rendering modal');
+				return _react2.default.createElement('div', { className: 'modal',
+					onClick: this.props.closeModal,
+					onKeyDown: function onKeyDown(event) {
+						return _this2.pressedKey(event.keycode);
+					} });
+			}
+		}, {
+			key: 'pressedKey',
+			value: function pressedKey(keycode) {
+				console.log('pressing keys');
+				if (keycode === 13 || keycode === 27) {
+					this.props.closeModal();
+				}
+			}
+		}, {
+			key: 'componentDidMount',
+			value: function componentDidMount() {
+				var _this3 = this;
+	
+				$(document.body).on('keydown', function (event) {
+					return _this3.pressedKey(event.keyCode);
+				});
+			}
+			//TODO -- make a cleaner, bound function so we can remove it specifically
+	
+		}, {
+			key: 'componentWillUnmount',
+			value: function componentWillUnmount() {
+				$(document.body).off('keydown');
+			}
+		}]);
+	
+		return Modal;
+	})(_react2.default.Component);
+	
+	exports.default = Modal;
 
 /***/ }
 /******/ ]);

@@ -7,6 +7,8 @@ import StatBlock from './stat.js';
 import EditableValue from './editableValue.js'; 
 import CombatManeuver from './combatManeuver.js'; 
 import Health from './health.js'; 
+import Modal from './modal.js';
+
 
 class SlashSheet extends React.Component{
 	render(){
@@ -30,29 +32,39 @@ class SlashSheet extends React.Component{
             path={['title']} 
             length = "15"/></h2>
             <div className="row">
-            <div className="col-sm-2 col-md-1">
-              <StatBlock key="stats" stats={this.props.stats} path={['stats']}
-              editValue={this.props.editValue}
-              saveValueEdit={this.props.saveValueEdit} />
-            </div>
-            <div className="col-sm-2 col-md-1">
-              <CombatManeuver
-                CMB={this.props.CMB}
-                CMD={this.props.CMD}
-                BAB={this.props.BAB}
-                editValue={this.props.editValue}
-                saveValueEdit={this.props.saveValueEdit}/>
-            </div>
-            <div className="col-sm-2 col-md-1">
-              <Health
-                HP={this.props.HP}
-                path={['HP']}
-                editValue={this.props.editValue}
-                saveValueEdit={this.props.saveValueEdit}/>
-            </div>
-          </div>
+                <div className="col-sm-2 col-md-1">
+                  <StatBlock key="stats" stats={this.props.stats} path={['stats']}
+                  editValue={this.props.editValue}
+                  saveValueEdit={this.props.saveValueEdit} />
+                </div>
+                <div className="col-sm-2 col-md-1">
+                  <CombatManeuver
+                    CMB={this.props.CMB}
+                    CMD={this.props.CMD}
+                    BAB={this.props.BAB}
+                    editValue={this.props.editValue}
+                    saveValueEdit={this.props.saveValueEdit}/>
+                </div>
+                <div className="col-sm-2 col-md-1">
+                  <Health
+                    HP={this.props.HP}
+                    path={['HP']}
+                    editValue={this.props.editValue}
+                    saveValueEdit={this.props.saveValueEdit}/>
+                </div>
+              </div>
+              {this.renderModal()}
 			</div>
 		)
 	}
+    renderModal(){
+        if(this.props.modal.active){
+            return(
+                <Modal 
+                closeModal={this.props.closeModal} />
+            )
+        }
+        return <button className="btn" onClick={this.props.openModal}> open modal </button>
+    }
 }
 export default connect(state => state, mapDispatchToProps)(SlashSheet); 

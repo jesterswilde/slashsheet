@@ -1,5 +1,4 @@
-import {INCREMENT_STAT, EDIT_STAT, SAVE_STAT_EDIT, EDIT_VALUE,
-SAVE_VALUE_EDIT} from './actions'; 
+import {EDIT_VALUE, SAVE_VALUE_EDIT, OPEN_MODAL, CLOSE_MODAL} from './actions'; 
 import {buildPath} from '../util/helpers.js'; 
 
 const update = require('react-addons-update');
@@ -10,6 +9,10 @@ const reducer = function(state, action){
 			return editValue(state,action);
 		case SAVE_VALUE_EDIT:
 			return saveEditValue(state,action); 
+		case OPEN_MODAL:
+			return openModal(state, action);
+		case CLOSE_MODAL:
+			return closeModal(state, action); 
 		default:
 			return identity(state); 
 	}
@@ -29,5 +32,12 @@ const saveEditValue = function(state, action){
 	return update(state, modState); 
 };
 
+const openModal = function(state, action){
+	return update(state, {modal:{active:{$set:true}}}); 
+};
+
+const closeModal = function(state, action){
+	return update(state, {modal:{active:{$set:false}}});
+};
 
 export {reducer}; 
