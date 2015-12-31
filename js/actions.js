@@ -1,34 +1,7 @@
-const INCREMENT_STAT = "INCREMENT_STAT"; 
-const EDIT_STAT = "EDIT_STAT";
-const SAVE_STAT_EDIT = "SAVE_STAT_EDIT"; 
-const INCREMENT_VALUE ="INCREMENT_VALUE";
 const EDIT_VALUE = "EDIT_VALUE";
 const SAVE_VALUE_EDIT = "SAVE_VALUE_EDIT";
-
-
-const incrementStat = function(stat, amount = 1){
-	return {
-		type: INCREMENT_STAT,
-		amount,
-		stat
-	};
-};
-
-const editStat = function(name, value){
-	return {
-		type: EDIT_STAT,
-		name,
-		value
-	};
-};
-
-const saveStatEdit = function(name, value){
-	return {
-		type: SAVE_STAT_EDIT,
-		name,
-		value
-	};
-};
+const OPEN_MODAL = "OPEN_MODAL"; 
+const CLOSE_MODAL = "CLOSE_MODAL";
 
 const editValue = function(path){
 	return {	
@@ -45,15 +18,26 @@ const saveValueEdit = function(path, value){
 	};
 };
 
+const openModal = function(){
+	return{
+		type: OPEN_MODAL
+	};
+};
+
+const closeModal = function(){
+	return {
+		type: CLOSE_MODAL
+	};
+};
+
 function mapDispatchToProps(dispatch) {
   return {
-    onIncrement: (stat, amount) => dispatch(incrementStat(stat, amount)),
-    editStat: (name,value) => dispatch(editStat(name, value)),
-    saveStatEdit: (name, value) => dispatch(saveStatEdit(name, value)),
     editValue: (path) => dispatch(editValue(path)),
-    saveValueEdit: (path, value) => dispatch(saveValueEdit(path, value))
+    saveValueEdit: (path, value) => dispatch(saveValueEdit(path, value)),
+    openModal: () => dispatch(openModal()),
+    closeModal: () => dispatch(closeModal())
   };
 }
 
-export {INCREMENT_STAT, EDIT_STAT, SAVE_STAT_EDIT, EDIT_VALUE, SAVE_VALUE_EDIT,
-	incrementStat, mapDispatchToProps}; 
+export {EDIT_VALUE, SAVE_VALUE_EDIT, OPEN_MODAL, CLOSE_MODAL,
+	 mapDispatchToProps}; 

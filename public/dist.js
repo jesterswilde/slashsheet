@@ -19713,19 +19713,12 @@
 	
 	var _actions = __webpack_require__(161);
 	
-	function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; } /*jshint esnext:true*/
+	var _helpers = __webpack_require__(188);
 	
 	var update = __webpack_require__(162);
 	
 	var reducer = function reducer(state, action) {
-		// console.log('reducing', action, state);
 		switch (action.type) {
-			case _actions.INCREMENT_STAT:
-				return incrementStat(state, action);
-			case _actions.EDIT_STAT:
-				return editStat(state, action);
-			case _actions.SAVE_STAT_EDIT:
-				return saveEditStat(state, action);
 			case _actions.EDIT_VALUE:
 				return editValue(state, action);
 			case _actions.SAVE_VALUE_EDIT:
@@ -19735,42 +19728,18 @@
 		}
 	};
 	var identity = function identity(state) {
-		// console.log('defaulted', state);
 		return state;
-	};
-	var incrementStat = function incrementStat(state, action) {
-		var value = state.stats[action.stat] + action.amount;
-		return update(state, { stats: _defineProperty({}, action.name, { $set: value }) });
-	};
-	
-	var saveEditStat = function saveEditStat(state, action) {
-		return update(state, { stats: _defineProperty({}, action.name, { editing: { $set: null },
-				value: { $set: action.value } }) });
-	};
-	
-	var editStat = function editStat(state, action) {
-		return update(state, { stats: _defineProperty({}, action.name, { editing: { $set: true } }) });
 	};
 	
 	var editValue = function editValue(state, action) {
-		var modState = buildPath(action.path, { editing: { $set: true } });
+		var modState = (0, _helpers.buildPath)(action.path, { editing: { $set: true } });
 		return update(state, modState);
 	};
 	
 	var saveEditValue = function saveEditValue(state, action) {
-		var modState = buildPath(action.path, { editing: { $set: null },
+		var modState = (0, _helpers.buildPath)(action.path, { editing: { $set: null },
 			value: { $set: action.value } });
 		return update(state, modState);
-	};
-	
-	var buildPath = function buildPath(array, last) {
-		var original = {};
-		var current = original;
-		for (var i = 0; i < array.length; i++) {
-			current = current[array[i]] = {};
-		}
-		Object.assign(current, last);
-		return original;
 	};
 	
 	exports.reducer = reducer;
@@ -19784,38 +19753,10 @@
 	Object.defineProperty(exports, "__esModule", {
 		value: true
 	});
-	var INCREMENT_STAT = "INCREMENT_STAT";
-	var EDIT_STAT = "EDIT_STAT";
-	var SAVE_STAT_EDIT = "SAVE_STAT_EDIT";
-	var INCREMENT_VALUE = "INCREMENT_VALUE";
 	var EDIT_VALUE = "EDIT_VALUE";
 	var SAVE_VALUE_EDIT = "SAVE_VALUE_EDIT";
-	
-	var incrementStat = function incrementStat(stat) {
-		var amount = arguments.length <= 1 || arguments[1] === undefined ? 1 : arguments[1];
-	
-		return {
-			type: INCREMENT_STAT,
-			amount: amount,
-			stat: stat
-		};
-	};
-	
-	var _editStat = function _editStat(name, value) {
-		return {
-			type: EDIT_STAT,
-			name: name,
-			value: value
-		};
-	};
-	
-	var _saveStatEdit = function _saveStatEdit(name, value) {
-		return {
-			type: SAVE_STAT_EDIT,
-			name: name,
-			value: value
-		};
-	};
+	var OPEN_MODAL = "OPEN_MODAL";
+	var CLOSE_MODAL = "CLOSE_MODAL";
 	
 	var _editValue = function _editValue(path) {
 		return {
@@ -19832,32 +19773,39 @@
 		};
 	};
 	
+	var _openModal = function _openModal() {
+		return {
+			type: OPEN_MODAL
+		};
+	};
+	
+	var _closeModal = function _closeModal() {
+		return {
+			type: CLOSE_MODAL
+		};
+	};
+	
 	function mapDispatchToProps(dispatch) {
 		return {
-			onIncrement: function onIncrement(stat, amount) {
-				return dispatch(incrementStat(stat, amount));
-			},
-			editStat: function editStat(name, value) {
-				return dispatch(_editStat(name, value));
-			},
-			saveStatEdit: function saveStatEdit(name, value) {
-				return dispatch(_saveStatEdit(name, value));
-			},
 			editValue: function editValue(path) {
 				return dispatch(_editValue(path));
 			},
 			saveValueEdit: function saveValueEdit(path, value) {
 				return dispatch(_saveValueEdit(path, value));
+			},
+			openModal: function openModal() {
+				return dispatch(_openModal());
+			},
+			closeModal: function closeModal() {
+				return dispatch(_closeModal());
 			}
 		};
 	}
 	
-	exports.INCREMENT_STAT = INCREMENT_STAT;
-	exports.EDIT_STAT = EDIT_STAT;
-	exports.SAVE_STAT_EDIT = SAVE_STAT_EDIT;
 	exports.EDIT_VALUE = EDIT_VALUE;
 	exports.SAVE_VALUE_EDIT = SAVE_VALUE_EDIT;
-	exports.incrementStat = incrementStat;
+	exports.OPEN_MODAL = OPEN_MODAL;
+	exports.CLOSE_MODAL = CLOSE_MODAL;
 	exports.mapDispatchToProps = mapDispatchToProps;
 
 /***/ },
@@ -21229,6 +21177,10 @@
 	
 	var _combatManeuver2 = _interopRequireDefault(_combatManeuver);
 	
+	var _health = __webpack_require__(190);
+	
+	var _health2 = _interopRequireDefault(_health);
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -21284,7 +21236,8 @@
 	            'div',
 	            { className: 'col-sm-2 col-md-1' },
 	            _react2.default.createElement(_stat2.default, { key: 'stats', stats: this.props.stats, path: ['stats'],
-	              editValue: this.props.editValue, saveValueEdit: this.props.saveValueEdit })
+	              editValue: this.props.editValue,
+	              saveValueEdit: this.props.saveValueEdit })
 	          ),
 	          _react2.default.createElement(
 	            'div',
@@ -21293,7 +21246,17 @@
 	              CMB: this.props.CMB,
 	              CMD: this.props.CMD,
 	              BAB: this.props.BAB,
-	              editValue: this.props.editValue, saveValueEdit: this.props.saveValueEdit })
+	              editValue: this.props.editValue,
+	              saveValueEdit: this.props.saveValueEdit })
+	          ),
+	          _react2.default.createElement(
+	            'div',
+	            { className: 'col-sm-2 col-md-1' },
+	            _react2.default.createElement(_health2.default, {
+	              HP: this.props.HP,
+	              path: ['HP'],
+	              editValue: this.props.editValue,
+	              saveValueEdit: this.props.saveValueEdit })
 	          )
 	        )
 	      );
@@ -21690,7 +21653,7 @@
 	Object.defineProperty(exports, "__esModule", {
 		value: true
 	});
-	exports.getStat = undefined;
+	exports.buildPath = exports.getStat = undefined;
 	
 	var _paths = __webpack_require__(189);
 	
@@ -21729,7 +21692,18 @@
 		return Math.floor(Number(state.value) / 2) - 5;
 	};
 	
+	var buildPath = function buildPath(array, last) {
+		var original = {};
+		var current = original;
+		for (var i = 0; i < array.length; i++) {
+			current = current[array[i]] = {};
+		}
+		Object.assign(current, last);
+		return original;
+	};
+	
 	exports.getStat = getStat;
+	exports.buildPath = buildPath;
 
 /***/ },
 /* 189 */
@@ -21751,6 +21725,117 @@
 	};
 	
 	exports.default = paths;
+
+/***/ },
+/* 190 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+	
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+	
+	var _react = __webpack_require__(2);
+	
+	var _react2 = _interopRequireDefault(_react);
+	
+	var _editableValue = __webpack_require__(185);
+	
+	var _editableValue2 = _interopRequireDefault(_editableValue);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	var Health = (function (_React$Component) {
+		_inherits(Health, _React$Component);
+	
+		function Health() {
+			_classCallCheck(this, Health);
+	
+			return _possibleConstructorReturn(this, Object.getPrototypeOf(Health).apply(this, arguments));
+		}
+	
+		_createClass(Health, [{
+			key: 'render',
+			value: function render() {
+				console.log('health', this.props);
+				return _react2.default.createElement(
+					'table',
+					{ className: 'table' },
+					_react2.default.createElement(
+						'thead',
+						null,
+						_react2.default.createElement(
+							'tr',
+							null,
+							_react2.default.createElement(
+								'th',
+								null,
+								'HP'
+							)
+						)
+					),
+					_react2.default.createElement(
+						'tbody',
+						null,
+						_react2.default.createElement(
+							'tr',
+							null,
+							_react2.default.createElement(
+								'td',
+								null,
+								_react2.default.createElement(_editableValue2.default, {
+									value: this.props.HP.current.value,
+									editing: this.props.HP.current.editing,
+									input: 'number',
+									path: this.addToPath('current'),
+									editValue: this.props.editValue,
+									saveValueEdit: this.props.saveValueEdit,
+									length: '4',
+									max: '9999' })
+							)
+						),
+						_react2.default.createElement(
+							'tr',
+							null,
+							_react2.default.createElement(
+								'td',
+								null,
+								_react2.default.createElement(_editableValue2.default, {
+									value: this.props.HP.total.value,
+									editing: this.props.HP.total.editing,
+									input: 'number',
+									path: this.addToPath('total'),
+									editValue: this.props.editValue,
+									saveValueEdit: this.props.saveValueEdit,
+									length: '4',
+									max: '9999' })
+							)
+						)
+					)
+				);
+			}
+		}, {
+			key: 'addToPath',
+			value: function addToPath(value) {
+				var newPath = this.props.path.slice();
+				newPath.push(value);
+				return newPath;
+			}
+		}]);
+	
+		return Health;
+	})(_react2.default.Component);
+	
+	exports.default = Health;
 
 /***/ }
 /******/ ]);

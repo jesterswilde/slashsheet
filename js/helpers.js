@@ -26,4 +26,15 @@ const getValue = function(statObj){
 	return Math.floor(Number(state.value)/2) - 5; 
 };
 
-export {getStat}; 
+const buildPath = function(array, last){
+	let original = {}; 
+	let current = original; 
+	for(var i = 0; i < array.length; i++){
+		current = current[array[i]] = {}; 
+	}
+	Object.assign(current, last); 
+	return original;
+};
+
+
+export {getStat, buildPath}; 
