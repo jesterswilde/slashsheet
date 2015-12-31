@@ -1,5 +1,5 @@
 import React from 'react'; 
-import {getStat} from './helpers.js'; 
+import {getStat} from '../util/helpers.js'; 
 import EditableValue from './editableValue.js'; 
 
 export default class CombatManeuver extends React.Component{

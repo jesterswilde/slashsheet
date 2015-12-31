@@ -1,6 +1,6 @@
 import {INCREMENT_STAT, EDIT_STAT, SAVE_STAT_EDIT, EDIT_VALUE,
 SAVE_VALUE_EDIT} from './actions'; 
-import {buildPath} from './helpers.js'; 
+import {buildPath} from '../util/helpers.js'; 
 
 const update = require('react-addons-update');
 

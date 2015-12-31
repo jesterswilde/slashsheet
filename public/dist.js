@@ -46,16 +46,6 @@
 
 	'use strict';
 	
-	/*jshint esnext:true*/
-	// import {value} from 'test.js';
-	var app = __webpack_require__(1);
-
-/***/ },
-/* 1 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
 	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 	
 	var _react = __webpack_require__(2);
@@ -68,11 +58,11 @@
 	
 	var _reactRedux = __webpack_require__(164);
 	
-	var _SlashSheet = __webpack_require__(183);
+	var _slashSheet = __webpack_require__(194);
 	
-	var _SlashSheet2 = _interopRequireDefault(_SlashSheet);
+	var _slashSheet2 = _interopRequireDefault(_slashSheet);
 	
-	var _store = __webpack_require__(186);
+	var _store = __webpack_require__(191);
 	
 	var _store2 = _interopRequireDefault(_store);
 	
@@ -83,6 +73,9 @@
 	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 	
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	/*jshint esnext:true*/
+	// import {value} from 'test.js';
+	// var app = require('./app.js');
 	
 	var App = (function (_React$Component) {
 		_inherits(App, _React$Component);
@@ -102,7 +95,7 @@
 					_react2.default.createElement(
 						_reactRedux.Provider,
 						{ store: _store2.default },
-						_react2.default.createElement(_SlashSheet2.default, null)
+						_react2.default.createElement(_slashSheet2.default, null)
 					)
 				);
 			}
@@ -114,6 +107,7 @@
 	_reactDom2.default.render(_react2.default.createElement(App, null), document.getElementById('root'));
 
 /***/ },
+/* 1 */,
 /* 2 */
 /***/ function(module, exports, __webpack_require__) {
 
@@ -19701,114 +19695,8 @@
 
 
 /***/ },
-/* 160 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	Object.defineProperty(exports, "__esModule", {
-		value: true
-	});
-	exports.reducer = undefined;
-	
-	var _actions = __webpack_require__(161);
-	
-	var _helpers = __webpack_require__(188);
-	
-	var update = __webpack_require__(162);
-	
-	var reducer = function reducer(state, action) {
-		switch (action.type) {
-			case _actions.EDIT_VALUE:
-				return editValue(state, action);
-			case _actions.SAVE_VALUE_EDIT:
-				return saveEditValue(state, action);
-			default:
-				return identity(state);
-		}
-	};
-	var identity = function identity(state) {
-		return state;
-	};
-	
-	var editValue = function editValue(state, action) {
-		var modState = (0, _helpers.buildPath)(action.path, { editing: { $set: true } });
-		return update(state, modState);
-	};
-	
-	var saveEditValue = function saveEditValue(state, action) {
-		var modState = (0, _helpers.buildPath)(action.path, { editing: { $set: null },
-			value: { $set: action.value } });
-		return update(state, modState);
-	};
-	
-	exports.reducer = reducer;
-
-/***/ },
-/* 161 */
-/***/ function(module, exports) {
-
-	"use strict";
-	
-	Object.defineProperty(exports, "__esModule", {
-		value: true
-	});
-	var EDIT_VALUE = "EDIT_VALUE";
-	var SAVE_VALUE_EDIT = "SAVE_VALUE_EDIT";
-	var OPEN_MODAL = "OPEN_MODAL";
-	var CLOSE_MODAL = "CLOSE_MODAL";
-	
-	var _editValue = function _editValue(path) {
-		return {
-			type: EDIT_VALUE,
-			path: path
-		};
-	};
-	
-	var _saveValueEdit = function _saveValueEdit(path, value) {
-		return {
-			type: SAVE_VALUE_EDIT,
-			path: path,
-			value: value
-		};
-	};
-	
-	var _openModal = function _openModal() {
-		return {
-			type: OPEN_MODAL
-		};
-	};
-	
-	var _closeModal = function _closeModal() {
-		return {
-			type: CLOSE_MODAL
-		};
-	};
-	
-	function mapDispatchToProps(dispatch) {
-		return {
-			editValue: function editValue(path) {
-				return dispatch(_editValue(path));
-			},
-			saveValueEdit: function saveValueEdit(path, value) {
-				return dispatch(_saveValueEdit(path, value));
-			},
-			openModal: function openModal() {
-				return dispatch(_openModal());
-			},
-			closeModal: function closeModal() {
-				return dispatch(_closeModal());
-			}
-		};
-	}
-	
-	exports.EDIT_VALUE = EDIT_VALUE;
-	exports.SAVE_VALUE_EDIT = SAVE_VALUE_EDIT;
-	exports.OPEN_MODAL = OPEN_MODAL;
-	exports.CLOSE_MODAL = CLOSE_MODAL;
-	exports.mapDispatchToProps = mapDispatchToProps;
-
-/***/ },
+/* 160 */,
+/* 161 */,
 /* 162 */
 /***/ function(module, exports, __webpack_require__) {
 
@@ -21087,7 +20975,84 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
 
 /***/ },
-/* 182 */
+/* 182 */,
+/* 183 */,
+/* 184 */,
+/* 185 */,
+/* 186 */,
+/* 187 */,
+/* 188 */,
+/* 189 */,
+/* 190 */,
+/* 191 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	var _redux = __webpack_require__(171);
+	
+	var _reducers = __webpack_require__(192);
+	
+	var _initial = __webpack_require__(201);
+	
+	var _initial2 = _interopRequireDefault(_initial);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	var store = (0, _redux.createStore)(_reducers.reducer, _initial2.default);
+	
+	exports.default = store;
+
+/***/ },
+/* 192 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+	exports.reducer = undefined;
+	
+	var _actions = __webpack_require__(193);
+	
+	var _helpers = __webpack_require__(199);
+	
+	var update = __webpack_require__(162);
+	
+	var reducer = function reducer(state, action) {
+		switch (action.type) {
+			case _actions.EDIT_VALUE:
+				return editValue(state, action);
+			case _actions.SAVE_VALUE_EDIT:
+				return saveEditValue(state, action);
+			default:
+				return identity(state);
+		}
+	};
+	var identity = function identity(state) {
+		return state;
+	};
+	
+	var editValue = function editValue(state, action) {
+		var modState = (0, _helpers.buildPath)(action.path, { editing: { $set: true } });
+		return update(state, modState);
+	};
+	
+	var saveEditValue = function saveEditValue(state, action) {
+		var modState = (0, _helpers.buildPath)(action.path, { editing: { $set: null },
+			value: { $set: action.value } });
+		return update(state, modState);
+	};
+	
+	exports.reducer = reducer;
+
+/***/ },
+/* 193 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -21095,58 +21060,63 @@
 	Object.defineProperty(exports, "__esModule", {
 		value: true
 	});
-	var initialState = {
-		stats: {
-			str: { value: 20 }, dex: { value: 12 }, con: { value: 15 },
-			int: { value: 8 }, wis: { value: 5 }, cha: { value: 15 }
-		},
-		HP: {
-			total: { value: 80 },
-			current: { value: 80 }
-		},
-		level: [{
-			class: { value: "Barbarian" },
-			level: { value: 8 }
-		}],
-		BAB: { value: 8 },
-		CMB: [{ value: "BAB", type: "flat" }, { value: "str", type: "mod" }],
-		CMD: [{ value: "BAB", type: "flat" }, { value: "str", type: "mod" }, { value: "dex", type: "mod" }, { value: 10 }],
-		status: [{
-			name: { value: "Berzerk Rage" },
-			str: { value: 4 },
-			con: { value: 4 },
-			meleeToHit: { value: 2 }
-		}, {
-			name: { value: "Weapon Specialization (Battle Axe)" },
-			weaponType: { value: ["Battle Axe"] }
+	var EDIT_VALUE = "EDIT_VALUE";
+	var SAVE_VALUE_EDIT = "SAVE_VALUE_EDIT";
+	var OPEN_MODAL = "OPEN_MODAL";
+	var CLOSE_MODAL = "CLOSE_MODAL";
 	
-		}],
-		weapons: [{
-			name: { value: "Crunk's Battle Axe" },
-			type: { value: "Battle Axe" },
-			toHit: [{ value: "BAB" }, { value: "STR" }],
-			fromStats: [{ value: "STR" }],
-			damage: [{
-				amount: { value: 2 },
-				die: { value: 12 },
-				type: { value: "Weapon Damage" }
-			}, {
-				amount: { value: 2 },
-				type: { value: "enchantment" }
-			}, {
-				amount: { value: 1 },
-				die: { value: 6 },
-				type: { value: "fire" }
-			}]
-		}],
-		name: { value: "Crunk" },
-		title: { value: "Barbarian of the Frozen Wastes" }
+	var _editValue = function _editValue(path) {
+		return {
+			type: EDIT_VALUE,
+			path: path
+		};
 	};
 	
-	exports.default = initialState;
+	var _saveValueEdit = function _saveValueEdit(path, value) {
+		return {
+			type: SAVE_VALUE_EDIT,
+			path: path,
+			value: value
+		};
+	};
+	
+	var _openModal = function _openModal() {
+		return {
+			type: OPEN_MODAL
+		};
+	};
+	
+	var _closeModal = function _closeModal() {
+		return {
+			type: CLOSE_MODAL
+		};
+	};
+	
+	function mapDispatchToProps(dispatch) {
+		return {
+			editValue: function editValue(path) {
+				return dispatch(_editValue(path));
+			},
+			saveValueEdit: function saveValueEdit(path, value) {
+				return dispatch(_saveValueEdit(path, value));
+			},
+			openModal: function openModal() {
+				return dispatch(_openModal());
+			},
+			closeModal: function closeModal() {
+				return dispatch(_closeModal());
+			}
+		};
+	}
+	
+	exports.EDIT_VALUE = EDIT_VALUE;
+	exports.SAVE_VALUE_EDIT = SAVE_VALUE_EDIT;
+	exports.OPEN_MODAL = OPEN_MODAL;
+	exports.CLOSE_MODAL = CLOSE_MODAL;
+	exports.mapDispatchToProps = mapDispatchToProps;
 
 /***/ },
-/* 183 */
+/* 194 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -21163,21 +21133,21 @@
 	
 	var _reactRedux = __webpack_require__(164);
 	
-	var _actions = __webpack_require__(161);
+	var _actions = __webpack_require__(193);
 	
-	var _stat = __webpack_require__(184);
+	var _stat = __webpack_require__(195);
 	
 	var _stat2 = _interopRequireDefault(_stat);
 	
-	var _editableValue = __webpack_require__(185);
+	var _editableValue = __webpack_require__(196);
 	
 	var _editableValue2 = _interopRequireDefault(_editableValue);
 	
-	var _combatManeuver = __webpack_require__(187);
+	var _combatManeuver = __webpack_require__(197);
 	
 	var _combatManeuver2 = _interopRequireDefault(_combatManeuver);
 	
-	var _health = __webpack_require__(190);
+	var _health = __webpack_require__(198);
 	
 	var _health2 = _interopRequireDefault(_health);
 	
@@ -21271,7 +21241,7 @@
 	}, _actions.mapDispatchToProps)(SlashSheet);
 
 /***/ },
-/* 184 */
+/* 195 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -21286,7 +21256,7 @@
 	
 	var _react2 = _interopRequireDefault(_react);
 	
-	var _editableValue = __webpack_require__(185);
+	var _editableValue = __webpack_require__(196);
 	
 	var _editableValue2 = _interopRequireDefault(_editableValue);
 	
@@ -21405,7 +21375,7 @@
 	exports.default = StatBlock;
 
 /***/ },
-/* 185 */
+/* 196 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -21508,31 +21478,7 @@
 	exports.default = _class;
 
 /***/ },
-/* 186 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	
-	var _redux = __webpack_require__(171);
-	
-	var _reducers = __webpack_require__(160);
-	
-	var _initial = __webpack_require__(182);
-	
-	var _initial2 = _interopRequireDefault(_initial);
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
-	var store = (0, _redux.createStore)(_reducers.reducer, _initial2.default);
-	
-	exports.default = store;
-
-/***/ },
-/* 187 */
+/* 197 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -21547,9 +21493,9 @@
 	
 	var _react2 = _interopRequireDefault(_react);
 	
-	var _helpers = __webpack_require__(188);
+	var _helpers = __webpack_require__(199);
 	
-	var _editableValue = __webpack_require__(185);
+	var _editableValue = __webpack_require__(196);
 	
 	var _editableValue2 = _interopRequireDefault(_editableValue);
 	
@@ -21645,89 +21591,7 @@
 	exports.default = CombatManeuver;
 
 /***/ },
-/* 188 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	Object.defineProperty(exports, "__esModule", {
-		value: true
-	});
-	exports.buildPath = exports.getStat = undefined;
-	
-	var _paths = __webpack_require__(189);
-	
-	var _paths2 = _interopRequireDefault(_paths);
-	
-	var _store = __webpack_require__(186);
-	
-	var _store2 = _interopRequireDefault(_store);
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
-	var getStat = function getStat(statArray) {
-		console.log('statArray', statArray);
-		return statArray.map(function (stat) {
-			if (typeof stat.value === 'number') {
-				return stat.value;
-			}
-			return getValue(stat);
-		}).reduce(function (total, current) {
-			return total + current;
-		});
-	};
-	
-	var getValue = function getValue(statObj) {
-		var stat = statObj.value;
-		var type = statObj.type;
-	
-		var path = _paths2.default[stat];
-		var state = _store2.default.getState();
-		for (var i = 0; i < path.length; i++) {
-			state = state[path[i]];
-		}
-		if (type === 'flat') {
-			return Number(state.value);
-		}
-		return Math.floor(Number(state.value) / 2) - 5;
-	};
-	
-	var buildPath = function buildPath(array, last) {
-		var original = {};
-		var current = original;
-		for (var i = 0; i < array.length; i++) {
-			current = current[array[i]] = {};
-		}
-		Object.assign(current, last);
-		return original;
-	};
-	
-	exports.getStat = getStat;
-	exports.buildPath = buildPath;
-
-/***/ },
-/* 189 */
-/***/ function(module, exports) {
-
-	'use strict';
-	
-	Object.defineProperty(exports, "__esModule", {
-		value: true
-	});
-	var paths = {
-		str: ['stats', 'str'],
-		dex: ['stats', 'dex'],
-		con: ['stats', 'con'],
-		int: ['stats', 'int'],
-		wis: ['stats', 'wis'],
-		cha: ['stats', 'cha'],
-		BAB: ['BAB']
-	};
-	
-	exports.default = paths;
-
-/***/ },
-/* 190 */
+/* 198 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -21742,7 +21606,7 @@
 	
 	var _react2 = _interopRequireDefault(_react);
 	
-	var _editableValue = __webpack_require__(185);
+	var _editableValue = __webpack_require__(196);
 	
 	var _editableValue2 = _interopRequireDefault(_editableValue);
 	
@@ -21836,6 +21700,148 @@
 	})(_react2.default.Component);
 	
 	exports.default = Health;
+
+/***/ },
+/* 199 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+	exports.buildPath = exports.getStat = undefined;
+	
+	var _paths = __webpack_require__(200);
+	
+	var _paths2 = _interopRequireDefault(_paths);
+	
+	var _store = __webpack_require__(191);
+	
+	var _store2 = _interopRequireDefault(_store);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	var getStat = function getStat(statArray) {
+		console.log('statArray', statArray);
+		return statArray.map(function (stat) {
+			if (typeof stat.value === 'number') {
+				return stat.value;
+			}
+			return getValue(stat);
+		}).reduce(function (total, current) {
+			return total + current;
+		});
+	};
+	
+	var getValue = function getValue(statObj) {
+		var stat = statObj.value;
+		var type = statObj.type;
+	
+		var path = _paths2.default[stat];
+		var state = _store2.default.getState();
+		for (var i = 0; i < path.length; i++) {
+			state = state[path[i]];
+		}
+		if (type === 'flat') {
+			return Number(state.value);
+		}
+		return Math.floor(Number(state.value) / 2) - 5;
+	};
+	
+	var buildPath = function buildPath(array, last) {
+		var original = {};
+		var current = original;
+		for (var i = 0; i < array.length; i++) {
+			current = current[array[i]] = {};
+		}
+		Object.assign(current, last);
+		return original;
+	};
+	
+	exports.getStat = getStat;
+	exports.buildPath = buildPath;
+
+/***/ },
+/* 200 */
+/***/ function(module, exports) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+	var paths = {
+		str: ['stats', 'str'],
+		dex: ['stats', 'dex'],
+		con: ['stats', 'con'],
+		int: ['stats', 'int'],
+		wis: ['stats', 'wis'],
+		cha: ['stats', 'cha'],
+		BAB: ['BAB']
+	};
+	
+	exports.default = paths;
+
+/***/ },
+/* 201 */
+/***/ function(module, exports) {
+
+	"use strict";
+	
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+	var initialState = {
+		stats: {
+			str: { value: 20 }, dex: { value: 12 }, con: { value: 15 },
+			int: { value: 8 }, wis: { value: 5 }, cha: { value: 15 }
+		},
+		HP: {
+			total: { value: 80 },
+			current: { value: 80 }
+		},
+		level: [{
+			class: { value: "Barbarian" },
+			level: { value: 8 }
+		}],
+		BAB: { value: 8 },
+		CMB: [{ value: "BAB", type: "flat" }, { value: "str", type: "mod" }],
+		CMD: [{ value: "BAB", type: "flat" }, { value: "str", type: "mod" }, { value: "dex", type: "mod" }, { value: 10 }],
+		status: [{
+			name: { value: "Berzerk Rage" },
+			str: { value: 4 },
+			con: { value: 4 },
+			meleeToHit: { value: 2 }
+		}, {
+			name: { value: "Weapon Specialization (Battle Axe)" },
+			weaponType: { value: ["Battle Axe"] }
+	
+		}],
+		weapons: [{
+			name: { value: "Crunk's Battle Axe" },
+			type: { value: "Battle Axe" },
+			toHit: [{ value: "BAB" }, { value: "STR" }],
+			fromStats: [{ value: "STR" }],
+			damage: [{
+				amount: { value: 2 },
+				die: { value: 12 },
+				type: { value: "Weapon Damage" }
+			}, {
+				amount: { value: 2 },
+				type: { value: "enchantment" }
+			}, {
+				amount: { value: 1 },
+				die: { value: 6 },
+				type: { value: "fire" }
+			}]
+		}],
+		name: { value: "Crunk" },
+		title: { value: "Barbarian of the Frozen Wastes" },
+		modal: { active: false }
+	};
+	
+	exports.default = initialState;
 
 /***/ }
 /******/ ]);

@@ -2,7 +2,7 @@
 
 import React from 'react'; 
 import {connect} from 'react-redux'; 
-import {mapDispatchToProps} from './actions.js'; 
+import {mapDispatchToProps} from '../redux/actions.js'; 
 import StatBlock from './stat.js'; 
 import EditableValue from './editableValue.js'; 
 import CombatManeuver from './combatManeuver.js'; 

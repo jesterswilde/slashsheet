@@ -1,5 +1,5 @@
 import paths from './paths.js'; 
-import store from './redux/store.js'; 
+import store from '../redux/store.js'; 
 
 const getStat = function(statArray){
 	console.log('statArray', statArray); 

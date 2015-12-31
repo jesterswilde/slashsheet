@@ -1,6 +1,6 @@
 import {createStore} from 'redux'; 
 import {reducer} from './reducers.js'; 
-import initialState from './initial.js';
+import initialState from '../util/initial.js';
 
 const store = createStore(reducer, initialState); 
 

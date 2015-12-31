@@ -47,7 +47,8 @@ const initialState  = {
 			}]
 	}],
 	name: {value:"Crunk"},
-	title: {value:"Barbarian of the Frozen Wastes"}
+	title: {value:"Barbarian of the Frozen Wastes"}, 
+	modal:{active: false}
 };
 
 export default initialState; 
