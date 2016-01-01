@@ -1,5 +1,3 @@
-/*jshint esnext:true */
-
 import React from 'react'; 
 import {connect} from 'react-redux'; 
 import {mapDispatchToProps} from '../redux/actions.js'; 
@@ -15,14 +13,14 @@ class SlashSheet extends React.Component{
     console.log('props', this.props);
 		return (
 			<div className = "container">
-		    	<h1><EditableValue 
-            value={this.props.name.value}
-            editing={this.props.name.editing}
-            editValue={this.props.editValue}
-            saveValueEdit={this.props.saveValueEdit}
-            input="string"
-            length="10"
-            path={['name']} /></h1>
+	    	<h1><EditableValue 
+                value={this.props.name.value}
+                editing={this.props.name.editing}
+                editValue={this.props.editValue}
+                saveValueEdit={this.props.saveValueEdit}
+                input="string"
+                length="10"
+                path={['name']} /></h1>
           <h2><EditableValue 
             value={this.props.title.value}
             editing={this.props.title.editing}
@@ -42,6 +40,7 @@ class SlashSheet extends React.Component{
                     CMB={this.props.CMB}
                     CMD={this.props.CMD}
                     BAB={this.props.BAB}
+                    openModal={this.props.openModal}
                     editValue={this.props.editValue}
                     saveValueEdit={this.props.saveValueEdit}/>
                 </div>
@@ -58,13 +57,18 @@ class SlashSheet extends React.Component{
 		)
 	}
     renderModal(){
-        if(this.props.modal.active){
+        const modal = this.props.modal; 
+        // console.log('Modals:',modal, '|', this.props.modal)
+        if(modal.active){
             return(
                 <Modal 
+                name={modal.value}
+                total={this.props[modal.value]}
                 closeModal={this.props.closeModal} />
             )
         }
-        return <button className="btn" onClick={this.props.openModal}> open modal </button>
+        return <button className="btn" onClick={this.props.openModal}> open modal! </button>
     }
 }
+
 export default connect(state => state, mapDispatchToProps)(SlashSheet); 

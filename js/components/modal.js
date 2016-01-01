@@ -1,12 +1,19 @@
 import React from 'react'; 
+import DependentStatModal from './dependentStatModal'; 
 
 export default class Modal extends React.Component{
 	render(){
-		console.log('rendering modal'); 
+		// console.log('rendering modal', this.props); 
 		return(
 			<div className="modal" 
 			onClick={this.props.closeModal}
 			onKeyDown={(event) => this.pressedKey(event.keycode)}>
+				<div className="modalActive"
+				onClick={(event)=>event.stopPropagation()}>
+					<DependentStatModal
+						name={this.props.name}
+						total={this.props.total} /> 
+				</div>
 			</div>
 		)
 	}
@@ -24,3 +31,4 @@ export default class Modal extends React.Component{
 		$(document.body).off('keydown');
 	}
 }
+

@@ -1,5 +1,5 @@
 import React from 'react'; 
-import {getStat} from '../util/helpers.js'; 
+import {getDepStat} from '../util/helpers.js'; 
 import EditableValue from './editableValue.js'; 
 
 export default class CombatManeuver extends React.Component{
@@ -22,13 +22,13 @@ export default class CombatManeuver extends React.Component{
 			  				max="99" />
 			  			</td>
 					</tr>
-					<tr>
+					<tr onClick={()=>this.props.openModal('CMB')}>
 						<td>CMB:</td>
-						<td>{getStat(this.props.CMB)}</td>
+						<td>{getDepStat(this.props.CMB)}</td>
 					</tr>
 					<tr>
-						<td>CMD:</td>
-						<td>{getStat(this.props.CMD)}</td>
+						<td onClick={()=>this.props.openModal('CMD')}>CMD:</td>
+						<td>{getDepStat(this.props.CMD)}</td>
 					</tr>
 
 					</tbody>

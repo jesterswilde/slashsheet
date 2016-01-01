@@ -7,5 +7,4 @@ const paths = {
 	cha:['stats', 'cha'],
 	BAB:['BAB'],
 };
-
 export default paths;

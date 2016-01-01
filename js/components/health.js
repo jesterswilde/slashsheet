@@ -3,7 +3,7 @@ import EditableValue from './editableValue.js';
 
 export default class Health extends React.Component{
 	render(){
-		console.log('health', this.props);
+		// console.log('health', this.props);
 		return (
 			<table className = "table"> 
 				<thead>

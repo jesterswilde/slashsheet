@@ -12,9 +12,14 @@ const initialState  = {
 		level:{value:8}
 	}],
 	BAB:{value:8},
-	CMB:[{value:"BAB", type:"flat"}, {value:"str", type:"mod"}],
-	CMD:[{value:"BAB", type:"flat"}, {value:"str", type:"mod"}, 
-		{value:"dex", type:"mod"}, {value:10}],
+	CMB:{dependsOn: [
+		{value:"BAB", type:"flat"}, 
+		{value:"str", type:"mod"}]},
+	CMD:{dependsOn: [
+		{value:"BAB", type:"flat"}, 
+		{value:"str", type:"mod"}, 
+		{value:"dex", type:"mod"}, 
+		{value:10, type:"rule"}]},
 	status:[{
 			name:{value:"Berzerk Rage"},
 			str:{value:4},
