@@ -30,6 +30,8 @@ const getDepStat = function(depObj, noMod){
 	.reduce((total, current) => total + current) + playerMod;
 };
 
+
+
 //returns the value of the associated stat
 const getValue = function(statObj){
 	const {value: stat, type} = statObj; 	
