@@ -1,502 +1,4 @@
 /******/ (function(modules) { // webpackBootstrap
-/******/ 	var parentHotUpdateCallback = this["webpackHotUpdate"];
-/******/ 	this["webpackHotUpdate"] = 
-/******/ 	function webpackHotUpdateCallback(chunkId, moreModules) { // eslint-disable-line no-unused-vars
-/******/ 		hotAddUpdateChunk(chunkId, moreModules);
-/******/ 		if(parentHotUpdateCallback) parentHotUpdateCallback(chunkId, moreModules);
-/******/ 	}
-/******/ 	
-/******/ 	function hotDownloadUpdateChunk(chunkId) { // eslint-disable-line no-unused-vars
-/******/ 		var head = document.getElementsByTagName("head")[0];
-/******/ 		var script = document.createElement("script");
-/******/ 		script.type = "text/javascript";
-/******/ 		script.charset = "utf-8";
-/******/ 		script.src = __webpack_require__.p + "" + chunkId + "." + hotCurrentHash + ".hot-update.js";
-/******/ 		head.appendChild(script);
-/******/ 	}
-/******/ 	
-/******/ 	function hotDownloadManifest(callback) { // eslint-disable-line no-unused-vars
-/******/ 		if(typeof XMLHttpRequest === "undefined")
-/******/ 			return callback(new Error("No browser support"));
-/******/ 		try {
-/******/ 			var request = new XMLHttpRequest();
-/******/ 			var requestPath = __webpack_require__.p + "" + hotCurrentHash + ".hot-update.json";
-/******/ 			request.open("GET", requestPath, true);
-/******/ 			request.timeout = 10000;
-/******/ 			request.send(null);
-/******/ 		} catch(err) {
-/******/ 			return callback(err);
-/******/ 		}
-/******/ 		request.onreadystatechange = function() {
-/******/ 			if(request.readyState !== 4) return;
-/******/ 			if(request.status === 0) {
-/******/ 				// timeout
-/******/ 				callback(new Error("Manifest request to " + requestPath + " timed out."));
-/******/ 			} else if(request.status === 404) {
-/******/ 				// no update available
-/******/ 				callback();
-/******/ 			} else if(request.status !== 200 && request.status !== 304) {
-/******/ 				// other failure
-/******/ 				callback(new Error("Manifest request to " + requestPath + " failed."));
-/******/ 			} else {
-/******/ 				// success
-/******/ 				try {
-/******/ 					var update = JSON.parse(request.responseText);
-/******/ 				} catch(e) {
-/******/ 					callback(e);
-/******/ 					return;
-/******/ 				}
-/******/ 				callback(null, update);
-/******/ 			}
-/******/ 		};
-/******/ 	}
-/******/
-/******/ 	
-/******/ 	
-/******/ 	var hotApplyOnUpdate = true;
-/******/ 	var hotCurrentHash = "e03b1fe82ada0373e57a"; // eslint-disable-line no-unused-vars
-/******/ 	var hotCurrentModuleData = {};
-/******/ 	var hotCurrentParents = []; // eslint-disable-line no-unused-vars
-/******/ 	
-/******/ 	function hotCreateRequire(moduleId) { // eslint-disable-line no-unused-vars
-/******/ 		var me = installedModules[moduleId];
-/******/ 		if(!me) return __webpack_require__;
-/******/ 		var fn = function(request) {
-/******/ 			if(me.hot.active) {
-/******/ 				if(installedModules[request]) {
-/******/ 					if(installedModules[request].parents.indexOf(moduleId) < 0)
-/******/ 						installedModules[request].parents.push(moduleId);
-/******/ 					if(me.children.indexOf(request) < 0)
-/******/ 						me.children.push(request);
-/******/ 				} else hotCurrentParents = [moduleId];
-/******/ 			} else {
-/******/ 				console.warn("[HMR] unexpected require(" + request + ") from disposed module " + moduleId);
-/******/ 				hotCurrentParents = [];
-/******/ 			}
-/******/ 			return __webpack_require__(request);
-/******/ 		};
-/******/ 		for(var name in __webpack_require__) {
-/******/ 			if(Object.prototype.hasOwnProperty.call(__webpack_require__, name)) {
-/******/ 				fn[name] = __webpack_require__[name];
-/******/ 			}
-/******/ 		}
-/******/ 		fn.e = function(chunkId, callback) {
-/******/ 			if(hotStatus === "ready")
-/******/ 				hotSetStatus("prepare");
-/******/ 			hotChunksLoading++;
-/******/ 			__webpack_require__.e(chunkId, function() {
-/******/ 				try {
-/******/ 					callback.call(null, fn);
-/******/ 				} finally {
-/******/ 					finishChunkLoading();
-/******/ 				}
-/******/ 	
-/******/ 				function finishChunkLoading() {
-/******/ 					hotChunksLoading--;
-/******/ 					if(hotStatus === "prepare") {
-/******/ 						if(!hotWaitingFilesMap[chunkId]) {
-/******/ 							hotEnsureUpdateChunk(chunkId);
-/******/ 						}
-/******/ 						if(hotChunksLoading === 0 && hotWaitingFiles === 0) {
-/******/ 							hotUpdateDownloaded();
-/******/ 						}
-/******/ 					}
-/******/ 				}
-/******/ 			});
-/******/ 		};
-/******/ 		return fn;
-/******/ 	}
-/******/ 	
-/******/ 	function hotCreateModule(moduleId) { // eslint-disable-line no-unused-vars
-/******/ 		var hot = {
-/******/ 			// private stuff
-/******/ 			_acceptedDependencies: {},
-/******/ 			_declinedDependencies: {},
-/******/ 			_selfAccepted: false,
-/******/ 			_selfDeclined: false,
-/******/ 			_disposeHandlers: [],
-/******/ 	
-/******/ 			// Module API
-/******/ 			active: true,
-/******/ 			accept: function(dep, callback) {
-/******/ 				if(typeof dep === "undefined")
-/******/ 					hot._selfAccepted = true;
-/******/ 				else if(typeof dep === "function")
-/******/ 					hot._selfAccepted = dep;
-/******/ 				else if(typeof dep === "object")
-/******/ 					for(var i = 0; i < dep.length; i++)
-/******/ 						hot._acceptedDependencies[dep[i]] = callback;
-/******/ 				else
-/******/ 					hot._acceptedDependencies[dep] = callback;
-/******/ 			},
-/******/ 			decline: function(dep) {
-/******/ 				if(typeof dep === "undefined")
-/******/ 					hot._selfDeclined = true;
-/******/ 				else if(typeof dep === "number")
-/******/ 					hot._declinedDependencies[dep] = true;
-/******/ 				else
-/******/ 					for(var i = 0; i < dep.length; i++)
-/******/ 						hot._declinedDependencies[dep[i]] = true;
-/******/ 			},
-/******/ 			dispose: function(callback) {
-/******/ 				hot._disposeHandlers.push(callback);
-/******/ 			},
-/******/ 			addDisposeHandler: function(callback) {
-/******/ 				hot._disposeHandlers.push(callback);
-/******/ 			},
-/******/ 			removeDisposeHandler: function(callback) {
-/******/ 				var idx = hot._disposeHandlers.indexOf(callback);
-/******/ 				if(idx >= 0) hot._disposeHandlers.splice(idx, 1);
-/******/ 			},
-/******/ 	
-/******/ 			// Management API
-/******/ 			check: hotCheck,
-/******/ 			apply: hotApply,
-/******/ 			status: function(l) {
-/******/ 				if(!l) return hotStatus;
-/******/ 				hotStatusHandlers.push(l);
-/******/ 			},
-/******/ 			addStatusHandler: function(l) {
-/******/ 				hotStatusHandlers.push(l);
-/******/ 			},
-/******/ 			removeStatusHandler: function(l) {
-/******/ 				var idx = hotStatusHandlers.indexOf(l);
-/******/ 				if(idx >= 0) hotStatusHandlers.splice(idx, 1);
-/******/ 			},
-/******/ 	
-/******/ 			//inherit from previous dispose call
-/******/ 			data: hotCurrentModuleData[moduleId]
-/******/ 		};
-/******/ 		return hot;
-/******/ 	}
-/******/ 	
-/******/ 	var hotStatusHandlers = [];
-/******/ 	var hotStatus = "idle";
-/******/ 	
-/******/ 	function hotSetStatus(newStatus) {
-/******/ 		hotStatus = newStatus;
-/******/ 		for(var i = 0; i < hotStatusHandlers.length; i++)
-/******/ 			hotStatusHandlers[i].call(null, newStatus);
-/******/ 	}
-/******/ 	
-/******/ 	// while downloading
-/******/ 	var hotWaitingFiles = 0;
-/******/ 	var hotChunksLoading = 0;
-/******/ 	var hotWaitingFilesMap = {};
-/******/ 	var hotRequestedFilesMap = {};
-/******/ 	var hotAvailibleFilesMap = {};
-/******/ 	var hotCallback;
-/******/ 	
-/******/ 	// The update info
-/******/ 	var hotUpdate, hotUpdateNewHash;
-/******/ 	
-/******/ 	function toModuleId(id) {
-/******/ 		var isNumber = (+id) + "" === id;
-/******/ 		return isNumber ? +id : id;
-/******/ 	}
-/******/ 	
-/******/ 	function hotCheck(apply, callback) {
-/******/ 		if(hotStatus !== "idle") throw new Error("check() is only allowed in idle status");
-/******/ 		if(typeof apply === "function") {
-/******/ 			hotApplyOnUpdate = false;
-/******/ 			callback = apply;
-/******/ 		} else {
-/******/ 			hotApplyOnUpdate = apply;
-/******/ 			callback = callback || function(err) {
-/******/ 				if(err) throw err;
-/******/ 			};
-/******/ 		}
-/******/ 		hotSetStatus("check");
-/******/ 		hotDownloadManifest(function(err, update) {
-/******/ 			if(err) return callback(err);
-/******/ 			if(!update) {
-/******/ 				hotSetStatus("idle");
-/******/ 				callback(null, null);
-/******/ 				return;
-/******/ 			}
-/******/ 	
-/******/ 			hotRequestedFilesMap = {};
-/******/ 			hotAvailibleFilesMap = {};
-/******/ 			hotWaitingFilesMap = {};
-/******/ 			for(var i = 0; i < update.c.length; i++)
-/******/ 				hotAvailibleFilesMap[update.c[i]] = true;
-/******/ 			hotUpdateNewHash = update.h;
-/******/ 	
-/******/ 			hotSetStatus("prepare");
-/******/ 			hotCallback = callback;
-/******/ 			hotUpdate = {};
-/******/ 			var chunkId = 0;
-/******/ 			{ // eslint-disable-line no-lone-blocks
-/******/ 				/*globals chunkId */
-/******/ 				hotEnsureUpdateChunk(chunkId);
-/******/ 			}
-/******/ 			if(hotStatus === "prepare" && hotChunksLoading === 0 && hotWaitingFiles === 0) {
-/******/ 				hotUpdateDownloaded();
-/******/ 			}
-/******/ 		});
-/******/ 	}
-/******/ 	
-/******/ 	function hotAddUpdateChunk(chunkId, moreModules) { // eslint-disable-line no-unused-vars
-/******/ 		if(!hotAvailibleFilesMap[chunkId] || !hotRequestedFilesMap[chunkId])
-/******/ 			return;
-/******/ 		hotRequestedFilesMap[chunkId] = false;
-/******/ 		for(var moduleId in moreModules) {
-/******/ 			if(Object.prototype.hasOwnProperty.call(moreModules, moduleId)) {
-/******/ 				hotUpdate[moduleId] = moreModules[moduleId];
-/******/ 			}
-/******/ 		}
-/******/ 		if(--hotWaitingFiles === 0 && hotChunksLoading === 0) {
-/******/ 			hotUpdateDownloaded();
-/******/ 		}
-/******/ 	}
-/******/ 	
-/******/ 	function hotEnsureUpdateChunk(chunkId) {
-/******/ 		if(!hotAvailibleFilesMap[chunkId]) {
-/******/ 			hotWaitingFilesMap[chunkId] = true;
-/******/ 		} else {
-/******/ 			hotRequestedFilesMap[chunkId] = true;
-/******/ 			hotWaitingFiles++;
-/******/ 			hotDownloadUpdateChunk(chunkId);
-/******/ 		}
-/******/ 	}
-/******/ 	
-/******/ 	function hotUpdateDownloaded() {
-/******/ 		hotSetStatus("ready");
-/******/ 		var callback = hotCallback;
-/******/ 		hotCallback = null;
-/******/ 		if(!callback) return;
-/******/ 		if(hotApplyOnUpdate) {
-/******/ 			hotApply(hotApplyOnUpdate, callback);
-/******/ 		} else {
-/******/ 			var outdatedModules = [];
-/******/ 			for(var id in hotUpdate) {
-/******/ 				if(Object.prototype.hasOwnProperty.call(hotUpdate, id)) {
-/******/ 					outdatedModules.push(toModuleId(id));
-/******/ 				}
-/******/ 			}
-/******/ 			callback(null, outdatedModules);
-/******/ 		}
-/******/ 	}
-/******/ 	
-/******/ 	function hotApply(options, callback) {
-/******/ 		if(hotStatus !== "ready") throw new Error("apply() is only allowed in ready status");
-/******/ 		if(typeof options === "function") {
-/******/ 			callback = options;
-/******/ 			options = {};
-/******/ 		} else if(options && typeof options === "object") {
-/******/ 			callback = callback || function(err) {
-/******/ 				if(err) throw err;
-/******/ 			};
-/******/ 		} else {
-/******/ 			options = {};
-/******/ 			callback = callback || function(err) {
-/******/ 				if(err) throw err;
-/******/ 			};
-/******/ 		}
-/******/ 	
-/******/ 		function getAffectedStuff(module) {
-/******/ 			var outdatedModules = [module];
-/******/ 			var outdatedDependencies = {};
-/******/ 	
-/******/ 			var queue = outdatedModules.slice();
-/******/ 			while(queue.length > 0) {
-/******/ 				var moduleId = queue.pop();
-/******/ 				var module = installedModules[moduleId];
-/******/ 				if(!module || module.hot._selfAccepted)
-/******/ 					continue;
-/******/ 				if(module.hot._selfDeclined) {
-/******/ 					return new Error("Aborted because of self decline: " + moduleId);
-/******/ 				}
-/******/ 				if(moduleId === 0) {
-/******/ 					return;
-/******/ 				}
-/******/ 				for(var i = 0; i < module.parents.length; i++) {
-/******/ 					var parentId = module.parents[i];
-/******/ 					var parent = installedModules[parentId];
-/******/ 					if(parent.hot._declinedDependencies[moduleId]) {
-/******/ 						return new Error("Aborted because of declined dependency: " + moduleId + " in " + parentId);
-/******/ 					}
-/******/ 					if(outdatedModules.indexOf(parentId) >= 0) continue;
-/******/ 					if(parent.hot._acceptedDependencies[moduleId]) {
-/******/ 						if(!outdatedDependencies[parentId])
-/******/ 							outdatedDependencies[parentId] = [];
-/******/ 						addAllToSet(outdatedDependencies[parentId], [moduleId]);
-/******/ 						continue;
-/******/ 					}
-/******/ 					delete outdatedDependencies[parentId];
-/******/ 					outdatedModules.push(parentId);
-/******/ 					queue.push(parentId);
-/******/ 				}
-/******/ 			}
-/******/ 	
-/******/ 			return [outdatedModules, outdatedDependencies];
-/******/ 		}
-/******/ 	
-/******/ 		function addAllToSet(a, b) {
-/******/ 			for(var i = 0; i < b.length; i++) {
-/******/ 				var item = b[i];
-/******/ 				if(a.indexOf(item) < 0)
-/******/ 					a.push(item);
-/******/ 			}
-/******/ 		}
-/******/ 	
-/******/ 		// at begin all updates modules are outdated
-/******/ 		// the "outdated" status can propagate to parents if they don't accept the children
-/******/ 		var outdatedDependencies = {};
-/******/ 		var outdatedModules = [];
-/******/ 		var appliedUpdate = {};
-/******/ 		for(var id in hotUpdate) {
-/******/ 			if(Object.prototype.hasOwnProperty.call(hotUpdate, id)) {
-/******/ 				var moduleId = toModuleId(id);
-/******/ 				var result = getAffectedStuff(moduleId);
-/******/ 				if(!result) {
-/******/ 					if(options.ignoreUnaccepted)
-/******/ 						continue;
-/******/ 					hotSetStatus("abort");
-/******/ 					return callback(new Error("Aborted because " + moduleId + " is not accepted"));
-/******/ 				}
-/******/ 				if(result instanceof Error) {
-/******/ 					hotSetStatus("abort");
-/******/ 					return callback(result);
-/******/ 				}
-/******/ 				appliedUpdate[moduleId] = hotUpdate[moduleId];
-/******/ 				addAllToSet(outdatedModules, result[0]);
-/******/ 				for(var moduleId in result[1]) {
-/******/ 					if(Object.prototype.hasOwnProperty.call(result[1], moduleId)) {
-/******/ 						if(!outdatedDependencies[moduleId])
-/******/ 							outdatedDependencies[moduleId] = [];
-/******/ 						addAllToSet(outdatedDependencies[moduleId], result[1][moduleId]);
-/******/ 					}
-/******/ 				}
-/******/ 			}
-/******/ 		}
-/******/ 	
-/******/ 		// Store self accepted outdated modules to require them later by the module system
-/******/ 		var outdatedSelfAcceptedModules = [];
-/******/ 		for(var i = 0; i < outdatedModules.length; i++) {
-/******/ 			var moduleId = outdatedModules[i];
-/******/ 			if(installedModules[moduleId] && installedModules[moduleId].hot._selfAccepted)
-/******/ 				outdatedSelfAcceptedModules.push({
-/******/ 					module: moduleId,
-/******/ 					errorHandler: installedModules[moduleId].hot._selfAccepted
-/******/ 				});
-/******/ 		}
-/******/ 	
-/******/ 		// Now in "dispose" phase
-/******/ 		hotSetStatus("dispose");
-/******/ 		var queue = outdatedModules.slice();
-/******/ 		while(queue.length > 0) {
-/******/ 			var moduleId = queue.pop();
-/******/ 			var module = installedModules[moduleId];
-/******/ 			if(!module) continue;
-/******/ 	
-/******/ 			var data = {};
-/******/ 	
-/******/ 			// Call dispose handlers
-/******/ 			var disposeHandlers = module.hot._disposeHandlers;
-/******/ 			for(var j = 0; j < disposeHandlers.length; j++) {
-/******/ 				var cb = disposeHandlers[j];
-/******/ 				cb(data);
-/******/ 			}
-/******/ 			hotCurrentModuleData[moduleId] = data;
-/******/ 	
-/******/ 			// disable module (this disables requires from this module)
-/******/ 			module.hot.active = false;
-/******/ 	
-/******/ 			// remove module from cache
-/******/ 			delete installedModules[moduleId];
-/******/ 	
-/******/ 			// remove "parents" references from all children
-/******/ 			for(var j = 0; j < module.children.length; j++) {
-/******/ 				var child = installedModules[module.children[j]];
-/******/ 				if(!child) continue;
-/******/ 				var idx = child.parents.indexOf(moduleId);
-/******/ 				if(idx >= 0) {
-/******/ 					child.parents.splice(idx, 1);
-/******/ 				}
-/******/ 			}
-/******/ 		}
-/******/ 	
-/******/ 		// remove outdated dependency from module children
-/******/ 		for(var moduleId in outdatedDependencies) {
-/******/ 			if(Object.prototype.hasOwnProperty.call(outdatedDependencies, moduleId)) {
-/******/ 				var module = installedModules[moduleId];
-/******/ 				var moduleOutdatedDependencies = outdatedDependencies[moduleId];
-/******/ 				for(var j = 0; j < moduleOutdatedDependencies.length; j++) {
-/******/ 					var dependency = moduleOutdatedDependencies[j];
-/******/ 					var idx = module.children.indexOf(dependency);
-/******/ 					if(idx >= 0) module.children.splice(idx, 1);
-/******/ 				}
-/******/ 			}
-/******/ 		}
-/******/ 	
-/******/ 		// Not in "apply" phase
-/******/ 		hotSetStatus("apply");
-/******/ 	
-/******/ 		hotCurrentHash = hotUpdateNewHash;
-/******/ 	
-/******/ 		// insert new code
-/******/ 		for(var moduleId in appliedUpdate) {
-/******/ 			if(Object.prototype.hasOwnProperty.call(appliedUpdate, moduleId)) {
-/******/ 				modules[moduleId] = appliedUpdate[moduleId];
-/******/ 			}
-/******/ 		}
-/******/ 	
-/******/ 		// call accept handlers
-/******/ 		var error = null;
-/******/ 		for(var moduleId in outdatedDependencies) {
-/******/ 			if(Object.prototype.hasOwnProperty.call(outdatedDependencies, moduleId)) {
-/******/ 				var module = installedModules[moduleId];
-/******/ 				var moduleOutdatedDependencies = outdatedDependencies[moduleId];
-/******/ 				var callbacks = [];
-/******/ 				for(var i = 0; i < moduleOutdatedDependencies.length; i++) {
-/******/ 					var dependency = moduleOutdatedDependencies[i];
-/******/ 					var cb = module.hot._acceptedDependencies[dependency];
-/******/ 					if(callbacks.indexOf(cb) >= 0) continue;
-/******/ 					callbacks.push(cb);
-/******/ 				}
-/******/ 				for(var i = 0; i < callbacks.length; i++) {
-/******/ 					var cb = callbacks[i];
-/******/ 					try {
-/******/ 						cb(outdatedDependencies);
-/******/ 					} catch(err) {
-/******/ 						if(!error)
-/******/ 							error = err;
-/******/ 					}
-/******/ 				}
-/******/ 			}
-/******/ 		}
-/******/ 	
-/******/ 		// Load self accepted modules
-/******/ 		for(var i = 0; i < outdatedSelfAcceptedModules.length; i++) {
-/******/ 			var item = outdatedSelfAcceptedModules[i];
-/******/ 			var moduleId = item.module;
-/******/ 			hotCurrentParents = [moduleId];
-/******/ 			try {
-/******/ 				__webpack_require__(moduleId);
-/******/ 			} catch(err) {
-/******/ 				if(typeof item.errorHandler === "function") {
-/******/ 					try {
-/******/ 						item.errorHandler(err);
-/******/ 					} catch(err) {
-/******/ 						if(!error)
-/******/ 							error = err;
-/******/ 					}
-/******/ 				} else if(!error)
-/******/ 					error = err;
-/******/ 			}
-/******/ 		}
-/******/ 	
-/******/ 		// handle errors in accept handlers and self accepted module load
-/******/ 		if(error) {
-/******/ 			hotSetStatus("fail");
-/******/ 			return callback(error);
-/******/ 		}
-/******/ 	
-/******/ 		hotSetStatus("idle");
-/******/ 		callback(null, outdatedModules);
-/******/ 	}
-/******/
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
 /******/
@@ -511,14 +13,11 @@
 /******/ 		var module = installedModules[moduleId] = {
 /******/ 			exports: {},
 /******/ 			id: moduleId,
-/******/ 			loaded: false,
-/******/ 			hot: hotCreateModule(moduleId),
-/******/ 			parents: hotCurrentParents,
-/******/ 			children: []
+/******/ 			loaded: false
 /******/ 		};
 /******/
 /******/ 		// Execute the module function
-/******/ 		modules[moduleId].call(module.exports, module, module.exports, hotCreateRequire(moduleId));
+/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
 /******/
 /******/ 		// Flag the module as loaded
 /******/ 		module.loaded = true;
@@ -537,11 +36,8 @@
 /******/ 	// __webpack_public_path__
 /******/ 	__webpack_require__.p = "";
 /******/
-/******/ 	// __webpack_hash__
-/******/ 	__webpack_require__.h = function() { return hotCurrentHash; };
-/******/
 /******/ 	// Load entry module and return exports
-/******/ 	return hotCreateRequire(0)(0);
+/******/ 	return __webpack_require__(0);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -21413,7 +20909,6 @@
 	    _createClass(SlashSheet, [{
 	        key: 'render',
 	        value: function render() {
-	            console.log('props', this.props);
 	            return _react2.default.createElement(
 	                'div',
 	                { className: 'container' },
@@ -21484,6 +20979,8 @@
 	                return _react2.default.createElement(_modal2.default, {
 	                    name: modal.value,
 	                    total: this.props[modal.value],
+	                    saveDepValueEdit: this.props.saveDepValueEdit,
+	                    editValue: this.props.editValue,
 	                    closeModal: this.props.closeModal });
 	            }
 	            return _react2.default.createElement(
@@ -21606,7 +21103,6 @@
 	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 	
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-	//TODO ---- FORCE FOCUS ON EDIT
 	
 	var StatBlock = (function (_React$Component) {
 		_inherits(StatBlock, _React$Component);
@@ -21944,7 +21440,7 @@
 	Object.defineProperty(exports, "__esModule", {
 		value: true
 	});
-	exports.addPlus = exports.getValue = exports.buildPath = exports.getDepStat = undefined;
+	exports.pathKeys = exports.addPlus = exports.getValue = exports.buildPath = exports.getStatFromPath = exports.getDepStat = undefined;
 	
 	var _paths = __webpack_require__(183);
 	
@@ -21956,16 +21452,25 @@
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
-	//given an array of stat objects IE [{value:'str' type:'mod'} ...]
-	//will return the total value
-	var getDepStat = function getDepStat(depObj) {
-		var statArray = undefined;
-		if (Array.isArray(depObj)) {
-			statArray = depObj;
-		} else {
-			statArray = depObj.dependsOn;
+	var getStatFromPath = function getStatFromPath(path) {
+		var state = _store2.default.getState();
+		for (var i = 0; i < path.length; i++) {
+			state = state[path[i]];
 		}
-		// console.log('depObj', depObj);
+		return state;
+	};
+	
+	//given an array of stat 	objects IE [{value:'str' type:'mod'} ...]
+	//will return the total value
+	var getDepStat = function getDepStat(depObj, noMod) {
+		var statArray = depObj.dependsOn;
+		var playerMod = depObj.playerMod;
+	
+		if (noMod) {
+			playerMod = 0;
+		} else {
+			playerMod = playerMod || 0;
+		}
 		return statArray.map(function (stat) {
 			if (typeof stat.value === 'number') {
 				return stat.value;
@@ -21973,7 +21478,7 @@
 			return getValue(stat);
 		}).reduce(function (total, current) {
 			return total + current;
-		});
+		}) + playerMod;
 	};
 	
 	//returns the value of the associated stat
@@ -21983,7 +21488,6 @@
 	
 		var path = _paths2.default[stat];
 		var state = _store2.default.getState();
-		// console.log('path', path, 'stat', stat, 'statObj', statObj);
 		for (var i = 0; i < path.length; i++) {
 			state = state[path[i]];
 		}
@@ -22012,10 +21516,20 @@
 		return number;
 	};
 	
+	var pathKeys = function pathKeys() {
+		var results = [];
+		for (var key in path) {
+			results.push(key);
+		}
+		return results;
+	};
+	
 	exports.getDepStat = getDepStat;
+	exports.getStatFromPath = getStatFromPath;
 	exports.buildPath = buildPath;
 	exports.getValue = getValue;
 	exports.addPlus = addPlus;
+	exports.pathKeys = pathKeys;
 
 /***/ },
 /* 183 */
@@ -22035,7 +21549,14 @@
 		cha: ['stats', 'cha'],
 		BAB: ['BAB']
 	};
+	
+	var depPaths = {
+		CMB: ['CMB'],
+		CMD: ['CMD']
+	};
+	
 	exports.default = paths;
+	exports.depPaths = depPaths;
 
 /***/ },
 /* 184 */
@@ -22106,6 +21627,21 @@
 	var saveEditValue = function saveEditValue(state, action) {
 		var modState = (0, _helpers.buildPath)(action.path, { editing: { $set: null },
 			value: { $set: action.value } });
+		return update(state, modState);
+	};
+	
+	var saveDepValuEdit = function saveDepValuEdit(state, action) {
+		var depObj = (0, _helpers.getStatFromPath)(action.path);
+		var origTotal = (0, _helpers.getDepStat)(depObj, true);
+		var dif = action.value - origTotal;
+		var modState;
+		if (!dif) {
+			modState = (0, _helpers.buildPath)(action.path, { playerMod: { $set: null },
+				editing: { $set: null } });
+		} else {
+			modState = (0, _helpers.buildPath)(action.path, { playerMod: { $set: dif },
+				editing: { $set: null } });
+		}
 		return update(state, modState);
 	};
 	
@@ -22262,8 +21798,8 @@
 			level: { value: 8 }
 		}],
 		BAB: { value: 8 },
-		CMB: { dependsOn: [{ value: "BAB", type: "flat" }, { value: "str", type: "mod" }] },
-		CMD: { dependsOn: [{ value: "BAB", type: "flat" }, { value: "str", type: "mod" }, { value: "dex", type: "mod" }, { value: 10, type: "rule" }] },
+		CMB: { dependsOn: [{ name: "BAB", value: "BAB", type: "flat" }, { name: "str", value: "str", type: "mod" }] },
+		CMD: { dependsOn: [{ name: "BAB", value: "BAB", type: "flat" }, { name: "str", value: "str", type: "mod" }, { name: "dex", value: "dex", type: "mod" }, { name: "rule", value: 10, type: "flat" }] },
 		status: [{
 			name: { value: "Berzerk Rage" },
 			str: { value: 4 },
@@ -22452,7 +21988,6 @@
 			value: function render() {
 				var _this2 = this;
 	
-				// console.log('rendering modal', this.props);
 				return _react2.default.createElement(
 					'div',
 					{ className: 'modal',
@@ -22467,6 +22002,8 @@
 								return event.stopPropagation();
 							} },
 						_react2.default.createElement(_dependentStatModal2.default, {
+							editValue: this.props.editValue,
+							saveDepValueEdit: this.props.saveDepValueEdit,
 							name: this.props.name,
 							total: this.props.total })
 					)
@@ -22475,8 +22012,10 @@
 		}, {
 			key: 'pressedKey',
 			value: function pressedKey(keycode) {
-				console.log('pressing keys');
-				if (keycode === 13 || keycode === 27) {
+				if (keycode === 13 && document.activeElement === document.body) {
+					this.props.closeModal();
+				}
+				if (keycode === 27) {
 					this.props.closeModal();
 				}
 			}
@@ -22521,6 +22060,10 @@
 	
 	var _helpers = __webpack_require__(182);
 	
+	var _editableValue = __webpack_require__(180);
+	
+	var _editableValue2 = _interopRequireDefault(_editableValue);
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -22561,7 +22104,15 @@
 								_react2.default.createElement(
 									'td',
 									null,
-									(0, _helpers.getDepStat)(this.props.total)
+									_react2.default.createElement(_editableValue2.default, {
+										value: (0, _helpers.getDepStat)(this.props.total),
+										editing: this.props.total.editing,
+										input: 'number',
+										path: [this.props.name],
+										editValue: this.props.editValue,
+										saveValueEdit: this.props.saveDepValueEdit,
+										length: '3',
+										max: '99' })
 								)
 							)
 						)
@@ -22575,7 +22126,8 @@
 							_react2.default.createElement(
 								'tr',
 								null,
-								this.printNames(this.props.total)
+								this.printNames(this.props.total),
+								this.printPlayerModHead(this.props.total.playerMod)
 							)
 						),
 						_react2.default.createElement(
@@ -22584,7 +22136,8 @@
 							_react2.default.createElement(
 								'tr',
 								null,
-								this.printValues(this.props.total)
+								this.printValues(this.props.total),
+								this.printPlayerModBody(this.props.total.playerMod)
 							)
 						)
 					)
@@ -22593,38 +22146,47 @@
 		}, {
 			key: 'printNames',
 			value: function printNames(names) {
-				var _this2 = this;
-	
 				return names.dependsOn.map(function (name, index) {
 					return _react2.default.createElement(
 						'th',
 						{ key: "modal-name-" + index },
 						' ',
-						_this2.printName(name),
-						' '
+						name.name,
+						_react2.default.createElement(
+							'span',
+							null,
+							_react2.default.createElement(
+								'i',
+								null,
+								_react2.default.createElement(
+									'label',
+									{ className: 'formLabel' },
+									' '
+								),
+								' ',
+								name.type
+							)
+						)
 					);
 				});
 			}
-		}, {
-			key: 'printName',
-			value: function printName(name) {
-				if (typeof name.value === "number") {
-					return name.type;
-				}
-				return name.value;
-			}
+			// printName(name){
+			// 	if(typeof name.value === "number"){
+			// 		return name.type
+			// 	}
+			// 	return name.value
+			// }
+	
 		}, {
 			key: 'printValues',
 			value: function printValues(values) {
-				var _this3 = this;
+				var _this2 = this;
 	
 				return values.dependsOn.map(function (value, index) {
 					return _react2.default.createElement(
 						'td',
 						{ key: "modal-value-" + index },
-						' ',
-						_this3.printValue(value),
-						' '
+						_this2.printValue(value)
 					);
 				});
 			}
@@ -22635,6 +22197,30 @@
 					return (0, _helpers.addPlus)(value.value);
 				}
 				return (0, _helpers.addPlus)((0, _helpers.getValue)(value));
+			}
+		}, {
+			key: 'printPlayerModHead',
+			value: function printPlayerModHead(playerMod) {
+				if (playerMod) {
+					return _react2.default.createElement(
+						'th',
+						null,
+						' Player Mod '
+					);
+				}
+			}
+		}, {
+			key: 'printPlayerModBody',
+			value: function printPlayerModBody(playerMod) {
+				if (playerMod) {
+					return _react2.default.createElement(
+						'td',
+						null,
+						' ',
+						(0, _helpers.addPlus)(playerMod),
+						' '
+					);
+				}
 			}
 		}]);
 	

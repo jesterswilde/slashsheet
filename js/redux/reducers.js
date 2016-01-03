@@ -1,7 +1,6 @@
 import {EDIT_VALUE, SAVE_VALUE_EDIT, SAVE_DEPVALUE_EDIT,
 	OPEN_MODAL, CLOSE_MODAL} from './actions'; 
-import {buildPath} from '../util/helpers.js'; 
-
+import {buildPath, getDepStat, getStatFromPath} from '../util/helpers.js'; 
 const update = require('react-addons-update');
 
 const reducer = function(state, action){
@@ -32,6 +31,21 @@ const editValue = function(state, action){
 const saveEditValue = function(state, action){
 	const modState = buildPath(action.path, {editing:{$set:null},
 											value:{$set:action.value}});
+	return update(state, modState); 
+};
+
+const saveDepValuEdit = function(state, action){
+	const depObj = getStatFromPath(action.path); 
+	const origTotal = getDepStat(depObj, true); 
+	const dif = action.value - origTotal; 
+	var modState; 
+	if(!dif){
+		modState = buildPath(action.path, {playerMod:{$set:null},
+											editing:{$set:null}});
+	}else{
+		modState = buildPath(action.path, {playerMod:{$set:dif},
+											editing:{$set:null}});
+	}
 	return update(state, modState); 
 };
 

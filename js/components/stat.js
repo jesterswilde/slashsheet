@@ -1,6 +1,4 @@
 
-//TODO ---- FORCE FOCUS ON EDIT
-
 import React from 'react';
 import EditableValue from './editableValue.js'; 
 
@@ -25,15 +23,15 @@ class StatBlock extends React.Component{
   				{key}
   				</td><td>
   				<EditableValue 
-  				key={statKey+"-stat"}
-  				value={statBlock[key].value}
-  				editing={statBlock[key].editing}
-  				input="number"	
-  				path={newPath}
-	            editValue={this.props.editValue}
-	            saveValueEdit={this.props.saveValueEdit}
-	            length="3"
-  				max="99" />
+	  				key={statKey+"-stat"}
+	  				value={statBlock[key].value}
+	  				editing={statBlock[key].editing}
+	  				input="number"	
+	  				path={newPath}
+		            editValue={this.props.editValue}
+		            saveValueEdit={this.props.saveValueEdit}
+		            length="3"
+	  				max="99" />
   				</td></tr>
   				)
   	}

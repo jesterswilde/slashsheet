@@ -7,4 +7,12 @@ const paths = {
 	cha:['stats', 'cha'],
 	BAB:['BAB'],
 };
+
+const depPaths = {
+	CMB:['CMB'],
+	CMD:['CMD']
+};
+
 export default paths;
+
+export {depPaths}; 

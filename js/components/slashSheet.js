@@ -10,7 +10,6 @@ import Modal from './modal.js';
 
 class SlashSheet extends React.Component{
 	render(){
-    console.log('props', this.props);
 		return (
 			<div className = "container">
 	    	<h1><EditableValue 
@@ -64,9 +63,11 @@ class SlashSheet extends React.Component{
                 <Modal 
                 name={modal.value}
                 total={this.props[modal.value]}
+                saveDepValueEdit = {this.props.saveDepValueEdit}
+                editValue = {this.props.editValue}
                 closeModal={this.props.closeModal} />
             )
-        }
+        }   
         return <button className="btn" onClick={this.props.openModal}> open modal! </button>
     }
 }

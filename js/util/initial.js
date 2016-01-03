@@ -13,13 +13,13 @@ const initialState  = {
 	}],
 	BAB:{value:8},
 	CMB:{dependsOn: [
-		{value:"BAB", type:"flat"}, 
-		{value:"str", type:"mod"}]},
+		{name:"BAB",value:"BAB", type:"flat"}, 
+		{name:"str", value:"str", type:"mod"}]},
 	CMD:{dependsOn: [
-		{value:"BAB", type:"flat"}, 
-		{value:"str", type:"mod"}, 
-		{value:"dex", type:"mod"}, 
-		{value:10, type:"rule"}]},
+		{name:"BAB", value:"BAB", type:"flat"}, 
+		{name:"str", value:"str", type:"mod"}, 
+		{name:"dex",value:"dex", type:"mod"}, 
+		{name:"rule",value:10, type:"flat"}]},
 	status:[{
 			name:{value:"Berzerk Rage"},
 			str:{value:4},

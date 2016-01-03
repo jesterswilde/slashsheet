@@ -1,16 +1,25 @@
 import paths from './paths.js'; 
 import store from '../redux/store.js'; 
 
-//given an array of stat objects IE [{value:'str' type:'mod'} ...]
-//will return the total value
-const getDepStat = function(depObj){
-	let statArray; 
-	if(Array.isArray(depObj)){
-		statArray=depObj; 
-	}else{
-		statArray = depObj.dependsOn; 
+
+
+const getStatFromPath = function(path){
+	let state = store.getState(); 
+	for(var i = 0; i < path.length; i++){
+		state = state[path[i]]; 
 	}
-	// console.log('depObj', depObj); 
+	return state; 
+};
+
+//given an array of stat 	objects IE [{value:'str' type:'mod'} ...]
+//will return the total value
+const getDepStat = function(depObj, noMod){
+	let {dependsOn: statArray, playerMod} = depObj;
+	if(noMod){
+		playerMod = 0; 
+	}else{
+		playerMod = playerMod || 0; 
+	}
 	return statArray
 	.map((stat) => {
 		if(typeof stat.value === 'number'){
@@ -18,7 +27,7 @@ const getDepStat = function(depObj){
 		}
 		return getValue(stat); 
 	})
-	.reduce((total, current) => total + current);
+	.reduce((total, current) => total + current) + playerMod;
 };
 
 //returns the value of the associated stat
@@ -26,7 +35,6 @@ const getValue = function(statObj){
 	const {value: stat, type} = statObj; 	
 	let path = paths[stat]; 
 	let state = store.getState();
-	// console.log('path', path, 'stat', stat, 'statObj', statObj); 
 	for(var i = 0; i < path.length; i++){
 		state = state[path[i]];
 	}
@@ -55,4 +63,13 @@ const addPlus = function(number){
 	return number; 
 };
 
-export {getDepStat, buildPath, getValue, addPlus}; 
+const pathKeys = function(){
+	let results = []; 
+	for(let key in path){
+		results.push(key); 
+	}
+	return results; 
+};
+
+export {getDepStat, getStatFromPath, buildPath, getValue, addPlus,
+	pathKeys}; 

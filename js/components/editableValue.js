@@ -36,7 +36,7 @@ export default class EditableValue extends React.Component{
 		if(this.props.editing){
 			this.getInput().focus(); 
 		}
-	}
+	}	
 	ifPressedenter(keycode, name, value){
 		if(keycode===13){
 			this.props.saveValueEdit(name, value); 	

@@ -3,7 +3,6 @@ import DependentStatModal from './dependentStatModal';
 
 export default class Modal extends React.Component{
 	render(){
-		// console.log('rendering modal', this.props); 
 		return(
 			<div className="modal" 
 			onClick={this.props.closeModal}
@@ -11,6 +10,8 @@ export default class Modal extends React.Component{
 				<div className="modalActive"
 				onClick={(event)=>event.stopPropagation()}>
 					<DependentStatModal
+						editValue = {this.props.editValue}
+						saveDepValueEdit = {this.props.saveDepValueEdit}
 						name={this.props.name}
 						total={this.props.total} /> 
 				</div>
@@ -18,8 +19,10 @@ export default class Modal extends React.Component{
 		)
 	}
 	pressedKey(keycode){
-		console.log('pressing keys');
-		if(keycode === 13 || keycode === 27){
+		if(keycode ===13 && document.activeElement === document.body){
+			this.props.closeModal(); 
+		}
+		if(keycode === 27){
 			this.props.closeModal(); 
 		}
 	}

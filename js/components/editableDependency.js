@@ -12,6 +12,7 @@ export default class EditableDependency extends React.Component{
 						style={this.props.style()}
 						defaulValue={getDepStat(statArray)}
 						id=this.getID()
+						
 				</div>
 			);
 		}
@@ -39,5 +40,4 @@ export default class EditableDependency extends React.Component{
 	getInput(){
 		return document.getElementById(this.getID());
 	}
-
 }
