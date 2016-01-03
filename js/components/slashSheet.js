@@ -61,10 +61,14 @@ class SlashSheet extends React.Component{
         if(modal.active){
             return(
                 <Modal 
-                name={modal.value}
-                total={this.props[modal.value]}
+                name = {modal.value}
+                total = {this.props[modal.value]}
+                addDep = {this.props.addDep}
+                removeDep = {this.props.removeDep}
+                saveValueEdit = {this.props.saveValueEdit}
                 saveDepValueEdit = {this.props.saveDepValueEdit}
                 editValue = {this.props.editValue}
+                modifyDep = {this.props.modifyDep}
                 closeModal={this.props.closeModal} />
             )
         }   

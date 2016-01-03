@@ -20979,8 +20979,12 @@
 	                return _react2.default.createElement(_modal2.default, {
 	                    name: modal.value,
 	                    total: this.props[modal.value],
+	                    addDep: this.props.addDep,
+	                    removeDep: this.props.removeDep,
+	                    saveValueEdit: this.props.saveValueEdit,
 	                    saveDepValueEdit: this.props.saveDepValueEdit,
 	                    editValue: this.props.editValue,
+	                    modifyDep: this.props.modifyDep,
 	                    closeModal: this.props.closeModal });
 	            }
 	            return _react2.default.createElement(
@@ -21012,6 +21016,9 @@
 	var SAVE_DEPVALUE_EDIT = "SAVE_DEPVALUE_EDIT";
 	var OPEN_MODAL = "OPEN_MODAL";
 	var CLOSE_MODAL = "CLOSE_MODAL";
+	var MODIFY_DEP = "MODIFY_DEP";
+	var ADD_DEP = "ADD_DEP";
+	var REMOVE_DEP = "REMOVE_DEP";
 	
 	var _editValue = function _editValue(path) {
 		return {
@@ -21049,6 +21056,31 @@
 		};
 	};
 	
+	var _modifyDep = function _modifyDep(path, indexType, value) {
+		return {
+			type: MODIFY_DEP,
+			path: path,
+			index: indexType[0],
+			version: indexType[1],
+			value: value
+		};
+	};
+	
+	var _addDep = function _addDep(path) {
+		return {
+			type: ADD_DEP,
+			path: path
+		};
+	};
+	
+	var _removeDep = function _removeDep(path, index) {
+		return {
+			type: REMOVE_DEP,
+			path: path,
+			index: index
+		};
+	};
+	
 	function mapDispatchToProps(dispatch) {
 		return {
 			editValue: function editValue(path) {
@@ -21065,6 +21097,15 @@
 			},
 			saveDepValueEdit: function saveDepValueEdit(path, value) {
 				return dispatch(_saveDepValueEdit(path, value));
+			},
+			modifyDep: function modifyDep(path, version, value) {
+				return dispatch(_modifyDep(path, version, value));
+			},
+			addDep: function addDep(path) {
+				return dispatch(_addDep(path));
+			},
+			removeDep: function removeDep(path, index) {
+				return dispatch(_removeDep(path, index));
 			}
 		};
 	}
@@ -21074,6 +21115,9 @@
 	exports.OPEN_MODAL = OPEN_MODAL;
 	exports.CLOSE_MODAL = CLOSE_MODAL;
 	exports.SAVE_DEPVALUE_EDIT = SAVE_DEPVALUE_EDIT;
+	exports.MODIFY_DEP = MODIFY_DEP;
+	exports.ADD_DEP = ADD_DEP;
+	exports.REMOVE_DEP = REMOVE_DEP;
 	exports.mapDispatchToProps = mapDispatchToProps;
 
 /***/ },
@@ -21440,7 +21484,7 @@
 	Object.defineProperty(exports, "__esModule", {
 		value: true
 	});
-	exports.pathKeys = exports.addPlus = exports.getValue = exports.buildPath = exports.getStatFromPath = exports.getDepStat = undefined;
+	exports.isStat = exports.bonusKeys = exports.modKeys = exports.statKeys = exports.addPlus = exports.getValue = exports.buildPath = exports.getStatFromPath = exports.getDepStat = undefined;
 	
 	var _paths = __webpack_require__(183);
 	
@@ -21472,7 +21516,7 @@
 			playerMod = playerMod || 0;
 		}
 		return statArray.map(function (stat) {
-			if (typeof stat.value === 'number') {
+			if (typeof stat.value === 'number' || !isStat(stat.value)) {
 				return stat.value;
 			}
 			return getValue(stat);
@@ -21491,10 +21535,7 @@
 		for (var i = 0; i < path.length; i++) {
 			state = state[path[i]];
 		}
-		if (type === 'flat') {
-			return Number(state.value);
-		}
-		return Math.floor(Number(state.value) / 2) - 5;
+		return _paths.mod[type](state.value);
 	};
 	
 	//creates an object used for easy update()
@@ -21516,9 +21557,32 @@
 		return number;
 	};
 	
-	var pathKeys = function pathKeys() {
+	var isStat = function isStat(statName) {
+		if (statKeys().indexOf(statName) >= 0) {
+			return true;
+		}
+		return false;
+	};
+	
+	var statKeys = function statKeys() {
 		var results = [];
-		for (var key in path) {
+		for (var key in _paths2.default) {
+			results.push(key);
+		}
+		return results;
+	};
+	
+	var bonusKeys = function bonusKeys() {
+		var results = statKeys();
+		for (var i = 0; i < _paths.bonusTypes.length; i++) {
+			results.push(_paths.bonusTypes[i]);
+		}
+		return results;
+	};
+	
+	var modKeys = function modKeys() {
+		var results = [];
+		for (var key in _paths.mod) {
 			results.push(key);
 		}
 		return results;
@@ -21529,7 +21593,10 @@
 	exports.buildPath = buildPath;
 	exports.getValue = getValue;
 	exports.addPlus = addPlus;
-	exports.pathKeys = pathKeys;
+	exports.statKeys = statKeys;
+	exports.modKeys = modKeys;
+	exports.bonusKeys = bonusKeys;
+	exports.isStat = isStat;
 
 /***/ },
 /* 183 */
@@ -21549,6 +21616,16 @@
 		cha: ['stats', 'cha'],
 		BAB: ['BAB']
 	};
+	var bonusTypes = ['rule'];
+	
+	var mod = {
+		flat: function flat(value) {
+			return value;
+		},
+		mod: function mod(value) {
+			return Math.floor(value / 2) - 5;
+		}
+	};
 	
 	var depPaths = {
 		CMB: ['CMB'],
@@ -21557,6 +21634,8 @@
 	
 	exports.default = paths;
 	exports.depPaths = depPaths;
+	exports.mod = mod;
+	exports.bonusTypes = bonusTypes;
 
 /***/ },
 /* 184 */
@@ -21611,6 +21690,12 @@
 				return openModal(state, action);
 			case _actions.CLOSE_MODAL:
 				return closeModal(state, action);
+			case _actions.MODIFY_DEP:
+				return modifyDep(state, action);
+			case _actions.ADD_DEP:
+				return addDep(state, action);
+			case _actions.REMOVE_DEP:
+				return removeDep(state, action);
 			default:
 				return identity(state);
 		}
@@ -21626,7 +21711,7 @@
 	
 	var saveEditValue = function saveEditValue(state, action) {
 		var modState = (0, _helpers.buildPath)(action.path, { editing: { $set: null },
-			value: { $set: action.value } });
+			value: { $set: Number(action.value) } });
 		return update(state, modState);
 	};
 	
@@ -21639,8 +21724,29 @@
 			modState = (0, _helpers.buildPath)(action.path, { playerMod: { $set: null },
 				editing: { $set: null } });
 		} else {
-			modState = (0, _helpers.buildPath)(action.path, { playerMod: { $set: dif },
-				editing: { $set: null } });
+			modState = (0, _helpers.buildPath)(action.path, { playerMod: { $set: dif }, editing: { $set: null } });
+		}
+		return update(state, modState);
+	};
+	
+	var modifyDep = function modifyDep(state, action) {
+		var modState;
+		var version = action.version;
+		var index = action.index;
+		var path = action.path;
+		var value = action.value;
+		// path=path.slice(); //Might not be needed, double check that this is a new array
+		// path.push('dependsOn', index);
+	
+		if (version === "name") {
+			if ((0, _helpers.isStat)(value)) {
+				modState = (0, _helpers.buildPath)(path, { name: { $set: value }, value: { $set: value } });
+			} else {
+				modState = (0, _helpers.buildPath)(path, { name: { $set: value }, value: { $set: 0 } });
+			}
+		}
+		if (version === "type") {
+			modState = (0, _helpers.buildPath)(path, { type: { $set: value } });
 		}
 		return update(state, modState);
 	};
@@ -21652,6 +21758,18 @@
 	
 	var closeModal = function closeModal(state, action) {
 		return update(state, { modal: { active: { $set: false } } });
+	};
+	
+	var addDep = function addDep(state, action) {
+		var modState = (0, _helpers.buildPath)(action.path, { dependsOn: { $push: [{ name: "str", value: "str", type: "mod" }] } });
+		return update(state, modState);
+	};
+	
+	var removeDep = function removeDep(state, action) {
+		var newArray = (0, _helpers.getStatFromPath)(action.path).dependsOn.slice();
+		newArray.splice(action.index, 1);
+		var modState = (0, _helpers.buildPath)(action.path, { dependsOn: { $set: newArray } });
+		return update(state, modState);
 	};
 	
 	exports.reducer = reducer;
@@ -21808,7 +21926,6 @@
 		}, {
 			name: { value: "Weapon Specialization (Battle Axe)" },
 			weaponType: { value: ["Battle Axe"] }
-	
 		}],
 		weapons: [{
 			name: { value: "Crunk's Battle Axe" },
@@ -22002,7 +22119,12 @@
 								return event.stopPropagation();
 							} },
 						_react2.default.createElement(_dependentStatModal2.default, {
+							modifyDep: this.props.modifyDep,
+							addDep: this.props.addDep,
+							removeDep: this.props.removeDep,
 							editValue: this.props.editValue,
+							path: [this.props.name],
+							saveValueEdit: this.props.saveValueEdit,
 							saveDepValueEdit: this.props.saveDepValueEdit,
 							name: this.props.name,
 							total: this.props.total })
@@ -22084,6 +22206,8 @@
 		_createClass(dependentStatModal, [{
 			key: 'render',
 			value: function render() {
+				var _this2 = this;
+	
 				return _react2.default.createElement(
 					'div',
 					null,
@@ -22121,23 +22245,30 @@
 						'table',
 						{ className: 'table' },
 						_react2.default.createElement(
-							'thead',
-							null,
-							_react2.default.createElement(
-								'tr',
-								null,
-								this.printNames(this.props.total),
-								this.printPlayerModHead(this.props.total.playerMod)
-							)
-						),
-						_react2.default.createElement(
 							'tbody',
 							null,
+							this.printNames(this.props.total),
 							_react2.default.createElement(
 								'tr',
 								null,
-								this.printValues(this.props.total),
+								this.printPlayerModHead(this.props.total.playerMod),
 								this.printPlayerModBody(this.props.total.playerMod)
+							),
+							_react2.default.createElement(
+								'tr',
+								null,
+								_react2.default.createElement(
+									'td',
+									null,
+									_react2.default.createElement(
+										'button',
+										{ className: 'btn btn-primary',
+											onClick: function onClick() {
+												return _this2.props.addDep(_this2.props.path);
+											} },
+										'Add'
+									)
+								)
 							)
 						)
 					)
@@ -22146,14 +22277,28 @@
 		}, {
 			key: 'printNames',
 			value: function printNames(names) {
+				var _this3 = this;
+	
 				return names.dependsOn.map(function (name, index) {
+					var path = _this3.props.path.slice();
+					path.push('dependsOn', index);
 					return _react2.default.createElement(
-						'th',
-						{ key: "modal-name-" + index },
-						' ',
-						name.name,
+						'tr',
+						{ key: "modal-name-" + name.name + "-" + index },
 						_react2.default.createElement(
-							'span',
+							'td',
+							null,
+							_react2.default.createElement(
+								'select',
+								{ defaultValue: name.name,
+									onChange: function onChange(event) {
+										return _this3.props.modifyDep(path, [index, "name"], event.target.value);
+									} },
+								_this3.typeOptions((0, _helpers.bonusKeys)(), name.name, "name")
+							)
+						),
+						_react2.default.createElement(
+							'td',
 							null,
 							_react2.default.createElement(
 								'i',
@@ -22163,40 +22308,49 @@
 									{ className: 'formLabel' },
 									' '
 								),
-								' ',
-								name.type
+								_react2.default.createElement(
+									'select',
+									{ defaultValue: name.type,
+										onChange: function onChange(event) {
+											return _this3.props.modifyDep(path, [index, "type"], event.target.value);
+										} },
+									_this3.typeOptions((0, _helpers.modKeys)(), name.type, "type")
+								)
 							)
-						)
-					);
-				});
-			}
-			// printName(name){
-			// 	if(typeof name.value === "number"){
-			// 		return name.type
-			// 	}
-			// 	return name.value
-			// }
-	
-		}, {
-			key: 'printValues',
-			value: function printValues(values) {
-				var _this2 = this;
-	
-				return values.dependsOn.map(function (value, index) {
-					return _react2.default.createElement(
-						'td',
-						{ key: "modal-value-" + index },
-						_this2.printValue(value)
+						),
+						_this3.printValue(name, index),
+						_this3.printRemoveButton(_this3.props.path, index)
 					);
 				});
 			}
 		}, {
 			key: 'printValue',
-			value: function printValue(value) {
-				if (typeof value.value === "number") {
-					return (0, _helpers.addPlus)(value.value);
+			value: function printValue(value, index) {
+				/*If it's a stat, just get the stat's value */
+				if ((0, _helpers.isStat)(value.value)) {
+					return _react2.default.createElement(
+						'td',
+						{ key: "modal-value-" + index },
+						(0, _helpers.addPlus)((0, _helpers.getValue)(value))
+					);
+				} else {
+					/* If it's not tied to a stat, it should be editable */
+					var path = this.props.path.slice();
+					path.push('dependsOn', index);
+					return _react2.default.createElement(
+						'td',
+						null,
+						_react2.default.createElement(_editableValue2.default, {
+							value: value.value,
+							editing: value.editing,
+							input: 'number',
+							path: path,
+							editValue: this.props.editValue,
+							saveValueEdit: this.props.saveValueEdit,
+							length: '3',
+							max: '99' })
+					);
 				}
-				return (0, _helpers.addPlus)((0, _helpers.getValue)(value));
 			}
 		}, {
 			key: 'printPlayerModHead',
@@ -22221,6 +22375,35 @@
 						' '
 					);
 				}
+			}
+		}, {
+			key: 'printRemoveButton',
+			value: function printRemoveButton(path, index) {
+				var _this4 = this;
+	
+				console.log('length', (0, _helpers.getStatFromPath)(path).dependsOn.length);
+				if ((0, _helpers.getStatFromPath)(path).dependsOn.length > 1) {
+					return _react2.default.createElement(
+						'td',
+						{ onClick: function onClick() {
+								return _this4.props.removeDep(_this4.props.path, index);
+							} },
+						'X'
+					);
+				}
+			}
+		}, {
+			key: 'typeOptions',
+			value: function typeOptions(typeArray, current, keyAdd) {
+				return typeArray.map(function (key) {
+					return _react2.default.createElement(
+						'option',
+						{ key: key + "-" + keyAdd + "-dropwdown", value: key },
+						' ',
+						key,
+						' '
+					);
+				});
 			}
 		}]);
 	

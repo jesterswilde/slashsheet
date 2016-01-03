@@ -1,4 +1,5 @@
 import paths from './paths.js'; 
+import {mod, bonusTypes} from './paths.js'; 
 import store from '../redux/store.js'; 
 
 
@@ -22,7 +23,7 @@ const getDepStat = function(depObj, noMod){
 	}
 	return statArray
 	.map((stat) => {
-		if(typeof stat.value === 'number'){
+		if(typeof stat.value === 'number' || !isStat(stat.value)){
 			return stat.value;
 		}
 		return getValue(stat); 
@@ -40,10 +41,7 @@ const getValue = function(statObj){
 	for(var i = 0; i < path.length; i++){
 		state = state[path[i]];
 	}
-	if(type === 'flat'){
-		return Number(state.value); 
-	}
-	return Math.floor(Number(state.value)/2) - 5; 
+	return mod[type](state.value); 
 };
 
 //creates an object used for easy update()
@@ -65,13 +63,36 @@ const addPlus = function(number){
 	return number; 
 };
 
-const pathKeys = function(){
+const isStat = function(statName){
+	if(statKeys().indexOf(statName) >= 0){
+		return true;
+	}
+	return false; 
+};
+
+const statKeys = function(){
 	let results = []; 
-	for(let key in path){
+	for(let key in paths){
 		results.push(key); 
+	}	
+	return results;
+};
+
+const bonusKeys = function(){
+	let results = statKeys(); 
+	for(let i = 0; i < bonusTypes.length; i++){
+		results.push(bonusTypes[i]); 
+	}
+	return results; 
+};
+
+const modKeys = function(){
+	let results = []; 
+	for(let key in mod){
+		results.push(key);
 	}
 	return results; 
 };
 
 export {getDepStat, getStatFromPath, buildPath, getValue, addPlus,
-	pathKeys}; 
+	statKeys, modKeys, bonusKeys, isStat}; 

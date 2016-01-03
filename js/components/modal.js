@@ -10,7 +10,12 @@ export default class Modal extends React.Component{
 				<div className="modalActive"
 				onClick={(event)=>event.stopPropagation()}>
 					<DependentStatModal
+						modifyDep = {this.props.modifyDep}
+						addDep = {this.props.addDep}
+						removeDep = {this.props.removeDep}
 						editValue = {this.props.editValue}
+						path={[this.props.name]}
+						saveValueEdit = {this.props.saveValueEdit}
 						saveDepValueEdit = {this.props.saveDepValueEdit}
 						name={this.props.name}
 						total={this.props.total} /> 

@@ -7,6 +7,14 @@ const paths = {
 	cha:['stats', 'cha'],
 	BAB:['BAB'],
 };
+const bonusTypes = [
+	'rule'
+];
+
+const mod = {
+	flat: (value) => value, 
+	mod: (value) => Math.floor(value/2) - 5
+};
 
 const depPaths = {
 	CMB:['CMB'],
@@ -15,4 +23,4 @@ const depPaths = {
 
 export default paths;
 
-export {depPaths}; 
+export {depPaths, mod, bonusTypes}; 

@@ -29,7 +29,6 @@ const initialState  = {
 		{
 			name:{value:"Weapon Specialization (Battle Axe)"},
 			weaponType:{value:["Battle Axe"]},
-
 		}],
 	weapons:[{
 		name:{value:"Crunk's Battle Axe"},
