@@ -110,7 +110,7 @@ const simplifyDamage = function(damageArray, statDamageObj){
 	for(let i = 0; i < sortedDamageArray.length; i++){
 		const dmg = sortedDamageArray[i];
 		//If it's a new die type
-		if(dmg.die !== recent.die){
+		if(dmg.die.value !== recent.die){
 			//Don't add + the first time
 			if(recent.die !== 'first'){
 				if(results !== ''){

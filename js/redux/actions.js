@@ -30,10 +30,11 @@ const saveDepValueEdit = function(path, value){
 	};
 };
 
-const openModal = function(value){
+const openModal = function(value, modalType){
 	return{
 		type: OPEN_MODAL,
-		value
+		value,
+		modalType
 	};
 };
 
@@ -72,7 +73,7 @@ function mapDispatchToProps(dispatch) {
   return {
     editValue: (path) => dispatch(editValue(path)),
     saveValueEdit: (path, value) => dispatch(saveValueEdit(path, value)),
-    openModal: (value) => dispatch(openModal(value)),
+    openModal: (value, modalType) => dispatch(openModal(value, modalType)),
     closeModal: (event) => dispatch(closeModal(event)),
     saveDepValueEdit: (path, value) => dispatch(saveDepValueEdit(path,value)),
     modifyDep: (path, version, value) => dispatch(modifyDep(path,version,value)),

@@ -63,14 +63,14 @@ class SlashSheet extends React.Component{
 	}
     renderModal(){
         const modal = this.props.modal; 
-        // console.log('Modals:',modal, '|', this.props.modal)
         if(modal.active){
         const stats = getStatFromPath(modal.value); 
             return(
                 <Modal 
                 name = {modal.value[modal.value.length-1]}
                 path = {modal.value}
-                total = {stats}
+                modalType = {modal.modalType}
+                modal = {stats}
                 addDep = {this.props.addDep}
                 removeDep = {this.props.removeDep}
                 saveValueEdit = {this.props.saveValueEdit}

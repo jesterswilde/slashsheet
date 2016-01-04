@@ -1,5 +1,6 @@
 import React from 'react'; 
 import DependentStatModal from './dependentStatModal'; 
+import modalRoutes from '../util/modalRoutes.js'; 
 
 export default class Modal extends React.Component{
 	render(){
@@ -9,19 +10,24 @@ export default class Modal extends React.Component{
 			onKeyDown={(event) => this.pressedKey(event.keycode)}>
 				<div className="modalActive"
 				onClick={(event)=>event.stopPropagation()}>
-					<DependentStatModal
-						modifyDep = {this.props.modifyDep}
-						addDep = {this.props.addDep}
-						removeDep = {this.props.removeDep}
-						editValue = {this.props.editValue}
-						path={[this.props.name]}
-						saveValueEdit = {this.props.saveValueEdit}
-						saveDepValueEdit = {this.props.saveDepValueEdit}
-						name={this.props.name}
-						total={this.props.total} /> 
+					{this.renderModal()}
 				</div>
 			</div>
 		)
+	}
+	renderModal(){
+		return modalRoutes[this.props.modalType]
+			(this.props.path, this.props.name, this.props.modal, this.actions());
+	}
+	actions(){
+		return {
+			modifyDep: this.props.modifyDep,
+			addDep: this.props.addDep,
+			removeDep: this.props.removeDep, 
+			editValue: this.props.editValue,
+			saveValueEdit: this.props.saveValueEdit,
+			saveDepValueEdit: this.props.saveDepValueEdit
+		}
 	}
 	pressedKey(keycode){
 		if(keycode ===13 && document.activeElement === document.body){

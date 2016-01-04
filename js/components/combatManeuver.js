@@ -22,12 +22,12 @@ export default class CombatManeuver extends React.Component{
 			  				max="99" />
 			  			</td>
 					</tr>
-					<tr onClick={()=>this.props.openModal(['CMB'])}>
+					<tr onClick={()=>this.props.openModal(['CMB'],'dependent')}>
 						<td>CMB:</td>
 						<td>{getDepStat(this.props.CMB)}</td>
 					</tr>
 					<tr>
-						<td onClick={()=>this.props.openModal(['CMD'])}>CMD:</td>
+						<td onClick={()=>this.props.openModal(['CMD'],'dependent')}>CMD:</td>
 						<td>{getDepStat(this.props.CMD)}</td>
 					</tr>
 

@@ -74,7 +74,8 @@ const modifyDep = function(state, action){
 
 const openModal = function(state, action){
 	return update(state, {modal:{active:{$set:true},
-								value:{$set:action.value}}}); 
+								value:{$set:action.value},
+								modalType:{$set:action.modalType}}}); 
 };
 
 const closeModal = function(state, action){

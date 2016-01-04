@@ -2,9 +2,9 @@ import React from 'react';
 import {getDepStat, getStatFromPath, getValue, addPlus, isStat, bonusKeys, modKeys} from '../util/helpers.js'; 
 import EditableValue from './editableValue.js'; 
 
-export default class dependentStatModal extends React.Component{
+export default class DependentStatModal extends React.Component{
 	render(){
-		
+
 		return (
 			<div>
 				<table className="table"><tbody>
@@ -15,8 +15,8 @@ export default class dependentStatModal extends React.Component{
 						{/* Stat Name */} 
 						<td>
 			  				<EditableValue 
-				  				value={getDepStat(this.props.total)}
-				  				editing={this.props.total.editing}
+				  				value={getDepStat(this.props.modal)}
+				  				editing={this.props.modal.editing}
 				  				input="number"	
 				  				path={[this.props.name]}
 					            editValue={this.props.editValue}
@@ -29,10 +29,10 @@ export default class dependentStatModal extends React.Component{
 				</tbody></table>
 				<table className="table">
 				<tbody>
-					{this.printNames(this.props.total)}
+					{this.printNames(this.props.modal)}
 				<tr>
-					{this.printPlayerModHead(this.props.total.playerMod)}
-					{this.printPlayerModBody(this.props.total.playerMod)}
+					{this.printPlayerModHead(this.props.modal.playerMod)}
+					{this.printPlayerModBody(this.props.modal.playerMod)}
 				</tr>
 				<tr>
 					<td>
@@ -113,7 +113,6 @@ export default class dependentStatModal extends React.Component{
 		}
 	}
 	printRemoveButton(path, index){
-		console.log('length', getStatFromPath(path).dependsOn.length);
 		if(getStatFromPath(path).dependsOn.length > 1){
 			return(
 				 <td onClick={()=>this.props.removeDep(this.props.path, index)}>
