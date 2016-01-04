@@ -13,7 +13,9 @@ const bonusTypes = [
 
 const mod = {
 	flat: (value) => value, 
-	mod: (value) => Math.floor(value/2) - 5
+	mod: (value) => Math.floor(value/2) - 5,
+	"1.5 mod": (value) => Math.floor((Math.floor(value/2) - 5) * 1.5), 
+	"0.5 mod": (value) => Math.floor((Math.floor(value/2) -5) * 0.5)
 };
 
 const depPaths = {

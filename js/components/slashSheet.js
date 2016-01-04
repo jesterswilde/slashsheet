@@ -1,11 +1,13 @@
 import React from 'react'; 
 import {connect} from 'react-redux'; 
 import {mapDispatchToProps} from '../redux/actions.js'; 
+import {getStatFromPath} from '../util/helpers.js'; 
 import StatBlock from './stat.js'; 
 import EditableValue from './editableValue.js'; 
 import CombatManeuver from './combatManeuver.js'; 
 import Health from './health.js'; 
 import Modal from './modal.js';
+import Weapon from './weapon.js';
 
 
 class SlashSheet extends React.Component{
@@ -50,6 +52,10 @@ class SlashSheet extends React.Component{
                     editValue={this.props.editValue}
                     saveValueEdit={this.props.saveValueEdit}/>
                 </div>
+                <div className="col-sm-4 col-md-3">
+                    <Weapon
+                        weapons={this.props.weapons} />
+                </div>
               </div>
               {this.renderModal()}
 			</div>
@@ -59,10 +65,12 @@ class SlashSheet extends React.Component{
         const modal = this.props.modal; 
         // console.log('Modals:',modal, '|', this.props.modal)
         if(modal.active){
+        const stats = getStatFromPath(modal.value); 
             return(
                 <Modal 
-                name = {modal.value}
-                total = {this.props[modal.value]}
+                name = {modal.value[modal.value.length-1]}
+                path = {modal.value}
+                total = {stats}
                 addDep = {this.props.addDep}
                 removeDep = {this.props.removeDep}
                 saveValueEdit = {this.props.saveValueEdit}
@@ -72,7 +80,6 @@ class SlashSheet extends React.Component{
                 closeModal={this.props.closeModal} />
             )
         }   
-        return <button className="btn" onClick={this.props.openModal}> open modal! </button>
     }
 }
 

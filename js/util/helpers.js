@@ -94,5 +94,54 @@ const modKeys = function(){
 	return results; 
 };
 
+//this is super messy, consider refactoring for cleaner.
+const simplifyDamage = function(damageArray, statDamageObj){
+	let sortedDamageArray = damageArray.sort((a,b) => {
+		if(a.die.value < b.die.value){
+			return 1;
+		}
+		if(a.die.value > b.die.value){
+			return -1;
+		}	
+	});
+	let recent = {die:'first', amount:0}; 
+	let results = ''; 
+	let statDmg = getDepStat(statDamageObj); 
+	for(let i = 0; i < sortedDamageArray.length; i++){
+		const dmg = sortedDamageArray[i];
+		//If it's a new die type
+		if(dmg.die !== recent.die){
+			//Don't add + the first time
+			if(recent.die !== 'first'){
+				if(results !== ''){
+					results += '+';
+				}
+				results += recent.amount +"D"+ recent.die; 
+			}
+			//overwrite recent die
+			recent.die = dmg.die.value;
+			recent.amount = dmg.amount.value;
+		}else{
+			//it's the same die type
+			recent.amount += dmg.amount.value; 
+		}
+	}
+	if(recent.die !== 'first'){
+		if(results !== ''){
+			results += '+';
+		}
+		if(recent.die === 0){
+			recent.amount += statDmg;
+			results += recent.die + recent.amount; 
+		}else{
+			results+= recent.amount +"D"+ recent.die; 
+			results += "+"+statDmg;
+		}
+	}else{
+		results+=statDmg; 
+	}
+	return results; 
+};
+
 export {getDepStat, getStatFromPath, buildPath, getValue, addPlus,
-	statKeys, modKeys, bonusKeys, isStat}; 
+	statKeys, modKeys, bonusKeys, isStat, simplifyDamage}; 

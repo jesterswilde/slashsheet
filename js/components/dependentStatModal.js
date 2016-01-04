@@ -4,6 +4,7 @@ import EditableValue from './editableValue.js';
 
 export default class dependentStatModal extends React.Component{
 	render(){
+		
 		return (
 			<div>
 				<table className="table"><tbody>

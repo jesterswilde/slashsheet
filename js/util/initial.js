@@ -32,9 +32,11 @@ const initialState  = {
 		}],
 	weapons:[{
 		name:{value:"Crunk's Battle Axe"},
-		type:{value:"Battle Axe"}, 
-		toHit:[{value:"BAB"}, {value:"STR"}],
-		fromStats:[{value:"STR"}],
+		tags:{value:["battle axe", "melee"]}, 
+		toHit:{dependsOn:[
+			{value:"BAB", name:"BAB", type:"flat"},
+			{value:"str", name:"str", type:"mod"}]},
+		damageMod:{dependsOn:[{name:"str", value:"str", type:"1.5 mod"}]},
 		damage:[{
 			amount:{value:2},
 			die:{value:12},
@@ -42,6 +44,7 @@ const initialState  = {
 			},
 			{
 			amount:{value:2},
+			die:{value:0},
 			type:{value:"enchantment"}
 			},
 			{
@@ -49,6 +52,32 @@ const initialState  = {
 			die:{value:6},
 			type:{value:"fire"}
 			}]
+	},
+	{
+		name:{value:"Unconcious Gnome"},
+		tags:{value:["gnome", "melee"]},
+		toHit:{dependsOn:[
+			{value:"BAB", name:"BAB", type:"flat"},
+			{value:"str", name:"str", type:"mod"}
+		]},
+		damageMod:{dependsOn:[{name:"str", value:"str", type:"mod"}]},
+		damage:[
+			{amount:{value:2}, die:{value:6}, type:{value:"Weapon Damage"}}
+		]
+	},
+	{
+		name:{value:"+1 Composite Longbow +2"},
+		tags:{value:['ranged']},
+		toHit:{dependsOn:[
+			{value:"BAB", name:"BAB", type:"flat"},
+			{value:"dex", name:"dex", type:"mod"}	
+		]},
+		damageMod:{dependsOn:[{name:"dex", value:"dex", type:"mod"}]},
+		damage:[
+			{amount:{value:1}, die:{value:8}, type:{value:"Weapon Damage"}},
+			{amount:{value:1}, die:{value:0}, type:{value:"enchantment"}},
+			{amount:{value:2}, die:{value:0}, type:{value:"strength"}}
+		]
 	}],
 	name: {value:"Crunk"},
 	title: {value:"Barbarian of the Frozen Wastes"}, 

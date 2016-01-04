@@ -20869,6 +20869,8 @@
 	
 	var _actions = __webpack_require__(178);
 	
+	var _helpers = __webpack_require__(182);
+	
 	var _stat = __webpack_require__(179);
 	
 	var _stat2 = _interopRequireDefault(_stat);
@@ -20888,6 +20890,10 @@
 	var _modal = __webpack_require__(190);
 	
 	var _modal2 = _interopRequireDefault(_modal);
+	
+	var _weapon = __webpack_require__(193);
+	
+	var _weapon2 = _interopRequireDefault(_weapon);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -20965,6 +20971,12 @@
 	                            path: ['HP'],
 	                            editValue: this.props.editValue,
 	                            saveValueEdit: this.props.saveValueEdit })
+	                    ),
+	                    _react2.default.createElement(
+	                        'div',
+	                        { className: 'col-sm-4 col-md-3' },
+	                        _react2.default.createElement(_weapon2.default, {
+	                            weapons: this.props.weapons })
 	                    )
 	                ),
 	                this.renderModal()
@@ -20976,9 +20988,11 @@
 	            var modal = this.props.modal;
 	            // console.log('Modals:',modal, '|', this.props.modal)
 	            if (modal.active) {
+	                var stats = (0, _helpers.getStatFromPath)(modal.value);
 	                return _react2.default.createElement(_modal2.default, {
-	                    name: modal.value,
-	                    total: this.props[modal.value],
+	                    name: modal.value[modal.value.length - 1],
+	                    path: modal.value,
+	                    total: stats,
 	                    addDep: this.props.addDep,
 	                    removeDep: this.props.removeDep,
 	                    saveValueEdit: this.props.saveValueEdit,
@@ -20987,11 +21001,6 @@
 	                    modifyDep: this.props.modifyDep,
 	                    closeModal: this.props.closeModal });
 	            }
-	            return _react2.default.createElement(
-	                'button',
-	                { className: 'btn', onClick: this.props.openModal },
-	                ' open modal! '
-	            );
 	        }
 	    }]);
 	
@@ -21435,7 +21444,7 @@
 							_react2.default.createElement(
 								'tr',
 								{ onClick: function onClick() {
-										return _this2.props.openModal('CMB');
+										return _this2.props.openModal(['CMB']);
 									} },
 								_react2.default.createElement(
 									'td',
@@ -21454,7 +21463,7 @@
 								_react2.default.createElement(
 									'td',
 									{ onClick: function onClick() {
-											return _this2.props.openModal('CMD');
+											return _this2.props.openModal(['CMD']);
 										} },
 									'CMD:'
 								),
@@ -21484,7 +21493,7 @@
 	Object.defineProperty(exports, "__esModule", {
 		value: true
 	});
-	exports.isStat = exports.bonusKeys = exports.modKeys = exports.statKeys = exports.addPlus = exports.getValue = exports.buildPath = exports.getStatFromPath = exports.getDepStat = undefined;
+	exports.simplifyDamage = exports.isStat = exports.bonusKeys = exports.modKeys = exports.statKeys = exports.addPlus = exports.getValue = exports.buildPath = exports.getStatFromPath = exports.getDepStat = undefined;
 	
 	var _paths = __webpack_require__(183);
 	
@@ -21588,6 +21597,55 @@
 		return results;
 	};
 	
+	//this is super messy, consider refactoring for cleaner.
+	var simplifyDamage = function simplifyDamage(damageArray, statDamageObj) {
+		var sortedDamageArray = damageArray.sort(function (a, b) {
+			if (a.die.value < b.die.value) {
+				return 1;
+			}
+			if (a.die.value > b.die.value) {
+				return -1;
+			}
+		});
+		var recent = { die: 'first', amount: 0 };
+		var results = '';
+		var statDmg = getDepStat(statDamageObj);
+		for (var i = 0; i < sortedDamageArray.length; i++) {
+			var dmg = sortedDamageArray[i];
+			//If it's a new die type
+			if (dmg.die !== recent.die) {
+				//Don't add + the first time
+				if (recent.die !== 'first') {
+					if (results !== '') {
+						results += '+';
+					}
+					results += recent.amount + "D" + recent.die;
+				}
+				//overwrite recent die
+				recent.die = dmg.die.value;
+				recent.amount = dmg.amount.value;
+			} else {
+				//it's the same die type
+				recent.amount += dmg.amount.value;
+			}
+		}
+		if (recent.die !== 'first') {
+			if (results !== '') {
+				results += '+';
+			}
+			if (recent.die === 0) {
+				recent.amount += statDmg;
+				results += recent.die + recent.amount;
+			} else {
+				results += recent.amount + "D" + recent.die;
+				results += "+" + statDmg;
+			}
+		} else {
+			results += statDmg;
+		}
+		return results;
+	};
+	
 	exports.getDepStat = getDepStat;
 	exports.getStatFromPath = getStatFromPath;
 	exports.buildPath = buildPath;
@@ -21597,6 +21655,7 @@
 	exports.modKeys = modKeys;
 	exports.bonusKeys = bonusKeys;
 	exports.isStat = isStat;
+	exports.simplifyDamage = simplifyDamage;
 
 /***/ },
 /* 183 */
@@ -21624,6 +21683,12 @@
 		},
 		mod: function mod(value) {
 			return Math.floor(value / 2) - 5;
+		},
+		"1.5 mod": function mod(value) {
+			return Math.floor((Math.floor(value / 2) - 5) * 1.5);
+		},
+		"0.5 mod": function mod(value) {
+			return Math.floor((Math.floor(value / 2) - 5) * 0.5);
 		}
 	};
 	
@@ -21929,21 +21994,34 @@
 		}],
 		weapons: [{
 			name: { value: "Crunk's Battle Axe" },
-			type: { value: "Battle Axe" },
-			toHit: [{ value: "BAB" }, { value: "STR" }],
-			fromStats: [{ value: "STR" }],
+			tags: { value: ["battle axe", "melee"] },
+			toHit: { dependsOn: [{ value: "BAB", name: "BAB", type: "flat" }, { value: "str", name: "str", type: "mod" }] },
+			damageMod: { dependsOn: [{ name: "str", value: "str", type: "1.5 mod" }] },
 			damage: [{
 				amount: { value: 2 },
 				die: { value: 12 },
 				type: { value: "Weapon Damage" }
 			}, {
 				amount: { value: 2 },
+				die: { value: 0 },
 				type: { value: "enchantment" }
 			}, {
 				amount: { value: 1 },
 				die: { value: 6 },
 				type: { value: "fire" }
 			}]
+		}, {
+			name: { value: "Unconcious Gnome" },
+			tags: { value: ["gnome", "melee"] },
+			toHit: { dependsOn: [{ value: "BAB", name: "BAB", type: "flat" }, { value: "str", name: "str", type: "mod" }] },
+			damageMod: { dependsOn: [{ name: "str", value: "str", type: "mod" }] },
+			damage: [{ amount: { value: 2 }, die: { value: 6 }, type: { value: "Weapon Damage" } }]
+		}, {
+			name: { value: "+1 Composite Longbow +2" },
+			tags: { value: ['ranged'] },
+			toHit: { dependsOn: [{ value: "BAB", name: "BAB", type: "flat" }, { value: "dex", name: "dex", type: "mod" }] },
+			damageMod: { dependsOn: [{ name: "dex", value: "dex", type: "mod" }] },
+			damage: [{ amount: { value: 1 }, die: { value: 8 }, type: { value: "Weapon Damage" } }, { amount: { value: 1 }, die: { value: 0 }, type: { value: "enchantment" } }, { amount: { value: 2 }, die: { value: 0 }, type: { value: "strength" } }]
 		}],
 		name: { value: "Crunk" },
 		title: { value: "Barbarian of the Frozen Wastes" },
@@ -22411,6 +22489,115 @@
 	})(_react2.default.Component);
 	
 	exports.default = dependentStatModal;
+
+/***/ },
+/* 192 */,
+/* 193 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+	
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+	
+	var _react = __webpack_require__(1);
+	
+	var _react2 = _interopRequireDefault(_react);
+	
+	var _helpers = __webpack_require__(182);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	var Weapon = (function (_React$Component) {
+		_inherits(Weapon, _React$Component);
+	
+		function Weapon() {
+			_classCallCheck(this, Weapon);
+	
+			return _possibleConstructorReturn(this, Object.getPrototypeOf(Weapon).apply(this, arguments));
+		}
+	
+		_createClass(Weapon, [{
+			key: 'render',
+			value: function render() {
+				return _react2.default.createElement(
+					'table',
+					null,
+					_react2.default.createElement(
+						'tbody',
+						null,
+						_react2.default.createElement(
+							'tr',
+							null,
+							_react2.default.createElement(
+								'td',
+								null,
+								this.weapons()
+							)
+						)
+					)
+				);
+			}
+		}, {
+			key: 'weapons',
+			value: function weapons() {
+				return this.props.weapons.map(function (weapon, index) {
+					return _react2.default.createElement(
+						'table',
+						{ key: weapon.name.value + '-' + index + 'weapon-table' },
+						_react2.default.createElement(
+							'thead',
+							null,
+							_react2.default.createElement(
+								'tr',
+								null,
+								_react2.default.createElement(
+									'th',
+									null,
+									weapon.name.value
+								)
+							)
+						),
+						_react2.default.createElement(
+							'tbody',
+							null,
+							_react2.default.createElement(
+								'tr',
+								null,
+								_react2.default.createElement(
+									'td',
+									null,
+									'To Hit: ',
+									(0, _helpers.addPlus)((0, _helpers.getDepStat)(weapon.toHit)),
+									' '
+								),
+								_react2.default.createElement(
+									'td',
+									null,
+									' Damage: ',
+									(0, _helpers.simplifyDamage)(weapon.damage, weapon.damageMod),
+									' '
+								)
+							)
+						)
+					);
+				});
+			}
+		}]);
+	
+		return Weapon;
+	})(_react2.default.Component);
+	
+	exports.default = Weapon;
 
 /***/ }
 /******/ ]);
