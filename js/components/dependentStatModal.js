@@ -1,27 +1,31 @@
 import React from 'react'; 
-import {getDepStat, getStatFromPath, getValue, addPlus, isStat, bonusKeys, modKeys} from '../util/helpers.js'; 
+import {getDepStat, getValue, addPlus, bonusKeys, modKeys, calcValue, useKeys} from '../util/helpers.js'; 
+import {getStatFromName, getPathFromName} from '../util/paths.js';
 import EditableValue from './editableValue.js'; 
 
-export default class DependentStatModal extends React.Component{
-	render(){
 
+
+export default class dependentStatModal extends React.Component{
+	render(){
+		let {name, statObj, addDep,
+			editValue, saveDepValueEdit} = this.props; 
 		return (
 			<div>
 				<table className="table"><tbody>
 					<tr>
 						<td>
-							{this.props.name}
+							{name}
 						</td>
 						{/* Stat Name */} 
 						<td>
 			  				<EditableValue 
-				  				value={getDepStat(this.props.modal)}
-				  				editing={this.props.modal.editing}
+				  				value={getDepStat(statObj)}
+				  				editing={statObj.editing}
 				  				input="number"	
-				  				path={[this.props.name]}
-					            editValue={this.props.editValue}
-					            saveValueEdit={this.props.saveDepValueEdit}
+					            editValue={editValue}
+					            saveValueEdit={saveDepValueEdit}
 					            length="3"
+					            path={getPathFromName(name)}
 				  				max="99" />
 						</td>
 					</tr>
@@ -29,15 +33,15 @@ export default class DependentStatModal extends React.Component{
 				</tbody></table>
 				<table className="table">
 				<tbody>
-					{this.printNames(this.props.modal)}
+					{this.printDepOptions(statObj)}
 				<tr>
-					{this.printPlayerModHead(this.props.modal.playerMod)}
-					{this.printPlayerModBody(this.props.modal.playerMod)}
+					{this.printPlayerModHead(statObj.playerMod)}
+					{this.printPlayerModBody(statObj.playerMod)}
 				</tr>
 				<tr>
 					<td>
 						<button className="btn btn-primary"
-							onClick={()=>this.props.addDep(this.props.path)}>
+							onClick={()=>addDep(getPathFromName(name))}>
 							Add
 						</button> 
 					</td>
@@ -47,60 +51,90 @@ export default class DependentStatModal extends React.Component{
 			</div>
 		)
 	}
-	printNames(names){
+	printDepOptions(names){
 		return names.dependsOn.map((name,index)=>{
-			let path = this.props.path.slice();
-			path.push('dependsOn', index)
 			return (
-				<tr key={"modal-name-"+name.name+"-"+index}>
+				<tr key={"statObj-name-"+name.name+"-"+index}>
+				{this.optionTypes(name,index)} 
 				{/* print the name*/}
-				<td> 
+				{this.useOptions(name.use.value)(name,index,this)}
+
+				 {/* print thea actual value of the stat with mod type */}
+					 {this.printValue(name, index)}
+					 {this.printRemoveButton(this.props.name, index)}
+			 </tr>
+			 )
+
+					})
+	}
+	optionTypes(depObj, index){
+		return(
+			<td>
+				<select defaultValue={depObj.use.value}
+					onChange={(event)=>this.props.modifyDep(getPathFromName(this.props.name), [index, "use"], event.target.value)}>
+						{this.typeOptions(useKeys(), "use")}
+				</select>
+			</td>
+		)
+	}
+	useOptions(use){
+		switch(use){
+			case 'flat':
+				return this.optionUseFlat
+			case 'stat':
+				return this.optionUseStat
+			case 'die':
+				return this.optionUseDie
+		}
+	}
+	optionUseFlat(depObj, index, t){
+		console.log('flat',t);
+		let results = []; 
+		results.push(
+			<td key={'flat-1-'+index}>
+				Type:{depObj.type.value}
+			</td>
+			);
+		results.push(
+			<td key={'flat-2-'+index}>
+				{addPlus(depObj.total.value)} 
+			</td>
+		)
+		return results;
+	}
+	optionUseStat(depObj, index, t){
+		let results = []; 
+		results.push(
+				<td key={'stat-1-'+index}> 
 					<select defaultValue={name.name} 
-					onChange={(event)=>this.props.modifyDep(path, [index,"name"], event.target.value)}>
-						{this.typeOptions(bonusKeys(), name.name, "name")}
+					onChange={(event)=>t.props.modifyDep(path, [index,"name"], event.target.value)}>
+						{t.typeOptions(bonusKeys(), "name")}
 					</select>
 				</td>
-				{/* print the mod type */}
-				<td>
-					<i>
-						 <label className="formLabel">{'\u00A0'}</label> 
-							<select defaultValue={name.type}
-							onChange={(event)=>this.props.modifyDep(path, [index, "type"], event.target.value)}>
-								{this.typeOptions(modKeys(), name.type, "type")}
-							</select>
-					</i>
-				 {/* print thea actual value of the stat with mod type */}
-				 </td>
-				 {this.printValue(name, index)}
-				 {this.printRemoveButton(this.props.path, index)}
-				 </tr>
-			 )
-		})
+		)
+		results.push(
+			<td key={'stat-2-'+index}>
+				<i>
+					 <label className="formLabel">{'\u00A0'}</label> 
+						<select defaultValue={name.type}
+						onChange={(event)=>t.props.modifyDep(path, [index, "type"], event.target.value)}>
+							{t.typeOptions(modKeys(), "type")}
+						</select>
+				</i>
+			 </td>
+		)
+		return results; 
 	}
-	printValue(value, index){
-		/*If it's a stat, just get the stat's value */
-		if(isStat(value.value)){
-			return <td key={"modal-value-"+index}> 
-						{addPlus(getValue(value))}
-					</td>
-		}else{
-			/* If it's not tied to a stat, it should be editable */
-			let path = this.props.path.slice(); 
-			path.push('dependsOn', index);
-			return(
-			<td>
-				<EditableValue
-	  				value={value.value}
-	  				editing={value.editing}
-	  				input="number"	
-	  				path={path}
-		            editValue={this.props.editValue}
-		            saveValueEdit={this.props.saveValueEdit}
-		            length="3"
-	  				max="99" />
-  				</td>
-				)
-		}
+	optionUseDie(depObj){
+
+	}
+	printValue(name, index){
+		return (
+			<td key={"statObj-value-"+index}> 
+				{addPlus(calcValue(name))}
+			</td>
+		)
+
 	}
 	printPlayerModHead(playerMod){
 		if(playerMod){
@@ -112,18 +146,18 @@ export default class DependentStatModal extends React.Component{
 			return <td> {addPlus(playerMod)} </td>
 		}
 	}
-	printRemoveButton(path, index){
-		if(getStatFromPath(path).dependsOn.length > 1){
+	printRemoveButton(name, index){
+		if(getStatFromName(name).dependsOn.length > 1){
 			return(
-				 <td onClick={()=>this.props.removeDep(this.props.path, index)}>
+				 <td onClick={()=>this.props.removeDep(getPathFromName(name), index)}>
 				 	X
 				 </td>
 			)
 		}
 	}
-	typeOptions(typeArray, current, keyAdd){
+	typeOptions(typeArray, keyAdd){
 		return typeArray.map((key)=>{
-		return <option key={key + "-" + keyAdd +"-dropwdown"} value={key}> {key} </option>
+			return <option key={key + "-" + keyAdd +"-dropwdown"} value={key}> {key} </option>
 		})
 	}
 }

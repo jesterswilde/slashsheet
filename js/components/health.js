@@ -13,7 +13,7 @@ export default class Health extends React.Component{
 					<tr>
 						<td>
 							<EditableValue 
-				  				value={this.props.HP.current.value}
+				  				value={this.props.HP.current.total.value}
 				  				editing={this.props.HP.current.editing}
 				  				input="number"	
 				  				path={this.addToPath('current')}
@@ -26,7 +26,7 @@ export default class Health extends React.Component{
 					<tr>
 						<td>
 							<EditableValue 
-				  				value={this.props.HP.total.value}
+				  				value={this.props.HP.total.total.value}
 				  				editing={this.props.HP.total.editing}
 				  				input="number"	
 				  				path={this.addToPath('total')}

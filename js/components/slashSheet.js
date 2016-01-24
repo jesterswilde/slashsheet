@@ -1,7 +1,7 @@
 import React from 'react'; 
 import {connect} from 'react-redux'; 
 import {mapDispatchToProps} from '../redux/actions.js'; 
-import {getStatFromPath} from '../util/helpers.js'; 
+import {getStatFromName} from '../util/paths.js'; 
 import StatBlock from './stat.js'; 
 import EditableValue from './editableValue.js'; 
 import CombatManeuver from './combatManeuver.js'; 
@@ -32,7 +32,7 @@ class SlashSheet extends React.Component{
             length = "15"/></h2>
             <div className="row">
                 <div className="col-sm-2 col-md-1">
-                  <StatBlock key="stats" stats={this.props.stats} path={['stats']}
+                  <StatBlock key="stats" stats={this.props.stats}
                   editValue={this.props.editValue}
                   saveValueEdit={this.props.saveValueEdit} />
                 </div>
@@ -52,10 +52,14 @@ class SlashSheet extends React.Component{
                     editValue={this.props.editValue}
                     saveValueEdit={this.props.saveValueEdit}/>
                 </div>
+                {/*
                 <div className="col-sm-4 col-md-3">
                     <Weapon
+                        path={['weapons']}
+                        openModal={this.props.openModal}
                         weapons={this.props.weapons} />
                 </div>
+                */}
               </div>
               {this.renderModal()}
 			</div>
@@ -64,11 +68,10 @@ class SlashSheet extends React.Component{
     renderModal(){
         const modal = this.props.modal; 
         if(modal.active){
-        const stats = getStatFromPath(modal.value); 
+        const stats = getStatFromName(modal.value); 
             return(
                 <Modal 
-                name = {modal.value[modal.value.length-1]}
-                path = {modal.value}
+                name = {modal.value}
                 modalType = {modal.modalType}
                 modal = {stats}
                 addDep = {this.props.addDep}

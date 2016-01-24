@@ -1,5 +1,5 @@
 import React from 'react'; 
-import DependentStatModal from './dependentStatModal'; 
+import DependentStatModal from './dependentStatModal.js'; 
 import modalRoutes from '../util/modalRoutes.js'; 
 
 export default class Modal extends React.Component{

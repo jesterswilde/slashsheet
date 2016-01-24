@@ -1,6 +1,7 @@
 import {EDIT_VALUE, SAVE_VALUE_EDIT, SAVE_DEPVALUE_EDIT,
 	OPEN_MODAL, CLOSE_MODAL, MODIFY_DEP, ADD_DEP, REMOVE_DEP} from './actions'; 
-import {buildPath, getDepStat, getStatFromPath, isStat} from '../util/helpers.js'; 
+import {buildPath, getDepStat, isStat} from '../util/helpers.js'; 
+import {getStatFromPath} from '../util/paths.js'; 
 const update = require('react-addons-update');
 
 const reducer = function(state, action){
@@ -11,16 +12,16 @@ const reducer = function(state, action){
 			return saveEditValue(state,action); 
 		case SAVE_DEPVALUE_EDIT:
 			return saveDepValuEdit(state,action); 
-		case OPEN_MODAL:
-			return openModal(state, action);
-		case CLOSE_MODAL:
-			return closeModal(state, action);
 		case MODIFY_DEP:
 			return modifyDep(state, action); 
 		case ADD_DEP:
 			return addDep(state, action);
 		case REMOVE_DEP:
 			return removeDep(state, action);  
+		case OPEN_MODAL:
+			return openModal(state, action);
+		case CLOSE_MODAL:
+			return closeModal(state, action);
 		default:
 			return identity(state); 
 	}
@@ -36,7 +37,7 @@ const editValue = function(state, action){
 
 const saveEditValue = function(state, action){
 	const modState = buildPath(action.path, {editing:{$set:null},
-											value:{$set:Number(action.value)}});
+											value:{$set:action.value}});
 	return update(state, modState); 
 };
 
@@ -55,21 +56,25 @@ const saveDepValuEdit = function(state, action){
 };
 
 const modifyDep = function(state, action){
-	var modState;
 	let {version, index, path, value} = action; 
-	// path=path.slice(); //Might not be needed, double check that this is a new array
-	// path.push('dependsOn', index); 
-	if(version === "name"){
-		if(isStat(value)){
-			modState = buildPath(path, {name:{$set:value}, value:{$set:value}}); 
-		}else{
-			modState = buildPath(path, {name:{$set:value}, value:{$set:0}});
-		}
-	}
-	if(version === "type"){
-		modState = buildPath(path, {type:{$set:value}});
-	} 
+	console.log('mod',path, version);
+	let modState = buildPath(path, {[version]:{value:{$set:value}}}); 
 	return update(state, modState); 
+};
+
+
+const addDep = function(state, action){
+	let modState = buildPath(action.path, {dependsOn:{$push:
+		[{use:{value:'stat'}, stat:{value:'str'}, bonus:{value:'mod'}}]
+	}});
+	return update(state, modState);
+};	 
+
+const removeDep = function(state, action){
+	let newArray = getStatFromPath(action.path).dependsOn.slice();
+	newArray.splice(action.index, 1); 
+	let modState = buildPath(action.path, {dependsOn:{$set:newArray}});
+	return update(state, modState);  
 };
 
 const openModal = function(state, action){
@@ -82,17 +87,5 @@ const closeModal = function(state, action){
 	return update(state, {modal:{active:{$set:false}}});
 };
 
-const addDep = function(state, action){
-	let modState = buildPath(action.path, {dependsOn:{$push:
-		[{name:"str", value:"str", type:"mod"}]}});
-	return update(state, modState);
-};	 
-
-const removeDep = function(state, action){
-	let newArray = getStatFromPath(action.path).dependsOn.slice();
-	newArray.splice(action.index, 1); 
-	let modState = buildPath(action.path, {dependsOn:{$set:newArray}});
-	return update(state, modState);  
-};
-
 export {reducer}; 
+

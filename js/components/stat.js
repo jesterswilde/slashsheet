@@ -1,6 +1,7 @@
 
 import React from 'react';
 import EditableValue from './editableValue.js'; 
+import paths from '../util/paths.js'; 
 
 class StatBlock extends React.Component{
 	render(){
@@ -15,9 +16,8 @@ class StatBlock extends React.Component{
 	allStats(statBlock){
 	  	const rows = []; 
 	  	for(var key in statBlock){
-	  		let newPath = this.props.path.slice(); 
-	  		newPath.push(key); 
-	  		let statKey = newPath.join('-'); 
+	  		let path = paths[key].path; 
+	  		let statKey = path.join('-'); 
   			rows.push(
   				<tr key={statKey}><td>
   				{key}
@@ -27,7 +27,7 @@ class StatBlock extends React.Component{
 	  				value={statBlock[key].value}
 	  				editing={statBlock[key].editing}
 	  				input="number"	
-	  				path={newPath}
+	  				path={path}
 		            editValue={this.props.editValue}
 		            saveValueEdit={this.props.saveValueEdit}
 		            length="3"

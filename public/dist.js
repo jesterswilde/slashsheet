@@ -62,7 +62,7 @@
 	
 	var _slashSheet2 = _interopRequireDefault(_slashSheet);
 	
-	var _store = __webpack_require__(184);
+	var _store = __webpack_require__(180);
 	
 	var _store2 = _interopRequireDefault(_store);
 	
@@ -20869,17 +20869,17 @@
 	
 	var _actions = __webpack_require__(178);
 	
-	var _helpers = __webpack_require__(182);
+	var _paths = __webpack_require__(179);
 	
-	var _stat = __webpack_require__(179);
+	var _stat = __webpack_require__(186);
 	
 	var _stat2 = _interopRequireDefault(_stat);
 	
-	var _editableValue = __webpack_require__(180);
+	var _editableValue = __webpack_require__(187);
 	
 	var _editableValue2 = _interopRequireDefault(_editableValue);
 	
-	var _combatManeuver = __webpack_require__(181);
+	var _combatManeuver = __webpack_require__(188);
 	
 	var _combatManeuver2 = _interopRequireDefault(_combatManeuver);
 	
@@ -20891,7 +20891,7 @@
 	
 	var _modal2 = _interopRequireDefault(_modal);
 	
-	var _weapon = __webpack_require__(193);
+	var _weapon = __webpack_require__(194);
 	
 	var _weapon2 = _interopRequireDefault(_weapon);
 	
@@ -20948,7 +20948,7 @@
 	                    _react2.default.createElement(
 	                        'div',
 	                        { className: 'col-sm-2 col-md-1' },
-	                        _react2.default.createElement(_stat2.default, { key: 'stats', stats: this.props.stats, path: ['stats'],
+	                        _react2.default.createElement(_stat2.default, { key: 'stats', stats: this.props.stats,
 	                            editValue: this.props.editValue,
 	                            saveValueEdit: this.props.saveValueEdit })
 	                    ),
@@ -20971,12 +20971,6 @@
 	                            path: ['HP'],
 	                            editValue: this.props.editValue,
 	                            saveValueEdit: this.props.saveValueEdit })
-	                    ),
-	                    _react2.default.createElement(
-	                        'div',
-	                        { className: 'col-sm-4 col-md-3' },
-	                        _react2.default.createElement(_weapon2.default, {
-	                            weapons: this.props.weapons })
 	                    )
 	                ),
 	                this.renderModal()
@@ -20987,10 +20981,9 @@
 	        value: function renderModal() {
 	            var modal = this.props.modal;
 	            if (modal.active) {
-	                var stats = (0, _helpers.getStatFromPath)(modal.value);
+	                var stats = (0, _paths.getStatFromName)(modal.value);
 	                return _react2.default.createElement(_modal2.default, {
-	                    name: modal.value[modal.value.length - 1],
-	                    path: modal.value,
+	                    name: modal.value,
 	                    modalType: modal.modalType,
 	                    modal: stats,
 	                    addDep: this.props.addDep,
@@ -21136,132 +21129,73 @@
 
 	'use strict';
 	
-	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-	
 	Object.defineProperty(exports, "__esModule", {
 		value: true
 	});
+	exports.getStatFromPath = exports.getStatFromName = exports.getTypeFromName = exports.getPathFromName = exports.mod = undefined;
 	
-	var _react = __webpack_require__(1);
+	var _store = __webpack_require__(180);
 	
-	var _react2 = _interopRequireDefault(_react);
-	
-	var _editableValue = __webpack_require__(180);
-	
-	var _editableValue2 = _interopRequireDefault(_editableValue);
+	var _store2 = _interopRequireDefault(_store);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	var paths = {
+		str: { path: ['stats', 'str'], type: 'flat' },
+		dex: { path: ['stats', 'dex'], type: 'flat' },
+		con: { path: ['stats', 'con'], type: 'flat' },
+		int: { path: ['stats', 'int'], type: 'flat' },
+		wis: { path: ['stats', 'wis'], type: 'flat' },
+		cha: { path: ['stats', 'cha'], type: 'flat' },
+		BAB: { path: ['BAB'], type: 'flat' },
+		CMB: { path: ['CMB'], type: 'dependent' },
+		CMD: { path: ['CMD'], type: 'dependent' },
+		weapon: { path: ['weapon'], type: 'weapon' }
+	};
 	
-	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	var getPathFromName = function getPathFromName(name) {
+		return paths[name].path;
+	};
 	
-	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	var getTypeFromName = function getTypeFromName(name) {
+		return paths[name].type;
+	};
 	
-	var StatBlock = (function (_React$Component) {
-		_inherits(StatBlock, _React$Component);
-	
-		function StatBlock() {
-			_classCallCheck(this, StatBlock);
-	
-			return _possibleConstructorReturn(this, Object.getPrototypeOf(StatBlock).apply(this, arguments));
+	var getStatFromPath = function getStatFromPath(path) {
+		console.log('path', path);
+		var state = _store2.default.getState();
+		for (var i = 0; i < path.length; i++) {
+			state = state[path[i]];
 		}
+		return state;
+	};
 	
-		_createClass(StatBlock, [{
-			key: 'render',
-			value: function render() {
-				return _react2.default.createElement(
-					'table',
-					{ className: 'table' },
-					_react2.default.createElement(
-						'tbody',
-						null,
-						this.allStats(this.props.stats)
-					)
-				);
-			}
-		}, {
-			key: 'allStats',
-			value: function allStats(statBlock) {
-				var rows = [];
-				for (var key in statBlock) {
-					var newPath = this.props.path.slice();
-					newPath.push(key);
-					var statKey = newPath.join('-');
-					rows.push(_react2.default.createElement(
-						'tr',
-						{ key: statKey },
-						_react2.default.createElement(
-							'td',
-							null,
-							key
-						),
-						_react2.default.createElement(
-							'td',
-							null,
-							_react2.default.createElement(_editableValue2.default, {
-								key: statKey + "-stat",
-								value: statBlock[key].value,
-								editing: statBlock[key].editing,
-								input: 'number',
-								path: newPath,
-								editValue: this.props.editValue,
-								saveValueEdit: this.props.saveValueEdit,
-								length: '3',
-								max: '99' })
-						)
-					));
-				}
-				return rows;
-			}
+	var getStatFromName = function getStatFromName(name) {
+		var path = getPathFromName(name);
+		return getStatFromPath(path);
+	};
 	
-			// printStat(){
-			// 	if(!this.props.stat.editing){
-			// 		return (
-			// 			<tr onClick = {() =>this.props.editStat(this.props.name, this.props.stat.value)}>
-			// 		<td>
-			// 		<b> {this.props.name} </b>
-			// 		</td><td>
-			// 		{this.props.stat.value}
-			// 		</td>
-			// 		</tr>)
-			// 	}else{
-			// 			return (
-			// 				<tr>
-			// 					<td>
-			// 						{this.props.name}
-			// 					</td>
-			// 					<td className="form-group">
-			// 						<input className="form-control" type="number" max={99} size={2}
-			// 								defaultValue={this.props.stat.value} id={this.props.name}
-			// 								onBlur={() => this.props.saveStatEdit(this.props.name,this.getInput().value)}
-			// 								onKeyDown={(event) => this.ifPressedenter(event.keyCode,this.props.name, this.getInput().value)}/>
-			// 					</td>
-			// 				<tr>
-			// 				)
-			// 	}
-			// }
-			// 	componentDidUpdate(){
-			// 		if(this.props.stat.editing){
-			// 			this.getInput().focus();
-			// 		}
-			// 	}
-			// 	ifPressedenter(keycode, name, value){
-			// 		if(keycode===13){
-			// 			this.props.saveStatEdit(name, value); 	
-			// 		}
-			// 	}
-			// 	getInput(){
-			// 		console.log('input', document.getElementById(this.props.name).value);
-			// 		return document.getElementById(this.props.name);
-			// 	}
+	var mod = {
+		flat: function flat(value) {
+			return value;
+		},
+		mod: function mod(value) {
+			return Math.floor(value / 2) - 5;
+		},
+		'1.5 mod': function mod(value) {
+			return Math.floor((Math.floor(value / 2) - 5) * 1.5);
+		},
+		'0.5 mod': function mod(value) {
+			return Math.floor((Math.floor(value / 2) - 5) * 0.5);
+		}
+	};
 	
-		}]);
-	
-		return StatBlock;
-	})(_react2.default.Component);
-	
-	exports.default = StatBlock;
+	exports.default = paths;
+	exports.mod = mod;
+	exports.getPathFromName = getPathFromName;
+	exports.getTypeFromName = getTypeFromName;
+	exports.getStatFromName = getStatFromName;
+	exports.getStatFromPath = getStatFromPath;
 
 /***/ },
 /* 180 */
@@ -21269,102 +21203,23 @@
 
 	'use strict';
 	
-	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-	
 	Object.defineProperty(exports, "__esModule", {
-		value: true
+	  value: true
 	});
 	
-	var _react = __webpack_require__(1);
+	var _redux = __webpack_require__(166);
 	
-	var _react2 = _interopRequireDefault(_react);
+	var _reducers = __webpack_require__(181);
+	
+	var _initial = __webpack_require__(185);
+	
+	var _initial2 = _interopRequireDefault(_initial);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	var store = (0, _redux.createStore)(_reducers.reducer, _initial2.default);
 	
-	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-	
-	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-	
-	var EditableValue = (function (_React$Component) {
-		_inherits(EditableValue, _React$Component);
-	
-		function EditableValue() {
-			_classCallCheck(this, EditableValue);
-	
-			return _possibleConstructorReturn(this, Object.getPrototypeOf(EditableValue).apply(this, arguments));
-		}
-	
-		_createClass(EditableValue, [{
-			key: 'render',
-			value: function render() {
-				var _this2 = this;
-	
-				if (!this.props.editing) {
-					return _react2.default.createElement(
-						'span',
-						{ id: this.getID(), style: this.style(),
-							onClick: function onClick() {
-								return _this2.props.editValue(_this2.props.path, _this2.props.value);
-							} },
-						this.props.value
-					);
-				}
-				return _react2.default.createElement(
-					'span',
-					null,
-					_react2.default.createElement('input', { type: this.props.input, max: this.props.max || 99, size: this.props.size || 2,
-						defaultValue: this.props.value, id: this.getID(),
-						onBlur: function onBlur() {
-							return _this2.props.saveValueEdit(_this2.props.path, _this2.getInput().value);
-						},
-						onKeyDown: function onKeyDown(event) {
-							return _this2.ifPressedenter(event.keyCode, _this2.props.path, _this2.getInput().value);
-						},
-						id: this.getID(),
-						style: this.style() })
-				);
-			}
-		}, {
-			key: 'style',
-			value: function style() {
-				var results = {};
-				if (this.props.length) {
-					results.width = this.props.length + "em";
-				}
-				return results;
-			}
-		}, {
-			key: 'getID',
-			value: function getID() {
-				return this.props.path.join('-');
-			}
-		}, {
-			key: 'componentDidUpdate',
-			value: function componentDidUpdate() {
-				if (this.props.editing) {
-					this.getInput().focus();
-				}
-			}
-		}, {
-			key: 'ifPressedenter',
-			value: function ifPressedenter(keycode, name, value) {
-				if (keycode === 13) {
-					this.props.saveValueEdit(name, value);
-				}
-			}
-		}, {
-			key: 'getInput',
-			value: function getInput() {
-				return document.getElementById(this.getID());
-			}
-		}]);
-	
-		return EditableValue;
-	})(_react2.default.Component);
-	
-	exports.default = EditableValue;
+	exports.default = store;
 
 /***/ },
 /* 181 */
@@ -21372,118 +21227,107 @@
 
 	'use strict';
 	
-	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-	
 	Object.defineProperty(exports, "__esModule", {
 		value: true
 	});
+	exports.reducer = undefined;
 	
-	var _react = __webpack_require__(1);
-	
-	var _react2 = _interopRequireDefault(_react);
+	var _actions = __webpack_require__(178);
 	
 	var _helpers = __webpack_require__(182);
 	
-	var _editableValue = __webpack_require__(180);
+	var _paths = __webpack_require__(179);
 	
-	var _editableValue2 = _interopRequireDefault(_editableValue);
+	function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	var update = __webpack_require__(183);
 	
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-	
-	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-	
-	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-	
-	var CombatManeuver = (function (_React$Component) {
-		_inherits(CombatManeuver, _React$Component);
-	
-		function CombatManeuver() {
-			_classCallCheck(this, CombatManeuver);
-	
-			return _possibleConstructorReturn(this, Object.getPrototypeOf(CombatManeuver).apply(this, arguments));
+	var reducer = function reducer(state, action) {
+		switch (action.type) {
+			case _actions.EDIT_VALUE:
+				return editValue(state, action);
+			case _actions.SAVE_VALUE_EDIT:
+				return saveEditValue(state, action);
+			case _actions.SAVE_DEPVALUE_EDIT:
+				return saveDepValuEdit(state, action);
+			case _actions.MODIFY_DEP:
+				return modifyDep(state, action);
+			case _actions.ADD_DEP:
+				return addDep(state, action);
+			case _actions.REMOVE_DEP:
+				return removeDep(state, action);
+			case _actions.OPEN_MODAL:
+				return openModal(state, action);
+			case _actions.CLOSE_MODAL:
+				return closeModal(state, action);
+			default:
+				return identity(state);
 		}
+	};
+	var identity = function identity(state) {
+		return state;
+	};
 	
-		_createClass(CombatManeuver, [{
-			key: 'render',
-			value: function render() {
-				var _this2 = this;
+	var editValue = function editValue(state, action) {
+		var modState = (0, _helpers.buildPath)(action.path, { editing: { $set: true } });
+		return update(state, modState);
+	};
 	
-				// console.log('cmb', this.props);
-				return _react2.default.createElement(
-					'div',
-					null,
-					_react2.default.createElement(
-						'table',
-						{ className: 'table' },
-						_react2.default.createElement(
-							'tbody',
-							null,
-							_react2.default.createElement(
-								'tr',
-								null,
-								_react2.default.createElement(
-									'td',
-									null,
-									'BAB'
-								),
-								_react2.default.createElement(
-									'td',
-									null,
-									_react2.default.createElement(_editableValue2.default, {
-										value: this.props.BAB.value,
-										editing: this.props.BAB.editing,
-										input: 'number',
-										path: ["BAB"],
-										editValue: this.props.editValue,
-										saveValueEdit: this.props.saveValueEdit,
-										length: '3',
-										max: '99' })
-								)
-							),
-							_react2.default.createElement(
-								'tr',
-								{ onClick: function onClick() {
-										return _this2.props.openModal(['CMB'], 'dependent');
-									} },
-								_react2.default.createElement(
-									'td',
-									null,
-									'CMB:'
-								),
-								_react2.default.createElement(
-									'td',
-									null,
-									(0, _helpers.getDepStat)(this.props.CMB)
-								)
-							),
-							_react2.default.createElement(
-								'tr',
-								null,
-								_react2.default.createElement(
-									'td',
-									{ onClick: function onClick() {
-											return _this2.props.openModal(['CMD'], 'dependent');
-										} },
-									'CMD:'
-								),
-								_react2.default.createElement(
-									'td',
-									null,
-									(0, _helpers.getDepStat)(this.props.CMD)
-								)
-							)
-						)
-					)
-				);
-			}
-		}]);
+	var saveEditValue = function saveEditValue(state, action) {
+		var modState = (0, _helpers.buildPath)(action.path, { editing: { $set: null },
+			value: { $set: action.value } });
+		return update(state, modState);
+	};
 	
-		return CombatManeuver;
-	})(_react2.default.Component);
+	var saveDepValuEdit = function saveDepValuEdit(state, action) {
+		var depObj = (0, _paths.getStatFromPath)(action.path);
+		var origTotal = (0, _helpers.getDepStat)(depObj, true);
+		var dif = action.value - origTotal;
+		var modState;
+		if (!dif) {
+			modState = (0, _helpers.buildPath)(action.path, { playerMod: { $set: null },
+				editing: { $set: null } });
+		} else {
+			modState = (0, _helpers.buildPath)(action.path, { playerMod: { $set: dif }, editing: { $set: null } });
+		}
+		return update(state, modState);
+	};
 	
-	exports.default = CombatManeuver;
+	var modifyDep = function modifyDep(state, action) {
+		var version = action.version;
+		var index = action.index;
+		var path = action.path;
+		var value = action.value;
+	
+		console.log('mod', path, version);
+		var modState = (0, _helpers.buildPath)(path, _defineProperty({}, version, { value: { $set: value } }));
+		return update(state, modState);
+	};
+	
+	var addDep = function addDep(state, action) {
+		var modState = (0, _helpers.buildPath)(action.path, { dependsOn: { $push: [{ use: { value: 'stat' }, stat: { value: 'str' }, bonus: { value: 'mod' } }]
+			} });
+		return update(state, modState);
+	};
+	
+	var removeDep = function removeDep(state, action) {
+		var newArray = (0, _paths.getStatFromPath)(action.path).dependsOn.slice();
+		newArray.splice(action.index, 1);
+		var modState = (0, _helpers.buildPath)(action.path, { dependsOn: { $set: newArray } });
+		return update(state, modState);
+	};
+	
+	var openModal = function openModal(state, action) {
+		return update(state, { modal: { active: { $set: true },
+				value: { $set: action.value },
+				modalType: { $set: action.modalType } } });
+	};
+	
+	var closeModal = function closeModal(state, action) {
+		return update(state, { modal: { active: { $set: false } } });
+	};
+	
+	exports.reducer = reducer;
 
 /***/ },
 /* 182 */
@@ -21494,24 +21338,36 @@
 	Object.defineProperty(exports, "__esModule", {
 		value: true
 	});
-	exports.simplifyDamage = exports.isStat = exports.bonusKeys = exports.modKeys = exports.statKeys = exports.addPlus = exports.getValue = exports.buildPath = exports.getStatFromPath = exports.getDepStat = undefined;
+	exports.useKeys = exports.simplifyDamage = exports.bonusKeys = exports.modKeys = exports.statKeys = exports.calcValue = exports.addPlus = exports.buildPath = exports.getDepStat = undefined;
 	
-	var _paths = __webpack_require__(183);
+	var _paths = __webpack_require__(179);
 	
 	var _paths2 = _interopRequireDefault(_paths);
 	
-	var _store = __webpack_require__(184);
+	var _store = __webpack_require__(180);
 	
 	var _store2 = _interopRequireDefault(_store);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
-	var getStatFromPath = function getStatFromPath(path) {
-		var state = _store2.default.getState();
-		for (var i = 0; i < path.length; i++) {
-			state = state[path[i]];
-		}
-		return state;
+	var calcUseFlat = function calcUseFlat(useObj) {
+		return useObj.total.value;
+	};
+	
+	var calcUseStat = function calcUseStat(useObj) {
+		var bonus = useObj.bonus.value;
+		var stat = useObj.stat.value;
+	
+		return _paths.mod[bonus]((0, _paths.getStatFromName)(stat).value);
+	};
+	
+	var use = {
+		flat: calcUseFlat,
+		stat: calcUseStat
+	};
+	//returns the value of the associated stat
+	var calcValue = function calcValue(statObj) {
+		return use[statObj.use.value](statObj);
 	};
 	
 	//given an array of stat 	objects IE [{value:'str' type:'mod'} ...]
@@ -21521,31 +21377,17 @@
 		var playerMod = depObj.playerMod;
 	
 		if (noMod) {
-			playerMod = 0;
+			//players are allowed to modify a stat without deriving that value
+			playerMod = 0; //this is called playerod
 		} else {
-			playerMod = playerMod || 0;
-		}
-		return statArray.map(function (stat) {
-			if (typeof stat.value === 'number' || !isStat(stat.value)) {
-				return stat.value;
+				playerMod = playerMod || 0;
 			}
-			return getValue(stat);
+		return statArray.map(function (stat) {
+			var result = calcValue(stat);
+			return result;
 		}).reduce(function (total, current) {
 			return total + current;
 		}) + playerMod;
-	};
-	
-	//returns the value of the associated stat
-	var getValue = function getValue(statObj) {
-		var stat = statObj.value;
-		var type = statObj.type;
-	
-		var path = _paths2.default[stat];
-		var state = _store2.default.getState();
-		for (var i = 0; i < path.length; i++) {
-			state = state[path[i]];
-		}
-		return _paths.mod[type](state.value);
 	};
 	
 	//creates an object used for easy update()
@@ -21567,25 +21409,20 @@
 		return number;
 	};
 	
-	var isStat = function isStat(statName) {
-		if (statKeys().indexOf(statName) >= 0) {
-			return true;
-		}
-		return false;
-	};
-	
 	var statKeys = function statKeys() {
 		var results = [];
 		for (var key in _paths2.default) {
-			results.push(key);
+			if (_paths2.default[key].type === 'flat') results.push(key);
 		}
 		return results;
 	};
 	
 	var bonusKeys = function bonusKeys() {
-		var results = statKeys();
-		for (var i = 0; i < _paths.bonusTypes.length; i++) {
-			results.push(_paths.bonusTypes[i]);
+		var results = [];
+		for (var key in _paths2.default) {
+			if (_paths2.default[key].type === 'flat' || _paths2.default[key].type === 'dependent') {
+				results.push(key);
+			}
 		}
 		return results;
 	};
@@ -21596,6 +21433,10 @@
 			results.push(key);
 		}
 		return results;
+	};
+	
+	var useKeys = function useKeys() {
+		return ['flat', 'stat', 'die'];
 	};
 	
 	//this is super messy, consider refactoring for cleaner.
@@ -21648,207 +21489,23 @@
 	};
 	
 	exports.getDepStat = getDepStat;
-	exports.getStatFromPath = getStatFromPath;
 	exports.buildPath = buildPath;
-	exports.getValue = getValue;
 	exports.addPlus = addPlus;
+	exports.calcValue = calcValue;
 	exports.statKeys = statKeys;
 	exports.modKeys = modKeys;
 	exports.bonusKeys = bonusKeys;
-	exports.isStat = isStat;
 	exports.simplifyDamage = simplifyDamage;
+	exports.useKeys = useKeys;
 
 /***/ },
 /* 183 */
-/***/ function(module, exports) {
+/***/ function(module, exports, __webpack_require__) {
 
-	'use strict';
-	
-	Object.defineProperty(exports, "__esModule", {
-		value: true
-	});
-	var paths = {
-		str: ['stats', 'str'],
-		dex: ['stats', 'dex'],
-		con: ['stats', 'con'],
-		int: ['stats', 'int'],
-		wis: ['stats', 'wis'],
-		cha: ['stats', 'cha'],
-		BAB: ['BAB']
-	};
-	var bonusTypes = ['rule'];
-	
-	var mod = {
-		flat: function flat(value) {
-			return value;
-		},
-		mod: function mod(value) {
-			return Math.floor(value / 2) - 5;
-		},
-		"1.5 mod": function mod(value) {
-			return Math.floor((Math.floor(value / 2) - 5) * 1.5);
-		},
-		"0.5 mod": function mod(value) {
-			return Math.floor((Math.floor(value / 2) - 5) * 0.5);
-		}
-	};
-	
-	var depPaths = {
-		CMB: ['CMB'],
-		CMD: ['CMD']
-	};
-	
-	exports.default = paths;
-	exports.depPaths = depPaths;
-	exports.mod = mod;
-	exports.bonusTypes = bonusTypes;
+	module.exports = __webpack_require__(184);
 
 /***/ },
 /* 184 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	
-	var _redux = __webpack_require__(166);
-	
-	var _reducers = __webpack_require__(185);
-	
-	var _initial = __webpack_require__(188);
-	
-	var _initial2 = _interopRequireDefault(_initial);
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
-	var store = (0, _redux.createStore)(_reducers.reducer, _initial2.default);
-	
-	exports.default = store;
-
-/***/ },
-/* 185 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	Object.defineProperty(exports, "__esModule", {
-		value: true
-	});
-	exports.reducer = undefined;
-	
-	var _actions = __webpack_require__(178);
-	
-	var _helpers = __webpack_require__(182);
-	
-	var update = __webpack_require__(186);
-	
-	var reducer = function reducer(state, action) {
-		switch (action.type) {
-			case _actions.EDIT_VALUE:
-				return editValue(state, action);
-			case _actions.SAVE_VALUE_EDIT:
-				return saveEditValue(state, action);
-			case _actions.SAVE_DEPVALUE_EDIT:
-				return saveDepValuEdit(state, action);
-			case _actions.OPEN_MODAL:
-				return openModal(state, action);
-			case _actions.CLOSE_MODAL:
-				return closeModal(state, action);
-			case _actions.MODIFY_DEP:
-				return modifyDep(state, action);
-			case _actions.ADD_DEP:
-				return addDep(state, action);
-			case _actions.REMOVE_DEP:
-				return removeDep(state, action);
-			default:
-				return identity(state);
-		}
-	};
-	var identity = function identity(state) {
-		return state;
-	};
-	
-	var editValue = function editValue(state, action) {
-		var modState = (0, _helpers.buildPath)(action.path, { editing: { $set: true } });
-		return update(state, modState);
-	};
-	
-	var saveEditValue = function saveEditValue(state, action) {
-		var modState = (0, _helpers.buildPath)(action.path, { editing: { $set: null },
-			value: { $set: Number(action.value) } });
-		return update(state, modState);
-	};
-	
-	var saveDepValuEdit = function saveDepValuEdit(state, action) {
-		var depObj = (0, _helpers.getStatFromPath)(action.path);
-		var origTotal = (0, _helpers.getDepStat)(depObj, true);
-		var dif = action.value - origTotal;
-		var modState;
-		if (!dif) {
-			modState = (0, _helpers.buildPath)(action.path, { playerMod: { $set: null },
-				editing: { $set: null } });
-		} else {
-			modState = (0, _helpers.buildPath)(action.path, { playerMod: { $set: dif }, editing: { $set: null } });
-		}
-		return update(state, modState);
-	};
-	
-	var modifyDep = function modifyDep(state, action) {
-		var modState;
-		var version = action.version;
-		var index = action.index;
-		var path = action.path;
-		var value = action.value;
-		// path=path.slice(); //Might not be needed, double check that this is a new array
-		// path.push('dependsOn', index);
-	
-		if (version === "name") {
-			if ((0, _helpers.isStat)(value)) {
-				modState = (0, _helpers.buildPath)(path, { name: { $set: value }, value: { $set: value } });
-			} else {
-				modState = (0, _helpers.buildPath)(path, { name: { $set: value }, value: { $set: 0 } });
-			}
-		}
-		if (version === "type") {
-			modState = (0, _helpers.buildPath)(path, { type: { $set: value } });
-		}
-		return update(state, modState);
-	};
-	
-	var openModal = function openModal(state, action) {
-		return update(state, { modal: { active: { $set: true },
-				value: { $set: action.value },
-				modalType: { $set: action.modalType } } });
-	};
-	
-	var closeModal = function closeModal(state, action) {
-		return update(state, { modal: { active: { $set: false } } });
-	};
-	
-	var addDep = function addDep(state, action) {
-		var modState = (0, _helpers.buildPath)(action.path, { dependsOn: { $push: [{ name: "str", value: "str", type: "mod" }] } });
-		return update(state, modState);
-	};
-	
-	var removeDep = function removeDep(state, action) {
-		var newArray = (0, _helpers.getStatFromPath)(action.path).dependsOn.slice();
-		newArray.splice(action.index, 1);
-		var modState = (0, _helpers.buildPath)(action.path, { dependsOn: { $set: newArray } });
-		return update(state, modState);
-	};
-	
-	exports.reducer = reducer;
-
-/***/ },
-/* 186 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__(187);
-
-/***/ },
-/* 187 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -21961,76 +21618,436 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ },
-/* 188 */
+/* 185 */
 /***/ function(module, exports) {
 
-	"use strict";
+	'use strict';
 	
 	Object.defineProperty(exports, "__esModule", {
 		value: true
 	});
 	var initialState = {
 		stats: {
-			str: { value: 20 }, dex: { value: 12 }, con: { value: 15 },
-			int: { value: 8 }, wis: { value: 5 }, cha: { value: 15 }
+			str: { value: 20 },
+			dex: { value: 12 },
+			con: { value: 15 },
+			int: { value: 8 },
+			wis: { value: 5 },
+			cha: { value: 15 }
 		},
 		HP: {
-			total: { value: 80 },
-			current: { value: 80 }
+			total: { use: { value: 'flat' }, total: { value: 80 }, bonus: { value: 'flat' } },
+			current: { use: { value: 'flat' }, total: { value: 80 }, bonus: { value: 'flat' } }
 		},
 		level: [{
-			class: { value: "Barbarian" },
+			class: { value: 'Barbarian' },
 			level: { value: 8 }
 		}],
 		BAB: { value: 8 },
-		CMB: { dependsOn: [{ name: "BAB", value: "BAB", type: "flat" }, { name: "str", value: "str", type: "mod" }] },
-		CMD: { dependsOn: [{ name: "BAB", value: "BAB", type: "flat" }, { name: "str", value: "str", type: "mod" }, { name: "dex", value: "dex", type: "mod" }, { name: "rule", value: 10, type: "flat" }] },
+		CMB: { dependsOn: [{ use: { value: 'stat' }, stat: { value: 'BAB' }, bonus: { value: 'flat' } }, { use: { value: 'stat' }, stat: { value: 'str' }, bonus: { value: 'mod' } }] },
+		CMD: { dependsOn: [{ use: { value: 'stat' }, stat: { value: 'BAB' }, bonus: { value: 'flat' } }, { use: { value: 'stat' }, stat: { value: 'str' }, bonus: { value: 'mod' } }, { use: { value: 'stat' }, stat: { value: 'dex' }, bonus: { value: 'mod' } }, { use: { value: 'flat' }, total: { value: 10 }, type: { value: 'rule' } }] },
 		status: [{
-			name: { value: "Berzerk Rage" },
-			str: { value: 4 },
-			con: { value: 4 },
-			meleeToHit: { value: 2 }
+			name: { value: 'Berzerk Rage' },
+			type: { value: 'Morale' },
+			stats: {
+				str: { use: { value: 'flat' }, total: { value: 4 } },
+				con: { use: { value: 'flat' }, total: { value: 4 } }
+			},
+			weapons: {
+				affects: { value: ['melee'] },
+				toHit: { dependsOn: [{ use: { value: 'flat' }, total: { value: 2 } }] }
+			}
 		}, {
-			name: { value: "Weapon Specialization (Battle Axe)" },
-			weaponType: { value: ["Battle Axe"] }
+			name: { value: 'Weapon Specialization (Battle Axe)' },
+			type: { value: 'bonus' },
+			weapons: {
+				affects: { value: ['battle axe'] },
+				toHit: { dependsOn: [{ use: { value: 'flat' }, total: { value: 1 } }] },
+				damage: { dependsOn: [{ use: { value: 'flat' }, total: { value: 2 } }] }
+			}
 		}],
 		weapons: [{
-			name: { value: "Crunk's Battle Axe" },
-			tags: { value: ["battle axe", "melee"] },
-			toHit: { dependsOn: [{ value: "BAB", name: "BAB", type: "flat" }, { value: "str", name: "str", type: "mod" }] },
-			damageMod: { dependsOn: [{ name: "str", value: "str", type: "1.5 mod" }] },
-			damage: [{
-				amount: { value: 2 },
-				die: { value: 12 },
-				type: { value: "Weapon Damage" }
-			}, {
-				amount: { value: 2 },
-				die: { value: 0 },
-				type: { value: "enchantment" }
-			}, {
-				amount: { value: 1 },
-				die: { value: 6 },
-				type: { value: "fire" }
-			}]
+			name: { value: 'Crunk\'s Battle Axe' },
+			tags: { value: ['battle axe', 'melee'] },
+			toHit: { dependsOn: [{ use: { value: 'stat' }, stat: { value: 'BAB' }, bonus: { value: 'flat' } }, { use: { value: 'stat' }, stat: { value: 'str' }, bonus: { value: 'mod' } }] },
+			damage: { dependsOn: [{ use: { value: 'stat' }, stat: { value: 'str' }, bonus: { value: '1.5 mod' } }, { use: { value: 'die' }, amount: { value: 2 }, die: { value: 12 }, type: { value: 'Weapon Damage' } }, { use: { value: 'die' }, amount: { value: 2 }, die: { value: 0 }, type: { value: 'enchantment' } }, { use: { value: 'die' }, amount: { value: 1 }, die: { value: 6 }, type: { value: 'fire' }
+				}]
+			}
 		}, {
-			name: { value: "Unconcious Gnome" },
-			tags: { value: ["gnome", "melee"] },
-			toHit: { dependsOn: [{ value: "BAB", name: "BAB", type: "flat" }, { value: "str", name: "str", type: "mod" }] },
-			damageMod: { dependsOn: [{ name: "str", value: "str", type: "mod" }] },
-			damage: [{ amount: { value: 2 }, die: { value: 6 }, type: { value: "Weapon Damage" } }]
+			name: { value: 'Unconcious Gnome' },
+			tags: { value: ['gnome', 'melee'] },
+			toHit: { dependsOn: [{ use: { value: 'stat' }, stat: { value: 'BAB' }, bonus: { value: 'flat' } }, { use: { value: 'stat' }, stat: { value: 'str' }, bonus: { value: 'mod' } }] },
+			damage: { dependsOn: [{ use: { value: 'stat' }, stat: { value: 'str' }, bonus: { value: 'mod' } }, { use: { value: 'die' }, amount: { value: 2 }, die: { value: 6 }, type: { value: 'Weapon Damage' } }] }
 		}, {
-			name: { value: "+1 Composite Longbow +2" },
+			name: { value: '+1 Composite Longbow +2' },
 			tags: { value: ['ranged'] },
-			toHit: { dependsOn: [{ value: "BAB", name: "BAB", type: "flat" }, { value: "dex", name: "dex", type: "mod" }] },
-			damageMod: { dependsOn: [{ name: "dex", value: "dex", type: "mod" }] },
-			damage: [{ amount: { value: 1 }, die: { value: 8 }, type: { value: "Weapon Damage" } }, { amount: { value: 1 }, die: { value: 0 }, type: { value: "enchantment" } }, { amount: { value: 2 }, die: { value: 0 }, type: { value: "strength" } }]
+			toHit: { dependsOn: [{ use: { value: 'stat' }, stat: { value: 'BAB' }, bonus: { value: 'flat' } }, { use: { value: 'stat' }, stat: { value: 'dex' }, bonus: { value: 'mod' } }] },
+			damage: [{ use: { value: 'stat' }, stat: 'dex', bonus: 'mod' }, { use: { value: 'die' }, amount: { value: 1 }, die: { value: 8 }, type: { value: 'Weapon Damage' } }, { use: { value: 'die' }, amount: { value: 1 }, die: { value: 0 }, type: { value: 'enchantment' } }, { use: { value: 'die' }, amount: { value: 2 }, die: { value: 0 }, type: { value: 'strength' } }]
 		}],
-		name: { value: "Crunk" },
-		title: { value: "Barbarian of the Frozen Wastes" },
+		name: { value: 'Crunk' },
+		title: { value: 'Barbarian of the Frozen Wastes' },
 		modal: { active: false }
 	};
 	
 	exports.default = initialState;
+
+/***/ },
+/* 186 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+	
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+	
+	var _react = __webpack_require__(1);
+	
+	var _react2 = _interopRequireDefault(_react);
+	
+	var _editableValue = __webpack_require__(187);
+	
+	var _editableValue2 = _interopRequireDefault(_editableValue);
+	
+	var _paths = __webpack_require__(179);
+	
+	var _paths2 = _interopRequireDefault(_paths);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	var StatBlock = (function (_React$Component) {
+		_inherits(StatBlock, _React$Component);
+	
+		function StatBlock() {
+			_classCallCheck(this, StatBlock);
+	
+			return _possibleConstructorReturn(this, Object.getPrototypeOf(StatBlock).apply(this, arguments));
+		}
+	
+		_createClass(StatBlock, [{
+			key: 'render',
+			value: function render() {
+				return _react2.default.createElement(
+					'table',
+					{ className: 'table' },
+					_react2.default.createElement(
+						'tbody',
+						null,
+						this.allStats(this.props.stats)
+					)
+				);
+			}
+		}, {
+			key: 'allStats',
+			value: function allStats(statBlock) {
+				var rows = [];
+				for (var key in statBlock) {
+					var path = _paths2.default[key].path;
+					var statKey = path.join('-');
+					rows.push(_react2.default.createElement(
+						'tr',
+						{ key: statKey },
+						_react2.default.createElement(
+							'td',
+							null,
+							key
+						),
+						_react2.default.createElement(
+							'td',
+							null,
+							_react2.default.createElement(_editableValue2.default, {
+								key: statKey + "-stat",
+								value: statBlock[key].value,
+								editing: statBlock[key].editing,
+								input: 'number',
+								path: path,
+								editValue: this.props.editValue,
+								saveValueEdit: this.props.saveValueEdit,
+								length: '3',
+								max: '99' })
+						)
+					));
+				}
+				return rows;
+			}
+	
+			// printStat(){
+			// 	if(!this.props.stat.editing){
+			// 		return (
+			// 			<tr onClick = {() =>this.props.editStat(this.props.name, this.props.stat.value)}>
+			// 		<td>
+			// 		<b> {this.props.name} </b>
+			// 		</td><td>
+			// 		{this.props.stat.value}
+			// 		</td>
+			// 		</tr>)
+			// 	}else{
+			// 			return (
+			// 				<tr>
+			// 					<td>
+			// 						{this.props.name}
+			// 					</td>
+			// 					<td className="form-group">
+			// 						<input className="form-control" type="number" max={99} size={2}
+			// 								defaultValue={this.props.stat.value} id={this.props.name}
+			// 								onBlur={() => this.props.saveStatEdit(this.props.name,this.getInput().value)}
+			// 								onKeyDown={(event) => this.ifPressedenter(event.keyCode,this.props.name, this.getInput().value)}/>
+			// 					</td>
+			// 				<tr>
+			// 				)
+			// 	}
+			// }
+			// 	componentDidUpdate(){
+			// 		if(this.props.stat.editing){
+			// 			this.getInput().focus();
+			// 		}
+			// 	}
+			// 	ifPressedenter(keycode, name, value){
+			// 		if(keycode===13){
+			// 			this.props.saveStatEdit(name, value); 	
+			// 		}
+			// 	}
+			// 	getInput(){
+			// 		console.log('input', document.getElementById(this.props.name).value);
+			// 		return document.getElementById(this.props.name);
+			// 	}
+	
+		}]);
+	
+		return StatBlock;
+	})(_react2.default.Component);
+	
+	exports.default = StatBlock;
+
+/***/ },
+/* 187 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+	
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+	
+	var _react = __webpack_require__(1);
+	
+	var _react2 = _interopRequireDefault(_react);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	var EditableValue = (function (_React$Component) {
+		_inherits(EditableValue, _React$Component);
+	
+		function EditableValue() {
+			_classCallCheck(this, EditableValue);
+	
+			return _possibleConstructorReturn(this, Object.getPrototypeOf(EditableValue).apply(this, arguments));
+		}
+	
+		_createClass(EditableValue, [{
+			key: 'render',
+			value: function render() {
+				var _this2 = this;
+	
+				if (!this.props.editing) {
+					return _react2.default.createElement(
+						'span',
+						{ id: this.getID(), style: this.style(),
+							onClick: function onClick() {
+								return _this2.props.editValue(_this2.props.path, _this2.props.value);
+							} },
+						this.props.value
+					);
+				}
+				return _react2.default.createElement(
+					'span',
+					null,
+					_react2.default.createElement('input', { type: this.props.input, max: this.props.max || 99, size: this.props.size || 2,
+						defaultValue: this.props.value, id: this.getID(),
+						onBlur: function onBlur() {
+							return _this2.props.saveValueEdit(_this2.props.path, _this2.getInput().value);
+						},
+						onKeyDown: function onKeyDown(event) {
+							return _this2.ifPressedenter(event.keyCode, _this2.props.path, _this2.getInput().value);
+						},
+						id: this.getID(),
+						style: this.style() })
+				);
+			}
+		}, {
+			key: 'style',
+			value: function style() {
+				var results = {};
+				if (this.props.length) {
+					results.width = this.props.length + "em";
+				}
+				return results;
+			}
+		}, {
+			key: 'getID',
+			value: function getID() {
+				return this.props.path.join('-');
+			}
+		}, {
+			key: 'componentDidUpdate',
+			value: function componentDidUpdate() {
+				if (this.props.editing) {
+					this.getInput().focus();
+				}
+			}
+		}, {
+			key: 'ifPressedenter',
+			value: function ifPressedenter(keycode, name, value) {
+				if (keycode === 13) {
+					this.props.saveValueEdit(name, value);
+				}
+			}
+		}, {
+			key: 'getInput',
+			value: function getInput() {
+				return document.getElementById(this.getID());
+			}
+		}]);
+	
+		return EditableValue;
+	})(_react2.default.Component);
+	
+	exports.default = EditableValue;
+
+/***/ },
+/* 188 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+	
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+	
+	var _react = __webpack_require__(1);
+	
+	var _react2 = _interopRequireDefault(_react);
+	
+	var _helpers = __webpack_require__(182);
+	
+	var _editableValue = __webpack_require__(187);
+	
+	var _editableValue2 = _interopRequireDefault(_editableValue);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	var CombatManeuver = (function (_React$Component) {
+		_inherits(CombatManeuver, _React$Component);
+	
+		function CombatManeuver() {
+			_classCallCheck(this, CombatManeuver);
+	
+			return _possibleConstructorReturn(this, Object.getPrototypeOf(CombatManeuver).apply(this, arguments));
+		}
+	
+		_createClass(CombatManeuver, [{
+			key: 'render',
+			value: function render() {
+				var _this2 = this;
+	
+				// console.log('cmb', this.props);
+				return _react2.default.createElement(
+					'div',
+					null,
+					_react2.default.createElement(
+						'table',
+						{ className: 'table' },
+						_react2.default.createElement(
+							'tbody',
+							null,
+							_react2.default.createElement(
+								'tr',
+								null,
+								_react2.default.createElement(
+									'td',
+									null,
+									'BAB'
+								),
+								_react2.default.createElement(
+									'td',
+									null,
+									_react2.default.createElement(_editableValue2.default, {
+										value: this.props.BAB.value,
+										editing: this.props.BAB.editing,
+										input: 'number',
+										path: ["BAB"],
+										editValue: this.props.editValue,
+										saveValueEdit: this.props.saveValueEdit,
+										length: '3',
+										max: '99' })
+								)
+							),
+							_react2.default.createElement(
+								'tr',
+								{ onClick: function onClick() {
+										return _this2.props.openModal('CMB', 'dependent');
+									} },
+								_react2.default.createElement(
+									'td',
+									null,
+									'CMB:'
+								),
+								_react2.default.createElement(
+									'td',
+									null,
+									(0, _helpers.getDepStat)(this.props.CMB)
+								)
+							),
+							_react2.default.createElement(
+								'tr',
+								null,
+								_react2.default.createElement(
+									'td',
+									{ onClick: function onClick() {
+											return _this2.props.openModal('CMD', 'dependent');
+										} },
+									'CMD:'
+								),
+								_react2.default.createElement(
+									'td',
+									null,
+									(0, _helpers.getDepStat)(this.props.CMD)
+								)
+							)
+						)
+					)
+				);
+			}
+		}]);
+	
+		return CombatManeuver;
+	})(_react2.default.Component);
+	
+	exports.default = CombatManeuver;
 
 /***/ },
 /* 189 */
@@ -22048,7 +22065,7 @@
 	
 	var _react2 = _interopRequireDefault(_react);
 	
-	var _editableValue = __webpack_require__(180);
+	var _editableValue = __webpack_require__(187);
 	
 	var _editableValue2 = _interopRequireDefault(_editableValue);
 	
@@ -22099,7 +22116,7 @@
 								'td',
 								null,
 								_react2.default.createElement(_editableValue2.default, {
-									value: this.props.HP.current.value,
+									value: this.props.HP.current.total.value,
 									editing: this.props.HP.current.editing,
 									input: 'number',
 									path: this.addToPath('current'),
@@ -22116,7 +22133,7 @@
 								'td',
 								null,
 								_react2.default.createElement(_editableValue2.default, {
-									value: this.props.HP.total.value,
+									value: this.props.HP.total.total.value,
 									editing: this.props.HP.total.editing,
 									input: 'number',
 									path: this.addToPath('total'),
@@ -22163,7 +22180,7 @@
 	
 	var _dependentStatModal2 = _interopRequireDefault(_dependentStatModal);
 	
-	var _modalRoutes = __webpack_require__(194);
+	var _modalRoutes = __webpack_require__(192);
 	
 	var _modalRoutes2 = _interopRequireDefault(_modalRoutes);
 	
@@ -22274,7 +22291,9 @@
 	
 	var _helpers = __webpack_require__(182);
 	
-	var _editableValue = __webpack_require__(180);
+	var _paths = __webpack_require__(179);
+	
+	var _editableValue = __webpack_require__(187);
 	
 	var _editableValue2 = _interopRequireDefault(_editableValue);
 	
@@ -22286,19 +22305,24 @@
 	
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 	
-	var DependentStatModal = (function (_React$Component) {
-		_inherits(DependentStatModal, _React$Component);
+	var dependentStatModal = (function (_React$Component) {
+		_inherits(dependentStatModal, _React$Component);
 	
-		function DependentStatModal() {
-			_classCallCheck(this, DependentStatModal);
+		function dependentStatModal() {
+			_classCallCheck(this, dependentStatModal);
 	
-			return _possibleConstructorReturn(this, Object.getPrototypeOf(DependentStatModal).apply(this, arguments));
+			return _possibleConstructorReturn(this, Object.getPrototypeOf(dependentStatModal).apply(this, arguments));
 		}
 	
-		_createClass(DependentStatModal, [{
+		_createClass(dependentStatModal, [{
 			key: 'render',
 			value: function render() {
-				var _this2 = this;
+				var _props = this.props;
+				var name = _props.name;
+				var statObj = _props.statObj;
+				var addDep = _props.addDep;
+				var editValue = _props.editValue;
+				var saveDepValueEdit = _props.saveDepValueEdit;
 	
 				return _react2.default.createElement(
 					'div',
@@ -22315,19 +22339,19 @@
 								_react2.default.createElement(
 									'td',
 									null,
-									this.props.name
+									name
 								),
 								_react2.default.createElement(
 									'td',
 									null,
 									_react2.default.createElement(_editableValue2.default, {
-										value: (0, _helpers.getDepStat)(this.props.modal),
-										editing: this.props.modal.editing,
+										value: (0, _helpers.getDepStat)(statObj),
+										editing: statObj.editing,
 										input: 'number',
-										path: [this.props.name],
-										editValue: this.props.editValue,
-										saveValueEdit: this.props.saveDepValueEdit,
+										editValue: editValue,
+										saveValueEdit: saveDepValueEdit,
 										length: '3',
+										path: (0, _paths.getPathFromName)(name),
 										max: '99' })
 								)
 							)
@@ -22339,12 +22363,12 @@
 						_react2.default.createElement(
 							'tbody',
 							null,
-							this.printNames(this.props.modal),
+							this.printDepOptions(statObj),
 							_react2.default.createElement(
 								'tr',
 								null,
-								this.printPlayerModHead(this.props.modal.playerMod),
-								this.printPlayerModBody(this.props.modal.playerMod)
+								this.printPlayerModHead(statObj.playerMod),
+								this.printPlayerModBody(statObj.playerMod)
 							),
 							_react2.default.createElement(
 								'tr',
@@ -22356,7 +22380,7 @@
 										'button',
 										{ className: 'btn btn-primary',
 											onClick: function onClick() {
-												return _this2.props.addDep(_this2.props.path);
+												return addDep((0, _paths.getPathFromName)(name));
 											} },
 										'Add'
 									)
@@ -22367,82 +22391,119 @@
 				);
 			}
 		}, {
-			key: 'printNames',
-			value: function printNames(names) {
-				var _this3 = this;
+			key: 'printDepOptions',
+			value: function printDepOptions(names) {
+				var _this2 = this;
 	
 				return names.dependsOn.map(function (name, index) {
-					var path = _this3.props.path.slice();
-					path.push('dependsOn', index);
 					return _react2.default.createElement(
 						'tr',
-						{ key: "modal-name-" + name.name + "-" + index },
-						_react2.default.createElement(
-							'td',
-							null,
-							_react2.default.createElement(
-								'select',
-								{ defaultValue: name.name,
-									onChange: function onChange(event) {
-										return _this3.props.modifyDep(path, [index, "name"], event.target.value);
-									} },
-								_this3.typeOptions((0, _helpers.bonusKeys)(), name.name, "name")
-							)
-						),
-						_react2.default.createElement(
-							'td',
-							null,
-							_react2.default.createElement(
-								'i',
-								null,
-								_react2.default.createElement(
-									'label',
-									{ className: 'formLabel' },
-									' '
-								),
-								_react2.default.createElement(
-									'select',
-									{ defaultValue: name.type,
-										onChange: function onChange(event) {
-											return _this3.props.modifyDep(path, [index, "type"], event.target.value);
-										} },
-									_this3.typeOptions((0, _helpers.modKeys)(), name.type, "type")
-								)
-							)
-						),
-						_this3.printValue(name, index),
-						_this3.printRemoveButton(_this3.props.path, index)
+						{ key: "statObj-name-" + name.name + "-" + index },
+						_this2.optionTypes(name, index),
+						_this2.useOptions(name.use.value)(name, index, _this2),
+						_this2.printValue(name, index),
+						_this2.printRemoveButton(_this2.props.name, index)
 					);
 				});
 			}
 		}, {
-			key: 'printValue',
-			value: function printValue(value, index) {
-				/*If it's a stat, just get the stat's value */
-				if ((0, _helpers.isStat)(value.value)) {
-					return _react2.default.createElement(
-						'td',
-						{ key: "modal-value-" + index },
-						(0, _helpers.addPlus)((0, _helpers.getValue)(value))
-					);
-				} else {
-					/* If it's not tied to a stat, it should be editable */
-					var path = this.props.path.slice();
-					path.push('dependsOn', index);
-					return _react2.default.createElement(
-						'td',
-						null,
-						_react2.default.createElement(_editableValue2.default, {
-							value: value.value,
-							editing: value.editing,
-							input: 'number',
-							path: path,
-							editValue: this.props.editValue,
-							saveValueEdit: this.props.saveValueEdit,
-							length: '3',
-							max: '99' })
-					);
+			key: 'optionTypes',
+			value: function optionTypes(depObj, index) {
+				var _this3 = this;
+	
+				return _react2.default.createElement(
+					'td',
+					null,
+					_react2.default.createElement(
+						'select',
+						{ defaultValue: depObj.use.value,
+							onChange: function onChange(event) {
+								return _this3.props.modifyDep((0, _paths.getPathFromName)(_this3.props.name), [index, "use"], event.target.value);
+							} },
+						this.typeOptions((0, _helpers.useKeys)(), "use")
+					)
+				);
+			}
+		}, {
+			key: 'useOptions',
+			value: function useOptions(use) {
+				switch (use) {
+					case 'flat':
+						return this.optionUseFlat;
+					case 'stat':
+						return this.optionUseStat;
+					case 'die':
+						return this.optionUseDie;
 				}
+			}
+		}, {
+			key: 'optionUseFlat',
+			value: function optionUseFlat(depObj, index, t) {
+				console.log('flat', t);
+				var results = [];
+				results.push(_react2.default.createElement(
+					'td',
+					{ key: 'flat-1-' + index },
+					'Type:',
+					depObj.type.value
+				));
+				results.push(_react2.default.createElement(
+					'td',
+					{ key: 'flat-2-' + index },
+					(0, _helpers.addPlus)(depObj.total.value)
+				));
+				return results;
+			}
+		}, {
+			key: 'optionUseStat',
+			value: function optionUseStat(depObj, index, t) {
+				var results = [];
+				results.push(_react2.default.createElement(
+					'td',
+					{ key: 'stat-1-' + index },
+					_react2.default.createElement(
+						'select',
+						{ defaultValue: name.name,
+							onChange: function onChange(event) {
+								return t.props.modifyDep(path, [index, "name"], event.target.value);
+							} },
+						t.typeOptions((0, _helpers.bonusKeys)(), "name")
+					)
+				));
+				results.push(_react2.default.createElement(
+					'td',
+					{ key: 'stat-2-' + index },
+					_react2.default.createElement(
+						'i',
+						null,
+						_react2.default.createElement(
+							'label',
+							{ className: 'formLabel' },
+							' '
+						),
+						_react2.default.createElement(
+							'select',
+							{ defaultValue: name.type,
+								onChange: function onChange(event) {
+									return t.props.modifyDep(path, [index, "type"], event.target.value);
+								} },
+							t.typeOptions((0, _helpers.modKeys)(), "type")
+						)
+					)
+				));
+				return results;
+			}
+		}, {
+			key: 'optionUseDie',
+			value: function optionUseDie(depObj) {}
+		}, {
+			key: 'printValue',
+			value: function printValue(name, index) {
+				return _react2.default.createElement(
+					'td',
+					{ key: "statObj-value-" + index },
+					(0, _helpers.addPlus)((0, _helpers.calcValue)(name))
+				);
 			}
 		}, {
 			key: 'printPlayerModHead',
@@ -22470,14 +22531,14 @@
 			}
 		}, {
 			key: 'printRemoveButton',
-			value: function printRemoveButton(path, index) {
+			value: function printRemoveButton(name, index) {
 				var _this4 = this;
 	
-				if ((0, _helpers.getStatFromPath)(path).dependsOn.length > 1) {
+				if ((0, _paths.getStatFromName)(name).dependsOn.length > 1) {
 					return _react2.default.createElement(
 						'td',
 						{ onClick: function onClick() {
-								return _this4.props.removeDep(_this4.props.path, index);
+								return _this4.props.removeDep((0, _paths.getPathFromName)(name), index);
 							} },
 						'X'
 					);
@@ -22485,7 +22546,7 @@
 			}
 		}, {
 			key: 'typeOptions',
-			value: function typeOptions(typeArray, current, keyAdd) {
+			value: function typeOptions(typeArray, keyAdd) {
 				return typeArray.map(function (key) {
 					return _react2.default.createElement(
 						'option',
@@ -22498,14 +22559,273 @@
 			}
 		}]);
 	
-		return DependentStatModal;
+		return dependentStatModal;
 	})(_react2.default.Component);
 	
-	exports.default = DependentStatModal;
+	exports.default = dependentStatModal;
 
 /***/ },
-/* 192 */,
+/* 192 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+	
+	var _react = __webpack_require__(1);
+	
+	var _react2 = _interopRequireDefault(_react);
+	
+	var _dependentStatModal = __webpack_require__(191);
+	
+	var _dependentStatModal2 = _interopRequireDefault(_dependentStatModal);
+	
+	var _WeaponModal = __webpack_require__(193);
+	
+	var _WeaponModal2 = _interopRequireDefault(_WeaponModal);
+	
+	var _helpers = __webpack_require__(182);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	/*
+		Modal routes simplifies calling of a modal, mostly by letting you pass in
+		actions object, and these functions taking the needed values. 
+	*/
+	var modalRoutes = {
+		dependent: function dependent(path, name, modal, actions) {
+			return _react2.default.createElement(_dependentStatModal2.default, {
+				modifyDep: actions.modifyDep,
+				addDep: actions.addDep,
+				removeDep: actions.removeDep,
+				editValue: actions.editValue,
+				saveValueEdit: actions.saveValueEdit,
+				saveDepValueEdit: actions.saveDepValueEdit,
+				name: name,
+				statObj: modal });
+		},
+		weapon: function weapon(path, name, modal, actions) {
+			return _react2.default.createElement(_WeaponModal2.default, {
+				modifyDep: actions.modifyDep,
+				addDep: actions.addDep,
+				removeDep: actions.removeDep,
+				editValue: actions.editValue,
+				saveValueEdit: actions.saveValueEdit,
+				saveDepValueEdit: actions.saveDepValueEdit,
+				path: path,
+				name: modal.name.value,
+				modal: modal });
+		}
+	};
+	
+	exports.default = modalRoutes;
+
+/***/ },
 /* 193 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	
+	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+	
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+	
+	var _react = __webpack_require__(1);
+	
+	var _react2 = _interopRequireDefault(_react);
+	
+	var _helpers = __webpack_require__(182);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	var WeaponModal = (function (_React$Component) {
+		_inherits(WeaponModal, _React$Component);
+	
+		function WeaponModal() {
+			_classCallCheck(this, WeaponModal);
+	
+			return _possibleConstructorReturn(this, Object.getPrototypeOf(WeaponModal).apply(this, arguments));
+		}
+	
+		_createClass(WeaponModal, [{
+			key: "render",
+			value: function render() {
+				console.log('weapons modal', this.props);
+				var _props = this.props;
+				var name = _props.name;
+				var path = _props.path;
+				var modal = _props.modal;
+	
+				return _react2.default.createElement(
+					"div",
+					null,
+					name,
+					_react2.default.createElement(
+						"table",
+						{ className: "table" },
+						_react2.default.createElement(
+							"tbody",
+							null,
+							_react2.default.createElement(
+								"tr",
+								null,
+								_react2.default.createElement(
+									"td",
+									null,
+									this.printTags()
+								)
+							)
+						)
+					),
+					_react2.default.createElement(
+						"table",
+						{ className: "table" },
+						_react2.default.createElement(
+							"thead",
+							null,
+							_react2.default.createElement(
+								"tr",
+								null,
+								_react2.default.createElement(
+									"td",
+									null,
+									" To Hit: ",
+									(0, _helpers.getDepStat)(modal.toHit),
+									" "
+								)
+							)
+						),
+						_react2.default.createElement(
+							"tbody",
+							null,
+							this.printToHitDep()
+						)
+					),
+					_react2.default.createElement(
+						"table",
+						{ className: "table" },
+						_react2.default.createElement(
+							"thead",
+							null,
+							_react2.default.createElement(
+								"tr",
+								null,
+								_react2.default.createElement(
+									"td",
+									null,
+									"Damage: ",
+									(0, _helpers.simplifyDamage)(modal.damage, modal.damageMod)
+								)
+							)
+						),
+						_react2.default.createElement(
+							"tbody",
+							null,
+							this.printDamage(),
+							this.printDamageMod()
+						)
+					)
+				);
+			}
+		}, {
+			key: "printTags",
+			value: function printTags() {
+				return this.props.modal.tags.value.join(', ');
+			}
+		}, {
+			key: "printToHitDep",
+			value: function printToHitDep() {
+				return this.props.modal.toHit.dependsOn.map(function (stat, index) {
+					return _react2.default.createElement(
+						"tr",
+						{ key: index + "-weapon-stat-dropdown" },
+						_react2.default.createElement(
+							"td",
+							null,
+							stat.name
+						),
+						_react2.default.createElement(
+							"td",
+							null,
+							stat.type
+						),
+						_react2.default.createElement(
+							"td",
+							null,
+							(0, _helpers.getValue)(stat)
+						)
+					);
+				});
+			}
+		}, {
+			key: "printDamage",
+			value: function printDamage() {
+				return this.props.modal.damage.map(function (source, index) {
+					return _react2.default.createElement(
+						"tr",
+						{ key: index + "damage-weapon-modal" },
+						_react2.default.createElement(
+							"td",
+							null,
+							source.amount.value
+						),
+						_react2.default.createElement(
+							"td",
+							null,
+							source.die.value
+						),
+						_react2.default.createElement(
+							"td",
+							null,
+							source.type.value
+						)
+					);
+				});
+			}
+		}, {
+			key: "printDamageMod",
+			value: function printDamageMod() {
+				return this.props.modal.damageMod.dependsOn.map(function (source, index) {
+					return _react2.default.createElement(
+						"tr",
+						{ key: index + "-damage-mod-modal" },
+						_react2.default.createElement(
+							"td",
+							null,
+							source.name
+						),
+						_react2.default.createElement(
+							"td",
+							null,
+							source.type
+						),
+						_react2.default.createElement(
+							"td",
+							null,
+							(0, _helpers.getValue)(source)
+						)
+					);
+				});
+			}
+		}]);
+	
+		return WeaponModal;
+	})(_react2.default.Component);
+	
+	exports.default = WeaponModal;
+
+/***/ },
+/* 194 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -22563,10 +22883,17 @@
 		}, {
 			key: 'weapons',
 			value: function weapons() {
+				var _this2 = this;
+	
 				return this.props.weapons.map(function (weapon, index) {
+					var path = _this2.props.path.slice();
+					path.push(index);
 					return _react2.default.createElement(
 						'table',
-						{ key: weapon.name.value + '-' + index + 'weapon-table' },
+						{ key: weapon.name.value + '-' + index + 'weapon-table',
+							onClick: function onClick() {
+								return _this2.props.openModal(path, 'weapon');
+							} },
 						_react2.default.createElement(
 							'thead',
 							null,
@@ -22611,293 +22938,6 @@
 	})(_react2.default.Component);
 	
 	exports.default = Weapon;
-
-/***/ },
-/* 194 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	Object.defineProperty(exports, "__esModule", {
-		value: true
-	});
-	
-	var _react = __webpack_require__(1);
-	
-	var _react2 = _interopRequireDefault(_react);
-	
-	var _DependentStatModal = __webpack_require__(195);
-	
-	var _DependentStatModal2 = _interopRequireDefault(_DependentStatModal);
-	
-	var _helpers = __webpack_require__(182);
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
-	var modalRoutes = {
-		dependent: function dependent(path, name, modal, actions) {
-			return _react2.default.createElement(_DependentStatModal2.default, {
-				modifyDep: actions.modifyDep,
-				addDep: actions.addDep,
-				removeDep: actions.removeDep,
-				editValue: actions.editValue,
-				saveValueEdit: actions.saveValueEdit,
-				saveDepValueEdit: actions.saveDepValueEdit,
-				path: path,
-				name: name,
-				modal: modal });
-		},
-		weapon: function weapon() {}
-	};
-	
-	exports.default = modalRoutes;
-
-/***/ },
-/* 195 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-	
-	Object.defineProperty(exports, "__esModule", {
-		value: true
-	});
-	
-	var _react = __webpack_require__(1);
-	
-	var _react2 = _interopRequireDefault(_react);
-	
-	var _helpers = __webpack_require__(182);
-	
-	var _editableValue = __webpack_require__(180);
-	
-	var _editableValue2 = _interopRequireDefault(_editableValue);
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-	
-	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-	
-	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-	
-	var DependentStatModal = (function (_React$Component) {
-		_inherits(DependentStatModal, _React$Component);
-	
-		function DependentStatModal() {
-			_classCallCheck(this, DependentStatModal);
-	
-			return _possibleConstructorReturn(this, Object.getPrototypeOf(DependentStatModal).apply(this, arguments));
-		}
-	
-		_createClass(DependentStatModal, [{
-			key: 'render',
-			value: function render() {
-				var _this2 = this;
-	
-				return _react2.default.createElement(
-					'div',
-					null,
-					_react2.default.createElement(
-						'table',
-						{ className: 'table' },
-						_react2.default.createElement(
-							'tbody',
-							null,
-							_react2.default.createElement(
-								'tr',
-								null,
-								_react2.default.createElement(
-									'td',
-									null,
-									this.props.name
-								),
-								_react2.default.createElement(
-									'td',
-									null,
-									_react2.default.createElement(_editableValue2.default, {
-										value: (0, _helpers.getDepStat)(this.props.modal),
-										editing: this.props.modal.editing,
-										input: 'number',
-										path: [this.props.name],
-										editValue: this.props.editValue,
-										saveValueEdit: this.props.saveDepValueEdit,
-										length: '3',
-										max: '99' })
-								)
-							)
-						)
-					),
-					_react2.default.createElement(
-						'table',
-						{ className: 'table' },
-						_react2.default.createElement(
-							'tbody',
-							null,
-							this.printNames(this.props.modal),
-							_react2.default.createElement(
-								'tr',
-								null,
-								this.printPlayerModHead(this.props.modal.playerMod),
-								this.printPlayerModBody(this.props.modal.playerMod)
-							),
-							_react2.default.createElement(
-								'tr',
-								null,
-								_react2.default.createElement(
-									'td',
-									null,
-									_react2.default.createElement(
-										'button',
-										{ className: 'btn btn-primary',
-											onClick: function onClick() {
-												return _this2.props.addDep(_this2.props.path);
-											} },
-										'Add'
-									)
-								)
-							)
-						)
-					)
-				);
-			}
-		}, {
-			key: 'printNames',
-			value: function printNames(names) {
-				var _this3 = this;
-	
-				return names.dependsOn.map(function (name, index) {
-					var path = _this3.props.path.slice();
-					path.push('dependsOn', index);
-					return _react2.default.createElement(
-						'tr',
-						{ key: "modal-name-" + name.name + "-" + index },
-						_react2.default.createElement(
-							'td',
-							null,
-							_react2.default.createElement(
-								'select',
-								{ defaultValue: name.name,
-									onChange: function onChange(event) {
-										return _this3.props.modifyDep(path, [index, "name"], event.target.value);
-									} },
-								_this3.typeOptions((0, _helpers.bonusKeys)(), name.name, "name")
-							)
-						),
-						_react2.default.createElement(
-							'td',
-							null,
-							_react2.default.createElement(
-								'i',
-								null,
-								_react2.default.createElement(
-									'label',
-									{ className: 'formLabel' },
-									' '
-								),
-								_react2.default.createElement(
-									'select',
-									{ defaultValue: name.type,
-										onChange: function onChange(event) {
-											return _this3.props.modifyDep(path, [index, "type"], event.target.value);
-										} },
-									_this3.typeOptions((0, _helpers.modKeys)(), name.type, "type")
-								)
-							)
-						),
-						_this3.printValue(name, index),
-						_this3.printRemoveButton(_this3.props.path, index)
-					);
-				});
-			}
-		}, {
-			key: 'printValue',
-			value: function printValue(value, index) {
-				/*If it's a stat, just get the stat's value */
-				if ((0, _helpers.isStat)(value.value)) {
-					return _react2.default.createElement(
-						'td',
-						{ key: "modal-value-" + index },
-						(0, _helpers.addPlus)((0, _helpers.getValue)(value))
-					);
-				} else {
-					/* If it's not tied to a stat, it should be editable */
-					var path = this.props.path.slice();
-					path.push('dependsOn', index);
-					return _react2.default.createElement(
-						'td',
-						null,
-						_react2.default.createElement(_editableValue2.default, {
-							value: value.value,
-							editing: value.editing,
-							input: 'number',
-							path: path,
-							editValue: this.props.editValue,
-							saveValueEdit: this.props.saveValueEdit,
-							length: '3',
-							max: '99' })
-					);
-				}
-			}
-		}, {
-			key: 'printPlayerModHead',
-			value: function printPlayerModHead(playerMod) {
-				if (playerMod) {
-					return _react2.default.createElement(
-						'th',
-						null,
-						' Player Mod '
-					);
-				}
-			}
-		}, {
-			key: 'printPlayerModBody',
-			value: function printPlayerModBody(playerMod) {
-				if (playerMod) {
-					return _react2.default.createElement(
-						'td',
-						null,
-						' ',
-						(0, _helpers.addPlus)(playerMod),
-						' '
-					);
-				}
-			}
-		}, {
-			key: 'printRemoveButton',
-			value: function printRemoveButton(path, index) {
-				var _this4 = this;
-	
-				if ((0, _helpers.getStatFromPath)(path).dependsOn.length > 1) {
-					return _react2.default.createElement(
-						'td',
-						{ onClick: function onClick() {
-								return _this4.props.removeDep(_this4.props.path, index);
-							} },
-						'X'
-					);
-				}
-			}
-		}, {
-			key: 'typeOptions',
-			value: function typeOptions(typeArray, current, keyAdd) {
-				return typeArray.map(function (key) {
-					return _react2.default.createElement(
-						'option',
-						{ key: key + "-" + keyAdd + "-dropwdown", value: key },
-						' ',
-						key,
-						' '
-					);
-				});
-			}
-		}]);
-	
-		return DependentStatModal;
-	})(_react2.default.Component);
-	
-	exports.default = DependentStatModal;
 
 /***/ }
 /******/ ]);

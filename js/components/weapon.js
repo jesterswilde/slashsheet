@@ -13,8 +13,11 @@ export default class Weapon extends React.Component{
 	}
 	weapons(){
 		return this.props.weapons.map((weapon, index)=>{
+			let path = this.props.path.slice();
+			path.push(index); 
 			return(
-				<table key={weapon.name.value+'-'+index+'weapon-table'}>
+				<table key={weapon.name.value+'-'+index+'weapon-table'}
+				onClick={()=>this.props.openModal(path, 'weapon')}>
 				<thead><tr><th>
 				{weapon.name.value}
 				</th></tr></thead>

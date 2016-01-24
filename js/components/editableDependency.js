@@ -1,4 +1,5 @@
-import React from 'react';
+
+mport React from 'react';
 import {getDepStat} from '../util/helpers.js';
 
 export default class EditableDependency extends React.Component{
