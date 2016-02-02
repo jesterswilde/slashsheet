@@ -31,6 +31,7 @@ const modalRoutes = {
 				editValue = {actions.editValue}
 				saveValueEdit = {actions.saveValueEdit}
 				saveDepValueEdit = {actions.saveDepValueEdit}
+				changeUseType = {actions.changeUseType}
 				path={path}
 				name={modal.name.value}
 				modal={modal} /> 

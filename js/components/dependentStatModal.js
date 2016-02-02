@@ -60,6 +60,7 @@ export default class dependentStatModal extends React.Component{
 					name={this.props.name}
 					editValue={this.props.editValue}
 					saveValueEdit={this.props.saveValueEdit}
+					removeDep={this.props.removeDep}
 					modifyDep={this.props.modifyDep}
 					changeUseType={this.props.changeUseType} />
 			)
@@ -76,4 +77,18 @@ export default class dependentStatModal extends React.Component{
 			return <td> {addPlus(playerMod)} </td>
 		}
 	}
+	// printRemoveButton(name, index){
+	// 	if(getStatFromName(name).dependsOn.length > 1){
+	// 		return(
+	// 			 <td onClick={()=>this.props.removeDep(getPathFromName(name), index)}>
+	// 			 	X
+	// 			 </td>
+	// 		)
+	// 	}
+	// }
+	// typeOptions(typeArray, keyAdd){
+	// 	return typeArray.map((key)=>{
+	// 		return <option key={key + "-" + keyAdd +"-dropwdown"} value={key}> {key} </option>
+	// 	})
+	// }
 }

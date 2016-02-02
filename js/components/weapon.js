@@ -1,19 +1,17 @@
 import React from 'react'; 
-import {getDepStat, addPlus, simplifyDamage} from '../util/helpers.js'; 
+import {getDepStat, addPlus} from '../util/helpers.js'; 
+import {getPathFromName} from '../util/paths.js'; 
 
 export default class Weapon extends React.Component{
 	render(){
 		return (
-			<table> 
-			<tbody><tr><td>
-			{this.weapons()}
-			</td></tr></tbody>
-			</table>
-		);
+			<div>
+				{this.weapons()};
+			</div>)
 	}
 	weapons(){
 		return this.props.weapons.map((weapon, index)=>{
-			let path = this.props.path.slice();
+			let path = getPathFromName('weapons'); 
 			path.push(index); 
 			return(
 				<table key={weapon.name.value+'-'+index+'weapon-table'}
@@ -23,7 +21,7 @@ export default class Weapon extends React.Component{
 				</th></tr></thead>
 				<tbody><tr>
 					<td>To Hit: {addPlus(getDepStat(weapon.toHit))} </td>
-					<td> Damage: {simplifyDamage(weapon.damage, weapon.damageMod)} </td> 
+					<td> Damage: {getDepStat(weapon.damage)} </td> 
 				</tr></tbody>
 				</table>
 			)	

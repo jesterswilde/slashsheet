@@ -14,9 +14,14 @@ const calcUseStat = function(useObj){
 	return bonuses[bonus](getStatFromName(stat).value);
 };
 
+const calcUseDie = function(useObj){
+	return {amount: useObj.amount.value, die: useObj.die.value}; 
+};
+
 const use = {
 	flat: calcUseFlat,
-	stat: calcUseStat
+	stat: calcUseStat,
+	die: calcUseDie
 };
 //returns the value of the associated stat
 const calcValue = function(statObj){
@@ -32,15 +37,31 @@ const getDepStat = function(depObj, noMod){
 	}else{
 		playerMod = playerMod || 0; 
 	}
-	return statArray
-		.map((stat) => {
-		let result = calcValue(stat);
-		return result;  
-		})
-		.reduce((total, current) => total + current) + playerMod;
+	//sum flat numbers, and build an object of the different dice types. 
+	let values = statArray.reduce((total, current) =>{
+		let stat = calcValue(current); 
+		if(typeof stat === 'number'){
+			total.flat+=stat; 
+		}else{
+			total.dice[stat.die] = total.dice[stat.die] || 0; 
+			total.dice[stat.die] += stat.amount; 
+		}return total; 
+	}, {dice:{}, flat:0});
+	//sort the dice types for easy printing, then start printing
+	let sortedDice = Object.keys(values.dice).sort((a,b) => b - a); 
+	let result = sortedDice.reduce((total, current) =>{
+		if(total !== ''){
+			total+='+'; 
+		}
+		return total+=values.dice[current] +'D'+current; 
+	}, ''); 
+	if(result !== '' && (values.flat + playerMod !== 0)){//if there are dice and flat
+		result +='+';
+	}if(values.flat + playerMod !== 0){//if there are flat
+		result += (values.flat + playerMod); 
+	}
+	return result; 
 };
-
-
 
 
 //creates an object used for easy update()
@@ -107,54 +128,6 @@ const useKeys = function(){
 	return results; 
 };
 
-//this is super messy, consider refactoring for cleaner.
-const simplifyDamage = function(damageArray, statDamageObj){
-	let sortedDamageArray = damageArray.sort((a,b) => {
-		if(a.die.value < b.die.value){
-			return 1;
-		}
-		if(a.die.value > b.die.value){
-			return -1;
-		}	
-	});
-	let recent = {die:'first', amount:0}; 
-	let results = ''; 
-	let statDmg = getDepStat(statDamageObj); 
-	for(let i = 0; i < sortedDamageArray.length; i++){
-		const dmg = sortedDamageArray[i];
-		//If it's a new die type
-		if(dmg.die.value !== recent.die){
-			//Don't add + the first time
-			if(recent.die !== 'first'){
-				if(results !== ''){
-					results += '+';
-				}
-				results += recent.amount +"D"+ recent.die; 
-			}
-			//overwrite recent die
-			recent.die = dmg.die.value;
-			recent.amount = dmg.amount.value;
-		}else{
-			//it's the same die type
-			recent.amount += dmg.amount.value; 
-		}
-	}
-	if(recent.die !== 'first'){
-		if(results !== ''){
-			results += '+';
-		}
-		if(recent.die === 0){
-			recent.amount += statDmg;
-			results += recent.die + recent.amount; 
-		}else{
-			results+= recent.amount +"D"+ recent.die; 
-			results += "+"+statDmg;
-		}
-	}else{
-		results+=statDmg; 
-	}
-	return results; 
-};
 
 export {getDepStat, buildPath, addPlus, calcValue,
-	statKeys, allStatKeys, bonusKeys, simplifyDamage, useKeys, useDefaults}; 
+	statKeys, allStatKeys, bonusKeys, useKeys, useDefaults}; 

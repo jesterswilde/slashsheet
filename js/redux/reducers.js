@@ -34,7 +34,6 @@ const identity = function(state){
 
 const editValue = function(state, action){
 	const modState = buildPath(action.path, {editing:{$set:true}});
-	console.log(action.path); 
 	return update(state, modState);
 };
 
@@ -60,7 +59,11 @@ const saveDepValuEdit = function(state, action){
 
 const modifyDep = function(state, action){
 	let {modify, index, name, value} = action; 
-	let path = getPathFromName(name);
+	console.log('actions', action); 
+	let path = name; 
+	if(typeof path !== 'object'){
+		path = getPathFromName(name);
+	}
 	path.push('dependsOn',index);
 	let modState = buildPath(path, {[modify]:{value:{$set:value}}}); 
 	return update(state, modState); 
@@ -81,13 +84,17 @@ const removeDep = function(state, action){
 	return update(state, modState);  
 };
 
+//if values existed already, then we don't overwrite them with the defaults
+//otherwise we add the default properties for the new use type.
 const changeUseType = function(state, action){
-	let {index, value, name} = action; 
-	console.log('name',name); 
-	let path = getPathFromName(name);
-	path.push('dependsOn', index); 
+	let {index, value, name:path} = action; 
+	if(typeof path !== 'object'){
+		let path = getPathFromName(name);
+	}
+	path.push('dependsOn',index); 
 	let defaultObj = useDefaults[value]; 
 	let currentObj = getStatFromPath(path);
+	console.log('path', path,'currentOBj', currentObj);
 	let mergedObj = {use:{value:{$set:value}}};  
 	for(var key in defaultObj){
 		if(currentObj[key] === undefined){
