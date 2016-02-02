@@ -1,5 +1,5 @@
 import paths from './paths.js'; 
-import {mod, bonusTypes, getStatFromName} from './paths.js'; 
+import {bonuses, bonusTypes, getStatFromName} from './paths.js'; 
 import store from '../redux/store.js'; 
 
 
@@ -11,7 +11,7 @@ const calcUseFlat = function(useObj){
 
 const calcUseStat = function(useObj){
 	let {bonus:{value:bonus}, stat:{value:stat}} = useObj;
-	return mod[bonus](getStatFromName(stat).value);
+	return bonuses[bonus](getStatFromName(stat).value);
 };
 
 const use = {
@@ -23,7 +23,7 @@ const calcValue = function(statObj){
 	return use[statObj.use.value](statObj); 
 };
 
-//given an array of stat 	objects IE [{value:'str' type:'mod'} ...]
+//given an array of stat 	objects IE [{value:'str' type:'bonuses'} ...]
 //will return the total value
 const getDepStat = function(depObj, noMod){
 	let {dependsOn: statArray, playerMod} = depObj;
@@ -33,11 +33,11 @@ const getDepStat = function(depObj, noMod){
 		playerMod = playerMod || 0; 
 	}
 	return statArray
-	.map((stat) => {
+		.map((stat) => {
 		let result = calcValue(stat);
 		return result;  
-	})
-	.reduce((total, current) => total + current) + playerMod;
+		})
+		.reduce((total, current) => total + current) + playerMod;
 };
 
 
@@ -45,13 +45,16 @@ const getDepStat = function(depObj, noMod){
 
 //creates an object used for easy update()
 //takes ['stat','str'] and returns {stat:{str:{}}}
-const buildPath = function(array, last){ 
+const buildPath = function(name, values){ 
+	if(typeof name === 'string'){
+		name = paths[name].path;
+	}
 	let original = {}; 
 	let current = original; 
-	for(var i = 0; i < array.length; i++){
-		current = current[array[i]] = {}; 
+	for(var i = 0; i < name.length; i++){
+		current = current[name[i]] = {}; 
 	}
-	Object.assign(current, last); 
+	Object.assign(current, values); 
 	return original;
 };
 
@@ -65,13 +68,13 @@ const addPlus = function(number){
 const statKeys = function(){
 	let results = []; 
 	for(let key in paths){
-		if(paths[key].type === 'flat')
+		if(paths[key].type === 'stat')
 		results.push(key); 
 	}	
 	return results;
 };
 
-const bonusKeys = function(){
+const allStatKeys = function(){
 	let results = []; 
 	for(let key in paths){
 		if(paths[key].type === 'flat' || paths[key].type === 'dependent'){
@@ -81,19 +84,28 @@ const bonusKeys = function(){
 	return results; 
 };
 
-const modKeys = function(){
+const bonusKeys = function(){
 	let results = []; 
-	for(let key in mod){
+	for(let key in bonuses){
 		results.push(key);
 	}
 	return results; 
 };
 
-const useKeys = function(){
-	return ['flat', 'stat', 'die']; 
+
+const useDefaults = {
+	stat:{stat:{value:'str'}, bonus:{value:'mod'}},
+	flat:{total:{value:'0'}, type:{value:'rule'}}, 
+	die:{amount:{value:1}, die:{value:6}, type:{value:'Weapon'}}
 };
 
-
+const useKeys = function(){
+	let results = [];
+	for(var key in useDefaults){
+		results.push(key);
+	}
+	return results; 
+};
 
 //this is super messy, consider refactoring for cleaner.
 const simplifyDamage = function(damageArray, statDamageObj){
@@ -145,4 +157,4 @@ const simplifyDamage = function(damageArray, statDamageObj){
 };
 
 export {getDepStat, buildPath, addPlus, calcValue,
-	statKeys, modKeys, bonusKeys, simplifyDamage, useKeys}; 
+	statKeys, allStatKeys, bonusKeys, simplifyDamage, useKeys, useDefaults}; 

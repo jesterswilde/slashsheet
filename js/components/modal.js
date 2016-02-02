@@ -26,7 +26,8 @@ export default class Modal extends React.Component{
 			removeDep: this.props.removeDep, 
 			editValue: this.props.editValue,
 			saveValueEdit: this.props.saveValueEdit,
-			saveDepValueEdit: this.props.saveDepValueEdit
+			saveDepValueEdit: this.props.saveDepValueEdit,
+			changeUseType: this.props.changeUseType
 		}
 	}
 	pressedKey(keycode){

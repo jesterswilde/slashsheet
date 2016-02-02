@@ -15,7 +15,7 @@ export default class CombatManeuver extends React.Component{
 			  				value={this.props.BAB.value}
 			  				editing={this.props.BAB.editing}
 			  				input="number"
-			  				path={["BAB"]}
+			  				name="BAB"
 				            editValue={this.props.editValue}
 				            saveValueEdit={this.props.saveValueEdit}
 				            length="3"

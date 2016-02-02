@@ -1,20 +1,26 @@
 import store from '../redux/store.js'; 
 
+
+
 const paths = {
-	str:{path:['stats', 'str'], type:'flat'},
-	dex:{path:['stats', 'dex'], type:'flat'},
-	con:{path:['stats', 'con'], type:'flat'},
-	int:{path:['stats', 'int'], type:'flat'},
-	wis:{path:['stats', 'wis'], type:'flat'},
-	cha:{path:['stats', 'cha'], type:'flat'},
-	BAB:{path:['BAB'], type:'flat'},
-	CMB:{path:['CMB'], type:'dependent'}, 
-	CMD:{path:['CMD'], type:'dependent'},
-	weapon:{path:['weapon'], type:'weapon'}
+	str:{path:['stats', 'str'], type:'stat', storeAs:'number'},
+	dex:{path:['stats', 'dex'], type:'stat', storeAs:'number'},
+	con:{path:['stats', 'con'], type:'stat', storeAs:'number'},
+	int:{path:['stats', 'int'], type:'stat', storeAs:'number'},
+	wis:{path:['stats', 'wis'], type:'stat', storeAs:'number'},
+	cha:{path:['stats', 'cha'], type:'stat', storeAs:'number'},
+	BAB:{path:['BAB'], type:'stat', storeAs:'number'},
+	CMB:{path:['CMB'], type:'dependent', storeAs:'dependent'}, 
+	CMD:{path:['CMD'], type:'dependent', storeAs:'dependent'},
+	weapon:{path:['weapon'], type:'weapon', storeAs:'dependent'},
+	currentHP:{path:['HP','current'], type:'health', storeAs:'number'},
+	totalHP:{path:['HP','total'], type:'health', storeAs:'number'},
+	name:{path:['name'], type:'name', storeAs:'string'},
+	title:{path:['title'], type:'name', storeAs:'string'}
 };
 
 const getPathFromName = function(name){
-	return paths[name].path; 
+	return paths[name].path.slice(); 
 };
 
 const getTypeFromName = function(name){
@@ -22,7 +28,6 @@ const getTypeFromName = function(name){
 };
 
 const getStatFromPath = function(path){
-	console.log('path', path); 
 	let state = store.getState(); 
 	for(var i = 0; i < path.length; i++){
 		state = state[path[i]]; 
@@ -36,7 +41,7 @@ const getStatFromName = function(name){
 };
 
 
-const mod = {
+const bonuses = {
 	flat: (value) => value, 
 	mod: (value) => Math.floor(value/2) - 5,
 	'1.5 mod': (value) => Math.floor((Math.floor(value/2) - 5) * 1.5), 
@@ -44,6 +49,7 @@ const mod = {
 };
 
 
+
 export default paths;
 
-export {mod, getPathFromName, getTypeFromName, getStatFromName, getStatFromPath}; 
+export {bonuses, getPathFromName, getTypeFromName, getStatFromName, getStatFromPath}; 

@@ -16,8 +16,7 @@ class StatBlock extends React.Component{
 	allStats(statBlock){
 	  	const rows = []; 
 	  	for(var key in statBlock){
-	  		let path = paths[key].path; 
-	  		let statKey = path.join('-'); 
+	  		let statKey = key; 
   			rows.push(
   				<tr key={statKey}><td>
   				{key}
@@ -27,7 +26,7 @@ class StatBlock extends React.Component{
 	  				value={statBlock[key].value}
 	  				editing={statBlock[key].editing}
 	  				input="number"	
-	  				path={path}
+	  				name={key}
 		            editValue={this.props.editValue}
 		            saveValueEdit={this.props.saveValueEdit}
 		            length="3"

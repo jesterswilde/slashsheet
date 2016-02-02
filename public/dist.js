@@ -20891,7 +20891,7 @@
 	
 	var _modal2 = _interopRequireDefault(_modal);
 	
-	var _weapon = __webpack_require__(194);
+	var _weapon = __webpack_require__(195);
 	
 	var _weapon2 = _interopRequireDefault(_weapon);
 	
@@ -20928,7 +20928,7 @@
 	                        saveValueEdit: this.props.saveValueEdit,
 	                        input: 'string',
 	                        length: '10',
-	                        path: ['name'] })
+	                        name: 'name' })
 	                ),
 	                _react2.default.createElement(
 	                    'h2',
@@ -20939,7 +20939,7 @@
 	                        editValue: this.props.editValue,
 	                        saveValueEdit: this.props.saveValueEdit,
 	                        input: 'string',
-	                        path: ['title'],
+	                        name: 'title',
 	                        length: '15' })
 	                ),
 	                _react2.default.createElement(
@@ -20968,7 +20968,6 @@
 	                        { className: 'col-sm-2 col-md-1' },
 	                        _react2.default.createElement(_health2.default, {
 	                            HP: this.props.HP,
-	                            path: ['HP'],
 	                            editValue: this.props.editValue,
 	                            saveValueEdit: this.props.saveValueEdit })
 	                    )
@@ -20992,6 +20991,7 @@
 	                    saveDepValueEdit: this.props.saveDepValueEdit,
 	                    editValue: this.props.editValue,
 	                    modifyDep: this.props.modifyDep,
+	                    changeUseType: this.props.changeUseType,
 	                    closeModal: this.props.closeModal });
 	            }
 	        }
@@ -21021,6 +21021,7 @@
 	var MODIFY_DEP = "MODIFY_DEP";
 	var ADD_DEP = "ADD_DEP";
 	var REMOVE_DEP = "REMOVE_DEP";
+	var CHANGE_USE_TYPE = "CHANGE_USE_TYPE";
 	
 	var _editValue = function _editValue(path) {
 		return {
@@ -21040,7 +21041,7 @@
 	var _saveDepValueEdit = function _saveDepValueEdit(path, value) {
 		return {
 			type: SAVE_DEPVALUE_EDIT,
-			path: path,
+			name: path,
 			value: value
 		};
 	};
@@ -21059,12 +21060,12 @@
 		};
 	};
 	
-	var _modifyDep = function _modifyDep(path, indexType, value) {
+	var _modifyDep = function _modifyDep(name, indexType, value) {
 		return {
 			type: MODIFY_DEP,
-			path: path,
+			name: name,
 			index: indexType[0],
-			version: indexType[1],
+			modify: indexType[1],
 			value: value
 		};
 	};
@@ -21081,6 +21082,15 @@
 			type: REMOVE_DEP,
 			path: path,
 			index: index
+		};
+	};
+	
+	var _changeUseType = function _changeUseType(name, index, value) {
+		return {
+			type: CHANGE_USE_TYPE,
+			name: name,
+			index: index,
+			value: value
 		};
 	};
 	
@@ -21109,6 +21119,9 @@
 			},
 			removeDep: function removeDep(path, index) {
 				return dispatch(_removeDep(path, index));
+			},
+			changeUseType: function changeUseType(name, index, value) {
+				return dispatch(_changeUseType(name, index, value));
 			}
 		};
 	}
@@ -21121,6 +21134,7 @@
 	exports.MODIFY_DEP = MODIFY_DEP;
 	exports.ADD_DEP = ADD_DEP;
 	exports.REMOVE_DEP = REMOVE_DEP;
+	exports.CHANGE_USE_TYPE = CHANGE_USE_TYPE;
 	exports.mapDispatchToProps = mapDispatchToProps;
 
 /***/ },
@@ -21132,7 +21146,7 @@
 	Object.defineProperty(exports, "__esModule", {
 		value: true
 	});
-	exports.getStatFromPath = exports.getStatFromName = exports.getTypeFromName = exports.getPathFromName = exports.mod = undefined;
+	exports.getStatFromPath = exports.getStatFromName = exports.getTypeFromName = exports.getPathFromName = exports.bonuses = undefined;
 	
 	var _store = __webpack_require__(180);
 	
@@ -21141,20 +21155,24 @@
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	var paths = {
-		str: { path: ['stats', 'str'], type: 'flat' },
-		dex: { path: ['stats', 'dex'], type: 'flat' },
-		con: { path: ['stats', 'con'], type: 'flat' },
-		int: { path: ['stats', 'int'], type: 'flat' },
-		wis: { path: ['stats', 'wis'], type: 'flat' },
-		cha: { path: ['stats', 'cha'], type: 'flat' },
-		BAB: { path: ['BAB'], type: 'flat' },
-		CMB: { path: ['CMB'], type: 'dependent' },
-		CMD: { path: ['CMD'], type: 'dependent' },
-		weapon: { path: ['weapon'], type: 'weapon' }
+		str: { path: ['stats', 'str'], type: 'stat', storeAs: 'number' },
+		dex: { path: ['stats', 'dex'], type: 'stat', storeAs: 'number' },
+		con: { path: ['stats', 'con'], type: 'stat', storeAs: 'number' },
+		int: { path: ['stats', 'int'], type: 'stat', storeAs: 'number' },
+		wis: { path: ['stats', 'wis'], type: 'stat', storeAs: 'number' },
+		cha: { path: ['stats', 'cha'], type: 'stat', storeAs: 'number' },
+		BAB: { path: ['BAB'], type: 'stat', storeAs: 'number' },
+		CMB: { path: ['CMB'], type: 'dependent', storeAs: 'dependent' },
+		CMD: { path: ['CMD'], type: 'dependent', storeAs: 'dependent' },
+		weapon: { path: ['weapon'], type: 'weapon', storeAs: 'dependent' },
+		currentHP: { path: ['HP', 'current'], type: 'health', storeAs: 'number' },
+		totalHP: { path: ['HP', 'total'], type: 'health', storeAs: 'number' },
+		name: { path: ['name'], type: 'name', storeAs: 'string' },
+		title: { path: ['title'], type: 'name', storeAs: 'string' }
 	};
 	
 	var getPathFromName = function getPathFromName(name) {
-		return paths[name].path;
+		return paths[name].path.slice();
 	};
 	
 	var getTypeFromName = function getTypeFromName(name) {
@@ -21162,7 +21180,6 @@
 	};
 	
 	var getStatFromPath = function getStatFromPath(path) {
-		console.log('path', path);
 		var state = _store2.default.getState();
 		for (var i = 0; i < path.length; i++) {
 			state = state[path[i]];
@@ -21175,7 +21192,7 @@
 		return getStatFromPath(path);
 	};
 	
-	var mod = {
+	var bonuses = {
 		flat: function flat(value) {
 			return value;
 		},
@@ -21191,7 +21208,7 @@
 	};
 	
 	exports.default = paths;
-	exports.mod = mod;
+	exports.bonuses = bonuses;
 	exports.getPathFromName = getPathFromName;
 	exports.getTypeFromName = getTypeFromName;
 	exports.getStatFromName = getStatFromName;
@@ -21256,6 +21273,8 @@
 				return addDep(state, action);
 			case _actions.REMOVE_DEP:
 				return removeDep(state, action);
+			case _actions.CHANGE_USE_TYPE:
+				return changeUseType(state, action);
 			case _actions.OPEN_MODAL:
 				return openModal(state, action);
 			case _actions.CLOSE_MODAL:
@@ -21270,6 +21289,7 @@
 	
 	var editValue = function editValue(state, action) {
 		var modState = (0, _helpers.buildPath)(action.path, { editing: { $set: true } });
+		console.log(action.path);
 		return update(state, modState);
 	};
 	
@@ -21280,27 +21300,28 @@
 	};
 	
 	var saveDepValuEdit = function saveDepValuEdit(state, action) {
-		var depObj = (0, _paths.getStatFromPath)(action.path);
+		var depObj = (0, _paths.getStatFromName)(action.name);
 		var origTotal = (0, _helpers.getDepStat)(depObj, true);
 		var dif = action.value - origTotal;
 		var modState;
 		if (!dif) {
-			modState = (0, _helpers.buildPath)(action.path, { playerMod: { $set: null },
+			modState = (0, _helpers.buildPath)(action.name, { playerMod: { $set: null },
 				editing: { $set: null } });
 		} else {
-			modState = (0, _helpers.buildPath)(action.path, { playerMod: { $set: dif }, editing: { $set: null } });
+			modState = (0, _helpers.buildPath)(action.name, { playerMod: { $set: dif }, editing: { $set: null } });
 		}
 		return update(state, modState);
 	};
 	
 	var modifyDep = function modifyDep(state, action) {
-		var version = action.version;
+		var modify = action.modify;
 		var index = action.index;
-		var path = action.path;
+		var name = action.name;
 		var value = action.value;
 	
-		console.log('mod', path, version);
-		var modState = (0, _helpers.buildPath)(path, _defineProperty({}, version, { value: { $set: value } }));
+		var path = (0, _paths.getPathFromName)(name);
+		path.push('dependsOn', index);
+		var modState = (0, _helpers.buildPath)(path, _defineProperty({}, modify, { value: { $set: value } }));
 		return update(state, modState);
 	};
 	
@@ -21314,6 +21335,26 @@
 		var newArray = (0, _paths.getStatFromPath)(action.path).dependsOn.slice();
 		newArray.splice(action.index, 1);
 		var modState = (0, _helpers.buildPath)(action.path, { dependsOn: { $set: newArray } });
+		return update(state, modState);
+	};
+	
+	var changeUseType = function changeUseType(state, action) {
+		var index = action.index;
+		var value = action.value;
+		var name = action.name;
+	
+		console.log('name', name);
+		var path = (0, _paths.getPathFromName)(name);
+		path.push('dependsOn', index);
+		var defaultObj = _helpers.useDefaults[value];
+		var currentObj = (0, _paths.getStatFromPath)(path);
+		var mergedObj = { use: { value: { $set: value } } };
+		for (var key in defaultObj) {
+			if (currentObj[key] === undefined) {
+				mergedObj[key] = { $set: { value: defaultObj[key].value } };
+			}
+		}
+		var modState = (0, _helpers.buildPath)(path, mergedObj);
 		return update(state, modState);
 	};
 	
@@ -21338,7 +21379,7 @@
 	Object.defineProperty(exports, "__esModule", {
 		value: true
 	});
-	exports.useKeys = exports.simplifyDamage = exports.bonusKeys = exports.modKeys = exports.statKeys = exports.calcValue = exports.addPlus = exports.buildPath = exports.getDepStat = undefined;
+	exports.useDefaults = exports.useKeys = exports.simplifyDamage = exports.bonusKeys = exports.allStatKeys = exports.statKeys = exports.calcValue = exports.addPlus = exports.buildPath = exports.getDepStat = undefined;
 	
 	var _paths = __webpack_require__(179);
 	
@@ -21358,7 +21399,7 @@
 		var bonus = useObj.bonus.value;
 		var stat = useObj.stat.value;
 	
-		return _paths.mod[bonus]((0, _paths.getStatFromName)(stat).value);
+		return _paths.bonuses[bonus]((0, _paths.getStatFromName)(stat).value);
 	};
 	
 	var use = {
@@ -21370,7 +21411,7 @@
 		return use[statObj.use.value](statObj);
 	};
 	
-	//given an array of stat 	objects IE [{value:'str' type:'mod'} ...]
+	//given an array of stat 	objects IE [{value:'str' type:'bonuses'} ...]
 	//will return the total value
 	var getDepStat = function getDepStat(depObj, noMod) {
 		var statArray = depObj.dependsOn;
@@ -21392,13 +21433,16 @@
 	
 	//creates an object used for easy update()
 	//takes ['stat','str'] and returns {stat:{str:{}}}
-	var buildPath = function buildPath(array, last) {
+	var buildPath = function buildPath(name, values) {
+		if (typeof name === 'string') {
+			name = _paths2.default[name].path;
+		}
 		var original = {};
 		var current = original;
-		for (var i = 0; i < array.length; i++) {
-			current = current[array[i]] = {};
+		for (var i = 0; i < name.length; i++) {
+			current = current[name[i]] = {};
 		}
-		Object.assign(current, last);
+		Object.assign(current, values);
 		return original;
 	};
 	
@@ -21412,12 +21456,12 @@
 	var statKeys = function statKeys() {
 		var results = [];
 		for (var key in _paths2.default) {
-			if (_paths2.default[key].type === 'flat') results.push(key);
+			if (_paths2.default[key].type === 'stat') results.push(key);
 		}
 		return results;
 	};
 	
-	var bonusKeys = function bonusKeys() {
+	var allStatKeys = function allStatKeys() {
 		var results = [];
 		for (var key in _paths2.default) {
 			if (_paths2.default[key].type === 'flat' || _paths2.default[key].type === 'dependent') {
@@ -21427,16 +21471,26 @@
 		return results;
 	};
 	
-	var modKeys = function modKeys() {
+	var bonusKeys = function bonusKeys() {
 		var results = [];
-		for (var key in _paths.mod) {
+		for (var key in _paths.bonuses) {
 			results.push(key);
 		}
 		return results;
 	};
 	
+	var useDefaults = {
+		stat: { stat: { value: 'str' }, bonus: { value: 'mod' } },
+		flat: { total: { value: '0' }, type: { value: 'rule' } },
+		die: { amount: { value: 1 }, die: { value: 6 }, type: { value: 'Weapon' } }
+	};
+	
 	var useKeys = function useKeys() {
-		return ['flat', 'stat', 'die'];
+		var results = [];
+		for (var key in useDefaults) {
+			results.push(key);
+		}
+		return results;
 	};
 	
 	//this is super messy, consider refactoring for cleaner.
@@ -21493,10 +21547,11 @@
 	exports.addPlus = addPlus;
 	exports.calcValue = calcValue;
 	exports.statKeys = statKeys;
-	exports.modKeys = modKeys;
+	exports.allStatKeys = allStatKeys;
 	exports.bonusKeys = bonusKeys;
 	exports.simplifyDamage = simplifyDamage;
 	exports.useKeys = useKeys;
+	exports.useDefaults = useDefaults;
 
 /***/ },
 /* 183 */
@@ -21636,8 +21691,8 @@
 			cha: { value: 15 }
 		},
 		HP: {
-			total: { use: { value: 'flat' }, total: { value: 80 }, bonus: { value: 'flat' } },
-			current: { use: { value: 'flat' }, total: { value: 80 }, bonus: { value: 'flat' } }
+			total: { value: 80 },
+			current: { value: 80 }
 		},
 		level: [{
 			class: { value: 'Barbarian' },
@@ -21750,8 +21805,7 @@
 			value: function allStats(statBlock) {
 				var rows = [];
 				for (var key in statBlock) {
-					var path = _paths2.default[key].path;
-					var statKey = path.join('-');
+					var statKey = key;
 					rows.push(_react2.default.createElement(
 						'tr',
 						{ key: statKey },
@@ -21768,7 +21822,7 @@
 								value: statBlock[key].value,
 								editing: statBlock[key].editing,
 								input: 'number',
-								path: path,
+								name: key,
 								editValue: this.props.editValue,
 								saveValueEdit: this.props.saveValueEdit,
 								length: '3',
@@ -21870,7 +21924,7 @@
 						'span',
 						{ id: this.getID(), style: this.style(),
 							onClick: function onClick() {
-								return _this2.props.editValue(_this2.props.path, _this2.props.value);
+								return _this2.props.editValue(_this2.props.name, _this2.props.value);
 							} },
 						this.props.value
 					);
@@ -21881,10 +21935,10 @@
 					_react2.default.createElement('input', { type: this.props.input, max: this.props.max || 99, size: this.props.size || 2,
 						defaultValue: this.props.value, id: this.getID(),
 						onBlur: function onBlur() {
-							return _this2.props.saveValueEdit(_this2.props.path, _this2.getInput().value);
+							return _this2.saveStat(_this2.props.name, _this2.getInput().value);
 						},
 						onKeyDown: function onKeyDown(event) {
-							return _this2.ifPressedenter(event.keyCode, _this2.props.path, _this2.getInput().value);
+							return _this2.ifPressedenter(event.keyCode, _this2.props.name, _this2.getInput().value);
 						},
 						id: this.getID(),
 						style: this.style() })
@@ -21902,7 +21956,7 @@
 		}, {
 			key: 'getID',
 			value: function getID() {
-				return this.props.path.join('-');
+				return this.props.name;
 			}
 		}, {
 			key: 'componentDidUpdate',
@@ -21915,13 +21969,28 @@
 			key: 'ifPressedenter',
 			value: function ifPressedenter(keycode, name, value) {
 				if (keycode === 13) {
-					this.props.saveValueEdit(name, value);
+					this.saveStat(name, value);
 				}
 			}
 		}, {
 			key: 'getInput',
 			value: function getInput() {
 				return document.getElementById(this.getID());
+			}
+		}, {
+			key: 'saveStat',
+			value: function saveStat(name, value) {
+				//error handling on number inputs
+				if (this.props.input === 'number') {
+					if (Number(value) !== NaN && value < 1000) {
+						this.props.saveValueEdit(name, Number(value));
+					} else {
+						this.props.saveValueEdit(name, this.props.value);
+					}
+				} else {
+					//it's a string, just save it.
+					this.props.saveValueEdit(name, value);
+				}
 			}
 		}]);
 	
@@ -21999,7 +22068,7 @@
 										value: this.props.BAB.value,
 										editing: this.props.BAB.editing,
 										input: 'number',
-										path: ["BAB"],
+										name: 'BAB',
 										editValue: this.props.editValue,
 										saveValueEdit: this.props.saveValueEdit,
 										length: '3',
@@ -22116,14 +22185,14 @@
 								'td',
 								null,
 								_react2.default.createElement(_editableValue2.default, {
-									value: this.props.HP.current.total.value,
+									value: this.props.HP.current.value,
 									editing: this.props.HP.current.editing,
 									input: 'number',
-									path: this.addToPath('current'),
+									name: 'currentHP',
 									editValue: this.props.editValue,
 									saveValueEdit: this.props.saveValueEdit,
-									length: '4',
-									max: '9999' })
+									length: '4'
+								})
 							)
 						),
 						_react2.default.createElement(
@@ -22133,10 +22202,10 @@
 								'td',
 								null,
 								_react2.default.createElement(_editableValue2.default, {
-									value: this.props.HP.total.total.value,
+									value: this.props.HP.total.value,
 									editing: this.props.HP.total.editing,
 									input: 'number',
-									path: this.addToPath('total'),
+									name: 'totalHP',
 									editValue: this.props.editValue,
 									saveValueEdit: this.props.saveValueEdit,
 									length: '4',
@@ -22180,7 +22249,7 @@
 	
 	var _dependentStatModal2 = _interopRequireDefault(_dependentStatModal);
 	
-	var _modalRoutes = __webpack_require__(192);
+	var _modalRoutes = __webpack_require__(193);
 	
 	var _modalRoutes2 = _interopRequireDefault(_modalRoutes);
 	
@@ -22237,7 +22306,8 @@
 					removeDep: this.props.removeDep,
 					editValue: this.props.editValue,
 					saveValueEdit: this.props.saveValueEdit,
-					saveDepValueEdit: this.props.saveDepValueEdit
+					saveDepValueEdit: this.props.saveDepValueEdit,
+					changeUseType: this.props.changeUseType
 				};
 			}
 		}, {
@@ -22297,6 +22367,10 @@
 	
 	var _editableValue2 = _interopRequireDefault(_editableValue);
 	
+	var _depStat = __webpack_require__(192);
+	
+	var _depStat2 = _interopRequireDefault(_depStat);
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -22351,7 +22425,7 @@
 										editValue: editValue,
 										saveValueEdit: saveDepValueEdit,
 										length: '3',
-										path: (0, _paths.getPathFromName)(name),
+										name: name,
 										max: '99' })
 								)
 							)
@@ -22392,119 +22466,22 @@
 			}
 		}, {
 			key: 'printDepOptions',
-			value: function printDepOptions(names) {
+			value: function printDepOptions(stat) {
 				var _this2 = this;
 	
-				return names.dependsOn.map(function (name, index) {
-					return _react2.default.createElement(
-						'tr',
-						{ key: "statObj-name-" + name.name + "-" + index },
-						_this2.optionTypes(name, index),
-						_this2.useOptions(name.use.value)(name, index, _this2),
-						_this2.printValue(name, index),
-						_this2.printRemoveButton(_this2.props.name, index)
-					);
+				return stat.dependsOn.map(function (obj, index) {
+					return _react2.default.createElement(_depStat2.default, {
+						obj: obj,
+						index: index,
+						name: _this2.props.name,
+						editValue: _this2.props.editValue,
+						saveValueEdit: _this2.props.saveValueEdit,
+						modifyDep: _this2.props.modifyDep,
+						changeUseType: _this2.props.changeUseType });
 				});
 			}
-		}, {
-			key: 'optionTypes',
-			value: function optionTypes(depObj, index) {
-				var _this3 = this;
+			// optionType
 	
-				return _react2.default.createElement(
-					'td',
-					null,
-					_react2.default.createElement(
-						'select',
-						{ defaultValue: depObj.use.value,
-							onChange: function onChange(event) {
-								return _this3.props.modifyDep((0, _paths.getPathFromName)(_this3.props.name), [index, "use"], event.target.value);
-							} },
-						this.typeOptions((0, _helpers.useKeys)(), "use")
-					)
-				);
-			}
-		}, {
-			key: 'useOptions',
-			value: function useOptions(use) {
-				switch (use) {
-					case 'flat':
-						return this.optionUseFlat;
-					case 'stat':
-						return this.optionUseStat;
-					case 'die':
-						return this.optionUseDie;
-				}
-			}
-		}, {
-			key: 'optionUseFlat',
-			value: function optionUseFlat(depObj, index, t) {
-				console.log('flat', t);
-				var results = [];
-				results.push(_react2.default.createElement(
-					'td',
-					{ key: 'flat-1-' + index },
-					'Type:',
-					depObj.type.value
-				));
-				results.push(_react2.default.createElement(
-					'td',
-					{ key: 'flat-2-' + index },
-					(0, _helpers.addPlus)(depObj.total.value)
-				));
-				return results;
-			}
-		}, {
-			key: 'optionUseStat',
-			value: function optionUseStat(depObj, index, t) {
-				var results = [];
-				results.push(_react2.default.createElement(
-					'td',
-					{ key: 'stat-1-' + index },
-					_react2.default.createElement(
-						'select',
-						{ defaultValue: name.name,
-							onChange: function onChange(event) {
-								return t.props.modifyDep(path, [index, "name"], event.target.value);
-							} },
-						t.typeOptions((0, _helpers.bonusKeys)(), "name")
-					)
-				));
-				results.push(_react2.default.createElement(
-					'td',
-					{ key: 'stat-2-' + index },
-					_react2.default.createElement(
-						'i',
-						null,
-						_react2.default.createElement(
-							'label',
-							{ className: 'formLabel' },
-							' '
-						),
-						_react2.default.createElement(
-							'select',
-							{ defaultValue: name.type,
-								onChange: function onChange(event) {
-									return t.props.modifyDep(path, [index, "type"], event.target.value);
-								} },
-							t.typeOptions((0, _helpers.modKeys)(), "type")
-						)
-					)
-				));
-				return results;
-			}
-		}, {
-			key: 'optionUseDie',
-			value: function optionUseDie(depObj) {}
-		}, {
-			key: 'printValue',
-			value: function printValue(name, index) {
-				return _react2.default.createElement(
-					'td',
-					{ key: "statObj-value-" + index },
-					(0, _helpers.addPlus)((0, _helpers.calcValue)(name))
-				);
-			}
 		}, {
 			key: 'printPlayerModHead',
 			value: function printPlayerModHead(playerMod) {
@@ -22529,20 +22506,216 @@
 					);
 				}
 			}
-		}, {
-			key: 'printRemoveButton',
-			value: function printRemoveButton(name, index) {
-				var _this4 = this;
+		}]);
 	
-				if ((0, _paths.getStatFromName)(name).dependsOn.length > 1) {
-					return _react2.default.createElement(
-						'td',
-						{ onClick: function onClick() {
-								return _this4.props.removeDep((0, _paths.getPathFromName)(name), index);
-							} },
-						'X'
-					);
+		return dependentStatModal;
+	})(_react2.default.Component);
+	
+	exports.default = dependentStatModal;
+
+/***/ },
+/* 192 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+	
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+	
+	var _react = __webpack_require__(1);
+	
+	var _react2 = _interopRequireDefault(_react);
+	
+	var _paths = __webpack_require__(179);
+	
+	var _paths2 = _interopRequireDefault(_paths);
+	
+	var _helpers = __webpack_require__(182);
+	
+	var _editableValue = __webpack_require__(187);
+	
+	var _editableValue2 = _interopRequireDefault(_editableValue);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	var depStat = (function (_React$Component) {
+		_inherits(depStat, _React$Component);
+	
+		function depStat() {
+			_classCallCheck(this, depStat);
+	
+			return _possibleConstructorReturn(this, Object.getPrototypeOf(depStat).apply(this, arguments));
+		}
+	
+		_createClass(depStat, [{
+			key: 'render',
+			value: function render() {
+				var _props = this.props;
+				var obj = _props.obj;
+				var index = _props.index;
+	
+				var rendering = this.printDep(obj, index);
+				return this.printDep(obj, index);
+			}
+		}, {
+			key: 'printDep',
+			value: function printDep(obj, index) {
+				var use = obj.use.value;
+				switch (use) {
+					case 'stat':
+						return this.printStat(obj, index);
+					case 'flat':
+						return this.printFlat(obj, index);
+					case 'die':
+						return this.printDie(obj, index);
 				}
+			}
+		}, {
+			key: 'printStat',
+			value: function printStat(obj, index) {
+				var _this2 = this;
+	
+				return _react2.default.createElement(
+					'tr',
+					null,
+					this.useSelect(obj, index),
+					_react2.default.createElement(
+						'td',
+						null,
+						_react2.default.createElement(
+							'select',
+							{
+								defaultValue: obj.stat.value,
+								onChange: function onChange(event) {
+									return _this2.props.modifyDep(_this2.props.name, [index, 'stat'], event.target.value);
+								} },
+							this.typeOptions((0, _helpers.statKeys)())
+						)
+					),
+					_react2.default.createElement(
+						'td',
+						null,
+						_react2.default.createElement(
+							'select',
+							{
+								defaultValue: obj.bonus.value,
+								onChange: function onChange(event) {
+									return _this2.props.modifyDep(_this2.props.name, [index, 'bonus'], event.target.value);
+								} },
+							this.typeOptions((0, _helpers.bonusKeys)())
+						)
+					),
+					_react2.default.createElement(
+						'td',
+						null,
+						(0, _helpers.calcValue)(obj)
+					)
+				);
+			}
+		}, {
+			key: 'printFlat',
+			value: function printFlat(obj, index) {
+				//this seems a bit inconsistent, consider a better approach
+				var totalPath = (0, _paths.getPathFromName)(this.props.name);
+				totalPath.push('dependsOn', index, 'total');
+				var typePath = (0, _paths.getPathFromName)(this.props.name);
+				typePath.push('dependsOn', index, 'type');
+				return _react2.default.createElement(
+					'tr',
+					{ key: index + "-flat-" + this.props.name },
+					this.useSelect(obj, index),
+					_react2.default.createElement(
+						'td',
+						null,
+						_react2.default.createElement(_editableValue2.default, {
+							input: 'string',
+							key: index + "-" + this.props.name + "-type",
+							name: typePath,
+							value: obj.type.value,
+							editing: obj.type.editing,
+							editValue: this.props.editValue,
+							saveValueEdit: this.props.saveValueEdit,
+							length: '10' })
+					),
+					_react2.default.createElement(
+						'td',
+						null,
+						_react2.default.createElement(_editableValue2.default, {
+							input: 'number',
+							key: index + "-" + this.props.name + "-total",
+							name: totalPath,
+							value: obj.total.value,
+							editing: obj.total.editing,
+							editValue: this.props.editValue,
+							saveValueEdit: this.props.saveValueEdit,
+							length: '3' })
+					)
+				);
+			}
+		}, {
+			key: 'printDie',
+			value: function printDie(obj, index) {
+				var diePath = (0, _paths.getPathFromName)(this.props.name).push('dependsOn', index, 'die');
+				var amountPath = (0, _paths.getPathFromName)(this.props.name).push('dependsOn', index, 'amount');
+				return _react2.default.createElement(
+					'tr',
+					null,
+					this.useSelect(obj, index),
+					_react2.default.createElement(
+						'td',
+						null,
+						_react2.default.createElement(_editableValue2.default, {
+							input: 'number',
+							key: index + "-" + this.props.name + "-amount",
+							name: amountPath,
+							value: obj.amount.value,
+							editing: obj.amount.editing,
+							editableValue: this.props.editableValue,
+							saveValueEdit: this.props.saveValueEdit,
+							length: '4' })
+					),
+					_react2.default.createElement(
+						'td',
+						null,
+						_react2.default.createElement(_editableValue2.default, {
+							input: 'number',
+							key: index + "-" + this.props.name + "-die",
+							name: diePath,
+							value: obj.die.value,
+							editing: obj.die.editing,
+							editableValue: this.props.editableValue,
+							saveValueEdit: this.props.saveValueEdit,
+							length: '4' })
+					)
+				);
+			}
+		}, {
+			key: 'useSelect',
+			value: function useSelect(obj, index) {
+				var _this3 = this;
+	
+				return _react2.default.createElement(
+					'td',
+					{ key: index + "-use-" + obj.use.value },
+					_react2.default.createElement(
+						'select',
+						{
+							defaultValue: obj.use.value,
+							onChange: function onChange(event) {
+								return _this3.props.changeUseType(_this3.props.name, index, event.target.value);
+							} },
+						this.typeOptions((0, _helpers.useKeys)())
+					)
+				);
 			}
 		}, {
 			key: 'typeOptions',
@@ -22559,13 +22732,13 @@
 			}
 		}]);
 	
-		return dependentStatModal;
+		return depStat;
 	})(_react2.default.Component);
 	
-	exports.default = dependentStatModal;
+	exports.default = depStat;
 
 /***/ },
-/* 192 */
+/* 193 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -22582,7 +22755,7 @@
 	
 	var _dependentStatModal2 = _interopRequireDefault(_dependentStatModal);
 	
-	var _WeaponModal = __webpack_require__(193);
+	var _WeaponModal = __webpack_require__(194);
 	
 	var _WeaponModal2 = _interopRequireDefault(_WeaponModal);
 	
@@ -22603,6 +22776,7 @@
 				editValue: actions.editValue,
 				saveValueEdit: actions.saveValueEdit,
 				saveDepValueEdit: actions.saveDepValueEdit,
+				changeUseType: actions.changeUseType,
 				name: name,
 				statObj: modal });
 		},
@@ -22623,7 +22797,7 @@
 	exports.default = modalRoutes;
 
 /***/ },
-/* 193 */
+/* 194 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -22825,7 +22999,7 @@
 	exports.default = WeaponModal;
 
 /***/ },
-/* 194 */
+/* 195 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';

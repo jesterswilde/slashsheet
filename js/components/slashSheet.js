@@ -21,14 +21,14 @@ class SlashSheet extends React.Component{
                 saveValueEdit={this.props.saveValueEdit}
                 input="string"
                 length="10"
-                path={['name']} /></h1>
+                name="name" /></h1>
           <h2><EditableValue 
             value={this.props.title.value}
             editing={this.props.title.editing}
             editValue={this.props.editValue}
             saveValueEdit={this.props.saveValueEdit}
             input="string"
-            path={['title']} 
+            name="title"
             length = "15"/></h2>
             <div className="row">
                 <div className="col-sm-2 col-md-1">
@@ -48,7 +48,6 @@ class SlashSheet extends React.Component{
                 <div className="col-sm-2 col-md-1">
                   <Health
                     HP={this.props.HP}
-                    path={['HP']}
                     editValue={this.props.editValue}
                     saveValueEdit={this.props.saveValueEdit}/>
                 </div>
@@ -80,6 +79,7 @@ class SlashSheet extends React.Component{
                 saveDepValueEdit = {this.props.saveDepValueEdit}
                 editValue = {this.props.editValue}
                 modifyDep = {this.props.modifyDep}
+                changeUseType = {this.props.changeUseType}
                 closeModal={this.props.closeModal} />
             )
         }   

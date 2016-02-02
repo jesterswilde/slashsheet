@@ -8,9 +8,9 @@ const initialState  = {
 		cha:{value: 15}
 	},
 	HP:{
-		total:{use:{value:'flat'}, total:{value:80}, bonus:{value:'flat'}},
-		current:{use:{value:'flat'}, total:{value:80}, bonus:{value:'flat'}}
-	},
+		total:{value:80},
+		current:{value:80}
+		},
 	level:[{
 		class:{value:'Barbarian'},
 		level:{value:8}

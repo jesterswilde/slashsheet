@@ -13,23 +13,23 @@ export default class Health extends React.Component{
 					<tr>
 						<td>
 							<EditableValue 
-				  				value={this.props.HP.current.total.value}
+				  				value={this.props.HP.current.value}
 				  				editing={this.props.HP.current.editing}
 				  				input="number"	
-				  				path={this.addToPath('current')}
+				  				name='currentHP'
 					            editValue={this.props.editValue}
 					            saveValueEdit={this.props.saveValueEdit}
 					            length="4"
-				  				max="9999" />
+				  				 />
 						</td>
 					</tr>
 					<tr>
 						<td>
 							<EditableValue 
-				  				value={this.props.HP.total.total.value}
+				  				value={this.props.HP.total.value}
 				  				editing={this.props.HP.total.editing}
 				  				input="number"	
-				  				path={this.addToPath('total')}
+				  				name="totalHP"
 					            editValue={this.props.editValue}
 					            saveValueEdit={this.props.saveValueEdit}
 					            length="4"

@@ -17,6 +17,7 @@ const modalRoutes = {
 				editValue = {actions.editValue}
 				saveValueEdit = {actions.saveValueEdit}
 				saveDepValueEdit = {actions.saveDepValueEdit}
+				changeUseType = {actions.changeUseType}
 				name={name}
 				statObj={modal} /> 
         )

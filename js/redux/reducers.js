@@ -1,7 +1,7 @@
 import {EDIT_VALUE, SAVE_VALUE_EDIT, SAVE_DEPVALUE_EDIT,
-	OPEN_MODAL, CLOSE_MODAL, MODIFY_DEP, ADD_DEP, REMOVE_DEP} from './actions'; 
-import {buildPath, getDepStat, isStat} from '../util/helpers.js'; 
-import {getStatFromPath} from '../util/paths.js'; 
+	OPEN_MODAL, CLOSE_MODAL, MODIFY_DEP, ADD_DEP, REMOVE_DEP, CHANGE_USE_TYPE} from './actions'; 
+import {buildPath, getDepStat, useDefaults} from '../util/helpers.js'; 
+import {getStatFromPath, getPathFromName, getStatFromName} from '../util/paths.js'; 
 const update = require('react-addons-update');
 
 const reducer = function(state, action){
@@ -18,6 +18,8 @@ const reducer = function(state, action){
 			return addDep(state, action);
 		case REMOVE_DEP:
 			return removeDep(state, action);  
+		case CHANGE_USE_TYPE:
+			return changeUseType(state, action); 
 		case OPEN_MODAL:
 			return openModal(state, action);
 		case CLOSE_MODAL:
@@ -32,6 +34,7 @@ const identity = function(state){
 
 const editValue = function(state, action){
 	const modState = buildPath(action.path, {editing:{$set:true}});
+	console.log(action.path); 
 	return update(state, modState);
 };
 
@@ -42,23 +45,24 @@ const saveEditValue = function(state, action){
 };
 
 const saveDepValuEdit = function(state, action){
-	const depObj = getStatFromPath(action.path); 
+	const depObj = getStatFromName(action.name); 
 	const origTotal = getDepStat(depObj, true); 
 	const dif = action.value - origTotal; 
 	var modState; 
 	if(!dif){
-		modState = buildPath(action.path, {playerMod:{$set:null},
+		modState = buildPath(action.name, {playerMod:{$set:null},
 											editing:{$set:null}});
 	}else{
-		modState = buildPath(action.path, {playerMod:{$set:dif},									editing:{$set:null}});
+		modState = buildPath(action.name, {playerMod:{$set:dif},									editing:{$set:null}});
 	}
 	return update(state, modState); 
 };
 
 const modifyDep = function(state, action){
-	let {version, index, path, value} = action; 
-	console.log('mod',path, version);
-	let modState = buildPath(path, {[version]:{value:{$set:value}}}); 
+	let {modify, index, name, value} = action; 
+	let path = getPathFromName(name);
+	path.push('dependsOn',index);
+	let modState = buildPath(path, {[modify]:{value:{$set:value}}}); 
 	return update(state, modState); 
 };
 
@@ -75,6 +79,23 @@ const removeDep = function(state, action){
 	newArray.splice(action.index, 1); 
 	let modState = buildPath(action.path, {dependsOn:{$set:newArray}});
 	return update(state, modState);  
+};
+
+const changeUseType = function(state, action){
+	let {index, value, name} = action; 
+	console.log('name',name); 
+	let path = getPathFromName(name);
+	path.push('dependsOn', index); 
+	let defaultObj = useDefaults[value]; 
+	let currentObj = getStatFromPath(path);
+	let mergedObj = {use:{value:{$set:value}}};  
+	for(var key in defaultObj){
+		if(currentObj[key] === undefined){
+			mergedObj[key] = {$set:{value:defaultObj[key].value}};
+		}
+	}
+	let modState = buildPath(path, mergedObj); 
+	return update(state, modState); 
 };
 
 const openModal = function(state, action){
