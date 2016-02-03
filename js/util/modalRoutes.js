@@ -25,16 +25,16 @@ const modalRoutes = {
 	weapon: function(path, name, modal, actions){
 		return (
 				<WeaponModal 
-				modifyDep = {actions.modifyDep}
-				addDep = {actions.addDep}
-				removeDep = {actions.removeDep}
-				editValue = {actions.editValue}
-				saveValueEdit = {actions.saveValueEdit}
-				saveDepValueEdit = {actions.saveDepValueEdit}
-				changeUseType = {actions.changeUseType}
-				path={path}
-				name={modal.name.value}
-				modal={modal} /> 
+					modifyDep = {actions.modifyDep}
+					addDep = {actions.addDep}
+					removeDep = {actions.removeDep}
+					editValue = {actions.editValue}
+					saveValueEdit = {actions.saveValueEdit}
+					saveDepValueEdit = {actions.saveDepValueEdit}
+					changeUseType = {actions.changeUseType}
+					path={path}
+					name={modal.name.value}
+					modal={modal} /> 
 		)
 	}
 };

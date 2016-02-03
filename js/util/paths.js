@@ -40,6 +40,15 @@ const getStatFromName = function(name){
 	return getStatFromPath(path);
 };
 
+const updatePath = function(path, ...args){
+	if(typeof path !== 'object'){ 
+		path = getPathFromName(path); 
+	}
+	path = path.slice(); 
+	args.forEach((element)=>path.push(element)); 
+	return path; 
+};
+
 
 const bonuses = {
 	flat: (value) => value, 
@@ -52,4 +61,4 @@ const bonuses = {
 
 export default paths;
 
-export {bonuses, getPathFromName, getTypeFromName, getStatFromName, getStatFromPath}; 
+export {bonuses, getPathFromName, getTypeFromName, getStatFromName, getStatFromPath, updatePath}; 

@@ -1,7 +1,7 @@
 import {EDIT_VALUE, SAVE_VALUE_EDIT, SAVE_DEPVALUE_EDIT,
 	OPEN_MODAL, CLOSE_MODAL, MODIFY_DEP, ADD_DEP, REMOVE_DEP, CHANGE_USE_TYPE} from './actions'; 
-import {buildPath, getDepStat, useDefaults} from '../util/helpers.js'; 
-import {getStatFromPath, getPathFromName, getStatFromName} from '../util/paths.js'; 
+import {buildPath, getDepStat, statDefaults} from '../util/helpers.js'; 
+import {getStatFromPath, getPathFromName, getStatFromName, updatePath} from '../util/paths.js'; 
 const update = require('react-addons-update');
 
 const reducer = function(state, action){
@@ -33,6 +33,7 @@ const identity = function(state){
 };
 
 const editValue = function(state, action){
+	console.log('edit', action.path);
 	const modState = buildPath(action.path, {editing:{$set:true}});
 	return update(state, modState);
 };
@@ -40,6 +41,7 @@ const editValue = function(state, action){
 const saveEditValue = function(state, action){
 	const modState = buildPath(action.path, {editing:{$set:null},
 											value:{$set:action.value}});
+	console.log('seveEdit', saveEditValue); 
 	return update(state, modState); 
 };
 
@@ -59,42 +61,35 @@ const saveDepValuEdit = function(state, action){
 
 const modifyDep = function(state, action){
 	let {modify, index, name, value} = action; 
-	console.log('actions', action); 
-	let path = name; 
-	if(typeof path !== 'object'){
-		path = getPathFromName(name);
-	}
-	path.push('dependsOn',index);
+	let path = updatePath(name, 'dependsOn', index); 
 	let modState = buildPath(path, {[modify]:{value:{$set:value}}}); 
 	return update(state, modState); 
 };
 
 
 const addDep = function(state, action){
-	let modState = buildPath(action.path, {dependsOn:{$push:
-		[{use:{value:'stat'}, stat:{value:'str'}, bonus:{value:'mod'}}]
-	}});
+	let depDefault = statDefaults[action.defaultType]; 
+	let modState = buildPath(action.path, {$push:
+		[depDefault]
+	});
 	return update(state, modState);
 };	 
 
 const removeDep = function(state, action){
-	let newArray = getStatFromPath(action.path).dependsOn.slice();
+	let path = updatePath(action.path); 
+	let newArray = getStatFromPath(path).slice();
 	newArray.splice(action.index, 1); 
-	let modState = buildPath(action.path, {dependsOn:{$set:newArray}});
+	let modState = buildPath(path, {$set:newArray});
 	return update(state, modState);  
 };
 
 //if values existed already, then we don't overwrite them with the defaults
 //otherwise we add the default properties for the new use type.
 const changeUseType = function(state, action){
-	let {index, value, name:path} = action; 
-	if(typeof path !== 'object'){
-		let path = getPathFromName(name);
-	}
-	path.push('dependsOn',index); 
-	let defaultObj = useDefaults[value]; 
+	let {index, value, name} = action; 
+	let path = updatePath(name, 'dependsOn', index); 
+	let defaultObj = statDefaults[value]; 
 	let currentObj = getStatFromPath(path);
-	console.log('path', path,'currentOBj', currentObj);
 	let mergedObj = {use:{value:{$set:value}}};  
 	for(var key in defaultObj){
 		if(currentObj[key] === undefined){

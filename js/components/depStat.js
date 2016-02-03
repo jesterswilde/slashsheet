@@ -1,7 +1,7 @@
 import React from 'react'; 
 import path from '../util/paths.js'; 
 import {useKeys, statKeys, bonusKeys, calcValue} from '../util/helpers.js'; 
-import {getPathFromName, getStatFromPath} from '../util/paths.js'; 
+import {getPathFromName, getStatFromPath, updatePath} from '../util/paths.js'; 
 import EditableValue from './editableValue.js'; 
 
 export default class depStat extends React.Component{
@@ -45,7 +45,7 @@ export default class depStat extends React.Component{
 				<td>
 					{calcValue(obj)}
 				</td>
-				{this.printRemoveButton(path, index)}
+				{this.printRemoveButton(updatePath(path,'dependsOn'), index)}
 			</tr>
 		);
 
@@ -81,7 +81,7 @@ export default class depStat extends React.Component{
 						saveValueEdit={this.props.saveValueEdit}	
 						length="3" />
 				</td>
-				{this.printRemoveButton(path, index)}
+				{this.printRemoveButton(updatePath(path,'dependsOn'), index)}
 			</tr>
 		)  
 	}
@@ -114,7 +114,7 @@ export default class depStat extends React.Component{
 						saveValueEdit={this.props.saveValueEdit}
 						length="4" />
 				</td>
-				{this.printRemoveButton(path, index)}
+				{this.printRemoveButton(updatePath(path,'dependsOn'), index)}
 			</tr>
 		)
 	}
@@ -129,9 +129,8 @@ export default class depStat extends React.Component{
 			</td>
 		)
 	}
-	printRemoveButton(path, index){
-		console.log('remove', getStatFromPath(path)); 
-		if(getStatFromPath(path).dependsOn.length > 1){
+	printRemoveButton(path, index){ 
+		if(getStatFromPath(path).length > 1){
 			return(
 				 <td onClick={()=>this.props.removeDep(path, index)}>
 				 	X

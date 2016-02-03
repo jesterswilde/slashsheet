@@ -1,6 +1,6 @@
 import React from 'react'; 
 import {getDepStat, getValue, addPlus, bonusKeys, modKeys, calcValue, useKeys} from '../util/helpers.js'; 
-import {getStatFromName, getPathFromName} from '../util/paths.js';
+import {getStatFromName, getPathFromName, updatePath} from '../util/paths.js';
 import EditableValue from './editableValue.js'; 
 import DepStat from './depStat.js'; 
 
@@ -41,7 +41,7 @@ export default class dependentStatModal extends React.Component{
 				<tr>
 					<td>
 						<button className="btn btn-primary"
-							onClick={()=>addDep(getPathFromName(name))}>
+							onClick={()=>addDep(updatePath(name,'dependsOn'))}>
 							Add
 						</button> 
 					</td>
@@ -77,18 +77,4 @@ export default class dependentStatModal extends React.Component{
 			return <td> {addPlus(playerMod)} </td>
 		}
 	}
-	// printRemoveButton(name, index){
-	// 	if(getStatFromName(name).dependsOn.length > 1){
-	// 		return(
-	// 			 <td onClick={()=>this.props.removeDep(getPathFromName(name), index)}>
-	// 			 	X
-	// 			 </td>
-	// 		)
-	// 	}
-	// }
-	// typeOptions(typeArray, keyAdd){
-	// 	return typeArray.map((key)=>{
-	// 		return <option key={key + "-" + keyAdd +"-dropwdown"} value={key}> {key} </option>
-	// 	})
-	// }
 }

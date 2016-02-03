@@ -20976,7 +20976,9 @@
 	                        { className: 'col-sm-4 col-md-3' },
 	                        _react2.default.createElement(_weapon2.default, {
 	                            openModal: this.props.openModal,
-	                            weapons: this.props.weapons })
+	                            weapons: this.props.weapons,
+	                            addDep: this.props.addDep,
+	                            removeDep: this.props.removeDep })
 	                    )
 	                ),
 	                this.renderModal()
@@ -20994,7 +20996,6 @@
 	                } else {
 	                    stats = (0, _paths.getStatFromName)(modal.value);
 	                }
-	                console.log('modal value', modal.value);
 	                return _react2.default.createElement(_modal2.default, {
 	                    name: modal.value,
 	                    modalType: modal.modalType,
@@ -21086,9 +21087,12 @@
 	};
 	
 	var _addDep = function _addDep(path) {
+		var defaultType = arguments.length <= 1 || arguments[1] === undefined ? 'stat' : arguments[1];
+	
 		return {
 			type: ADD_DEP,
-			path: path
+			path: path,
+			defaultType: defaultType
 		};
 	};
 	
@@ -21129,8 +21133,8 @@
 			modifyDep: function modifyDep(path, version, value) {
 				return dispatch(_modifyDep(path, version, value));
 			},
-			addDep: function addDep(path) {
-				return dispatch(_addDep(path));
+			addDep: function addDep(path, value) {
+				return dispatch(_addDep(path, value));
 			},
 			removeDep: function removeDep(path, index) {
 				return dispatch(_removeDep(path, index));
@@ -21161,13 +21165,15 @@
 	Object.defineProperty(exports, "__esModule", {
 		value: true
 	});
-	exports.getStatFromPath = exports.getStatFromName = exports.getTypeFromName = exports.getPathFromName = exports.bonuses = undefined;
+	exports.updatePath = exports.getStatFromPath = exports.getStatFromName = exports.getTypeFromName = exports.getPathFromName = exports.bonuses = undefined;
 	
 	var _store = __webpack_require__(180);
 	
 	var _store2 = _interopRequireDefault(_store);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.constructor === Symbol ? "symbol" : typeof obj; }
 	
 	var paths = {
 		str: { path: ['stats', 'str'], type: 'stat', storeAs: 'number' },
@@ -21207,6 +21213,22 @@
 		return getStatFromPath(path);
 	};
 	
+	var updatePath = function updatePath(path) {
+		if ((typeof path === 'undefined' ? 'undefined' : _typeof(path)) !== 'object') {
+			path = getPathFromName(path);
+		}
+		path = path.slice();
+	
+		for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+			args[_key - 1] = arguments[_key];
+		}
+	
+		args.forEach(function (element) {
+			return path.push(element);
+		});
+		return path;
+	};
+	
 	var bonuses = {
 		flat: function flat(value) {
 			return value;
@@ -21228,6 +21250,7 @@
 	exports.getTypeFromName = getTypeFromName;
 	exports.getStatFromName = getStatFromName;
 	exports.getStatFromPath = getStatFromPath;
+	exports.updatePath = updatePath;
 
 /***/ },
 /* 180 */
@@ -21272,8 +21295,6 @@
 	
 	function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 	
-	function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.constructor === Symbol ? "symbol" : typeof obj; }
-	
 	var update = __webpack_require__(183);
 	
 	var reducer = function reducer(state, action) {
@@ -21305,6 +21326,7 @@
 	};
 	
 	var editValue = function editValue(state, action) {
+		console.log('edit', action.path);
 		var modState = (0, _helpers.buildPath)(action.path, { editing: { $set: true } });
 		return update(state, modState);
 	};
@@ -21312,6 +21334,7 @@
 	var saveEditValue = function saveEditValue(state, action) {
 		var modState = (0, _helpers.buildPath)(action.path, { editing: { $set: null },
 			value: { $set: action.value } });
+		console.log('seveEdit', saveEditValue);
 		return update(state, modState);
 	};
 	
@@ -21335,26 +21358,23 @@
 		var name = action.name;
 		var value = action.value;
 	
-		console.log('actions', action);
-		var path = name;
-		if ((typeof path === 'undefined' ? 'undefined' : _typeof(path)) !== 'object') {
-			path = (0, _paths.getPathFromName)(name);
-		}
-		path.push('dependsOn', index);
+		var path = (0, _paths.updatePath)(name, 'dependsOn', index);
 		var modState = (0, _helpers.buildPath)(path, _defineProperty({}, modify, { value: { $set: value } }));
 		return update(state, modState);
 	};
 	
 	var addDep = function addDep(state, action) {
-		var modState = (0, _helpers.buildPath)(action.path, { dependsOn: { $push: [{ use: { value: 'stat' }, stat: { value: 'str' }, bonus: { value: 'mod' } }]
-			} });
+		var depDefault = _helpers.statDefaults[action.defaultType];
+		var modState = (0, _helpers.buildPath)(action.path, { $push: [depDefault]
+		});
 		return update(state, modState);
 	};
 	
 	var removeDep = function removeDep(state, action) {
-		var newArray = (0, _paths.getStatFromPath)(action.path).dependsOn.slice();
+		var path = (0, _paths.updatePath)(action.path);
+		var newArray = (0, _paths.getStatFromPath)(path).slice();
 		newArray.splice(action.index, 1);
-		var modState = (0, _helpers.buildPath)(action.path, { dependsOn: { $set: newArray } });
+		var modState = (0, _helpers.buildPath)(path, { $set: newArray });
 		return update(state, modState);
 	};
 	
@@ -21363,15 +21383,11 @@
 	var changeUseType = function changeUseType(state, action) {
 		var index = action.index;
 		var value = action.value;
-		var path = action.name;
+		var name = action.name;
 	
-		if ((typeof path === 'undefined' ? 'undefined' : _typeof(path)) !== 'object') {
-			var _path = (0, _paths.getPathFromName)(name);
-		}
-		path.push('dependsOn', index);
-		var defaultObj = _helpers.useDefaults[value];
+		var path = (0, _paths.updatePath)(name, 'dependsOn', index);
+		var defaultObj = _helpers.statDefaults[value];
 		var currentObj = (0, _paths.getStatFromPath)(path);
-		console.log('path', path, 'currentOBj', currentObj);
 		var mergedObj = { use: { value: { $set: value } } };
 		for (var key in defaultObj) {
 			if (currentObj[key] === undefined) {
@@ -21403,7 +21419,7 @@
 	Object.defineProperty(exports, "__esModule", {
 		value: true
 	});
-	exports.useDefaults = exports.useKeys = exports.bonusKeys = exports.allStatKeys = exports.statKeys = exports.calcValue = exports.addPlus = exports.buildPath = exports.getDepStat = undefined;
+	exports.statDefaults = exports.useKeys = exports.bonusKeys = exports.allStatKeys = exports.statKeys = exports.calcValue = exports.addPlus = exports.buildPath = exports.getDepStat = undefined;
 	
 	var _paths = __webpack_require__(179);
 	
@@ -21485,6 +21501,7 @@
 	//creates an object used for easy update()
 	//takes ['stat','str'] and returns {stat:{str:{}}}
 	var buildPath = function buildPath(name, values) {
+		console.log('build path', name);
 		if (typeof name === 'string') {
 			name = _paths2.default[name].path;
 		}
@@ -21530,15 +21547,21 @@
 		return results;
 	};
 	
-	var useDefaults = {
-		stat: { stat: { value: 'str' }, bonus: { value: 'mod' } },
-		flat: { total: { value: '0' }, type: { value: 'rule' } },
-		die: { amount: { value: 1 }, die: { value: 6 }, type: { value: 'Weapon' } }
+	var statDefaults = {
+		stat: { use: { value: 'stat' }, stat: { value: 'str' }, bonus: { value: 'mod' } },
+		flat: { use: { value: 'flat' }, total: { value: 0 }, type: { value: 'rule' } },
+		die: { use: { value: 'die' }, amount: { value: 1 }, die: { value: 6 }, type: { value: 'Weapon' } },
+		weapon: {
+			name: { value: 'Dagger' },
+			tags: { value: ['melee'] },
+			toHit: { dependsOn: [{ use: { value: 'stat' }, stat: { value: 'BAB' }, bonus: { value: 'flat' } }, { use: { value: 'stat' }, stat: { value: 'str' }, bonus: { value: 'mod' } }] },
+			damage: { dependsOn: [{ use: { value: 'stat' }, stat: { value: 'str' }, bonus: { value: 'mod' } }, { use: { value: 'die' }, amount: { value: 1 }, die: { value: 4 }, type: { value: 'Weapon Damage' } }] }
+		}
 	};
 	
 	var useKeys = function useKeys() {
 		var results = [];
-		for (var key in useDefaults) {
+		for (var key in statDefaults) {
 			results.push(key);
 		}
 		return results;
@@ -21552,7 +21575,7 @@
 	exports.allStatKeys = allStatKeys;
 	exports.bonusKeys = bonusKeys;
 	exports.useKeys = useKeys;
-	exports.useDefaults = useDefaults;
+	exports.statDefaults = statDefaults;
 
 /***/ },
 /* 183 */
@@ -22455,7 +22478,7 @@
 										'button',
 										{ className: 'btn btn-primary',
 											onClick: function onClick() {
-												return addDep((0, _paths.getPathFromName)(name));
+												return addDep((0, _paths.updatePath)(name, 'dependsOn'));
 											} },
 										'Add'
 									)
@@ -22508,21 +22531,6 @@
 					);
 				}
 			}
-			// printRemoveButton(name, index){
-			// 	if(getStatFromName(name).dependsOn.length > 1){
-			// 		return(
-			// 			 <td onClick={()=>this.props.removeDep(getPathFromName(name), index)}>
-			// 			 	X
-			// 			 </td>
-			// 		)
-			// 	}
-			// }
-			// typeOptions(typeArray, keyAdd){
-			// 	return typeArray.map((key)=>{
-			// 		return <option key={key + "-" + keyAdd +"-dropwdown"} value={key}> {key} </option>
-			// 	})
-			// }
-	
 		}]);
 	
 		return dependentStatModal;
@@ -22641,7 +22649,7 @@
 						null,
 						(0, _helpers.calcValue)(obj)
 					),
-					this.printRemoveButton(path, index)
+					this.printRemoveButton((0, _paths.updatePath)(path, 'dependsOn'), index)
 				);
 			}
 		}, {
@@ -22682,7 +22690,7 @@
 							saveValueEdit: this.props.saveValueEdit,
 							length: '3' })
 					),
-					this.printRemoveButton(path, index)
+					this.printRemoveButton((0, _paths.updatePath)(path, 'dependsOn'), index)
 				);
 			}
 		}, {
@@ -22719,7 +22727,7 @@
 							saveValueEdit: this.props.saveValueEdit,
 							length: '4' })
 					),
-					this.printRemoveButton(path, index)
+					this.printRemoveButton((0, _paths.updatePath)(path, 'dependsOn'), index)
 				);
 			}
 		}, {
@@ -22746,8 +22754,7 @@
 			value: function printRemoveButton(path, index) {
 				var _this4 = this;
 	
-				console.log('remove', (0, _paths.getStatFromPath)(path));
-				if ((0, _paths.getStatFromPath)(path).dependsOn.length > 1) {
+				if ((0, _paths.getStatFromPath)(path).length > 1) {
 					return _react2.default.createElement(
 						'td',
 						{ onClick: function onClick() {
@@ -22855,9 +22862,19 @@
 	
 	var _helpers = __webpack_require__(182);
 	
+	var _paths = __webpack_require__(179);
+	
 	var _depStat = __webpack_require__(192);
 	
 	var _depStat2 = _interopRequireDefault(_depStat);
+	
+	var _editableList = __webpack_require__(196);
+	
+	var _editableList2 = _interopRequireDefault(_editableList);
+	
+	var _editableValue = __webpack_require__(187);
+	
+	var _editableValue2 = _interopRequireDefault(_editableValue);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -22879,20 +22896,29 @@
 		_createClass(WeaponModal, [{
 			key: "render",
 			value: function render() {
-				console.log('weapons modal', this.props);
 				var _props = this.props;
 				var name = _props.name;
 				var path = _props.path;
 				var modal = _props.modal;
 	
-				var toHitPath = path.slice();
-				toHitPath.push('toHit');
-				var damagePath = path.slice();
-				damagePath.push('damage');
+				var truncPath = path.slice(-1);
+				// let toHitPath = updatePath(path, 'toHit');
+				// let damagePath = updatePath(path, 'damage');
 				return _react2.default.createElement(
 					"div",
 					null,
-					name,
+					_react2.default.createElement(
+						"h2",
+						null,
+						_react2.default.createElement(_editableValue2.default, {
+							value: modal.name.value,
+							editing: modal.name.editing,
+							input: "text",
+							editValue: this.props.editValue,
+							saveValueEdit: this.props.saveValueEdit,
+							length: "20",
+							name: (0, _paths.updatePath)(path, 'name') })
+					),
 					_react2.default.createElement(
 						"table",
 						{ className: "table" },
@@ -22905,7 +22931,11 @@
 								_react2.default.createElement(
 									"td",
 									null,
-									this.printTags()
+									_react2.default.createElement(_editableList2.default, {
+										editValue: this.props.editValue,
+										saveValueEdit: this.props.saveValueEdit,
+										obj: modal.tags,
+										path: (0, _paths.updatePath)(path, 'tags') })
 								)
 							)
 						)
@@ -22931,7 +22961,7 @@
 						_react2.default.createElement(
 							"tbody",
 							null,
-							this.printDeps(modal.toHit.dependsOn, toHitPath)
+							this.printDeps(modal.toHit.dependsOn, (0, _paths.updatePath)(path, 'toHit'))
 						)
 					),
 					_react2.default.createElement(
@@ -22954,7 +22984,7 @@
 						_react2.default.createElement(
 							"tbody",
 							null,
-							this.printDeps(modal.damage.dependsOn, damagePath)
+							this.printDeps(modal.damage.dependsOn, (0, _paths.updatePath)(path, 'damage'))
 						)
 					)
 				);
@@ -22964,7 +22994,6 @@
 			value: function printDeps(deps, path) {
 				var _this2 = this;
 	
-				console.log('deps', deps, 'path', path);
 				return deps.map(function (obj, index) {
 					return _react2.default.createElement(_depStat2.default, {
 						obj: obj,
@@ -22976,11 +23005,6 @@
 						modifyDep: _this2.props.modifyDep,
 						changeUseType: _this2.props.changeUseType });
 				});
-			}
-		}, {
-			key: "printTags",
-			value: function printTags() {
-				return this.props.modal.tags.value.join(', ');
 			}
 		}, {
 			key: "printToHitDep",
@@ -23104,26 +23128,39 @@
 		_createClass(Weapon, [{
 			key: 'render',
 			value: function render() {
+				var _this2 = this;
+	
+				var path = (0, _paths.updatePath)('weapons');
 				return _react2.default.createElement(
 					'div',
 					null,
 					this.weapons(),
-					';'
+					_react2.default.createElement(
+						'div',
+						null,
+						_react2.default.createElement(
+							'button',
+							{ className: 'btn btn-primary',
+								onClick: function onClick() {
+									return _this2.props.addDep((0, _paths.updatePath)('weapons'), 'weapon');
+								} },
+							'Add'
+						)
+					)
 				);
 			}
 		}, {
 			key: 'weapons',
 			value: function weapons() {
-				var _this2 = this;
+				var _this3 = this;
 	
 				return this.props.weapons.map(function (weapon, index) {
-					var path = (0, _paths.getPathFromName)('weapons');
-					path.push(index);
+					var path = (0, _paths.updatePath)('weapons', index);
 					return _react2.default.createElement(
 						'table',
-						{ key: weapon.name.value + '-' + index + 'weapon-table',
+						{ key: path.join('-') + 'weapon-table',
 							onClick: function onClick() {
-								return _this2.props.openModal(path, 'weapon');
+								return _this3.props.openModal(path, 'weapon');
 							} },
 						_react2.default.createElement(
 							'thead',
@@ -23135,6 +23172,14 @@
 									'th',
 									null,
 									weapon.name.value
+								),
+								_react2.default.createElement(
+									'th',
+									{ onClick: function onClick(event) {
+											event.stopPropagation();
+											_this3.props.removeDep((0, _paths.updatePath)('weapons'), index);
+										} },
+									'X'
 								)
 							)
 						),
@@ -23169,6 +23214,124 @@
 	})(_react2.default.Component);
 	
 	exports.default = Weapon;
+
+/***/ },
+/* 196 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+	
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+	
+	var _react = __webpack_require__(1);
+	
+	var _react2 = _interopRequireDefault(_react);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	var EditableList = (function (_React$Component) {
+		_inherits(EditableList, _React$Component);
+	
+		function EditableList() {
+			_classCallCheck(this, EditableList);
+	
+			return _possibleConstructorReturn(this, Object.getPrototypeOf(EditableList).apply(this, arguments));
+		}
+	
+		_createClass(EditableList, [{
+			key: 'render',
+			value: function render() {
+				var _this2 = this;
+	
+				var _props = this.props;
+				var path = _props.path;
+				var _props$obj = _props.obj;
+				var editing = _props$obj.editing;
+				var value = _props$obj.value;
+	
+				if (!editing) {
+					return _react2.default.createElement(
+						'span',
+						{ id: this.getID(), style: this.style(),
+							onClick: function onClick() {
+								return _this2.props.editValue(path, value);
+							} },
+						value.join(', ')
+					);
+				}
+				return _react2.default.createElement(
+					'span',
+					null,
+					_react2.default.createElement('input', { type: 'text', size: this.props.size || 10,
+						defaultValue: value.join(', '), id: this.getID(),
+						onBlur: function onBlur() {
+							return _this2.saveString(path, _this2.getInput().value);
+						},
+						onKeyDown: function onKeyDown(event) {
+							return _this2.ifPressedEnter(event.keyCode, path, _this2.getInput().value);
+						},
+						id: this.getID(),
+						style: this.style() })
+				);
+			}
+		}, {
+			key: 'saveString',
+			value: function saveString(path, input) {
+				var results = input.split(',').map(function (string) {
+					return string.trim();
+				});
+				console.log('res', results);
+				this.props.saveValueEdit(path, results);
+			}
+		}, {
+			key: 'style',
+			value: function style() {
+				var results = {};
+				if (this.props.length) {
+					results.width = this.props.length + "em";
+				}
+				return results;
+			}
+		}, {
+			key: 'getID',
+			value: function getID() {
+				return this.props.path.join('-');
+			}
+		}, {
+			key: 'componentDidUpdate',
+			value: function componentDidUpdate() {
+				if (this.props.obj.editing) {
+					this.getInput().focus();
+				}
+			}
+		}, {
+			key: 'ifPressedEnter',
+			value: function ifPressedEnter(keycode, path, input) {
+				if (keycode === 13) {
+					this.saveString(path, input);
+				}
+			}
+		}, {
+			key: 'getInput',
+			value: function getInput() {
+				return document.getElementById(this.getID());
+			}
+		}]);
+	
+		return EditableList;
+	})(_react2.default.Component);
+	
+	exports.default = EditableList;
 
 /***/ }
 /******/ ]);

@@ -67,6 +67,7 @@ const getDepStat = function(depObj, noMod){
 //creates an object used for easy update()
 //takes ['stat','str'] and returns {stat:{str:{}}}
 const buildPath = function(name, values){ 
+	console.log('build path', name);
 	if(typeof name === 'string'){
 		name = paths[name].path;
 	}
@@ -114,15 +115,27 @@ const bonusKeys = function(){
 };
 
 
-const useDefaults = {
-	stat:{stat:{value:'str'}, bonus:{value:'mod'}},
-	flat:{total:{value:'0'}, type:{value:'rule'}}, 
-	die:{amount:{value:1}, die:{value:6}, type:{value:'Weapon'}}
+const statDefaults = {
+	stat:{use:{value:'stat'}, stat:{value:'str'}, bonus:{value:'mod'}},
+	flat:{use:{value:'flat'}, total:{value:0}, type:{value:'rule'}}, 
+	die:{use:{value:'die'}, amount:{value:1}, die:{value:6}, type:{value:'Weapon'}},
+	weapon:{
+		name:{value:'Dagger'},
+		tags:{value:['melee']},
+		toHit:{dependsOn:[
+			{use:{value:'stat'}, stat:{value:'BAB'}, bonus:{value:'flat'}},
+			{use:{value:'stat'}, stat:{value:'str'}, bonus:{value:'mod'}}
+		]},
+		damage:{dependsOn:[
+			{use:{value:'stat'}, stat:{value:'str'}, bonus:{value:'mod'}},
+			{use:{value:'die'}, amount:{value:1}, die:{value:4}, type:{value:'Weapon Damage'}}
+		]}
+	}
 };
 
 const useKeys = function(){
 	let results = [];
-	for(var key in useDefaults){
+	for(var key in statDefaults){
 		results.push(key);
 	}
 	return results; 
@@ -130,4 +143,4 @@ const useKeys = function(){
 
 
 export {getDepStat, buildPath, addPlus, calcValue,
-	statKeys, allStatKeys, bonusKeys, useKeys, useDefaults}; 
+	statKeys, allStatKeys, bonusKeys, useKeys, statDefaults}; 

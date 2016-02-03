@@ -55,10 +55,11 @@ const modifyDep = function(name, indexType, value){
 	};
 };
 
-const addDep = function(path){
+const addDep = function(path, defaultType='stat'){
 	return{
 		type: ADD_DEP,
-		path
+		path,
+		defaultType
 	};
 };
 
@@ -87,7 +88,7 @@ function mapDispatchToProps(dispatch) {
     closeModal: (event) => dispatch(closeModal(event)),
     saveDepValueEdit: (path, value) => dispatch(saveDepValueEdit(path,value)),
     modifyDep: (path, version, value) => dispatch(modifyDep(path,version,value)),
-    addDep: (path) => dispatch(addDep(path)),
+    addDep: (path, value) => dispatch(addDep(path, value)),
     removeDep: (path, index) => dispatch(removeDep(path, index)),
     changeUseType: (name, index, value) =>dispatch(changeUseType(name, index, value))
   };

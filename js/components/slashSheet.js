@@ -54,7 +54,9 @@ class SlashSheet extends React.Component{
                 <div className="col-sm-4 col-md-3">
                     <Weapon
                         openModal={this.props.openModal}
-                        weapons={this.props.weapons} />
+                        weapons={this.props.weapons}
+                        addDep={this.props.addDep}
+                        removeDep={this.props.removeDep} />
                 </div>
               </div>
               {this.renderModal()}
@@ -71,7 +73,6 @@ class SlashSheet extends React.Component{
         }else{
             stats = getStatFromName(modal.value); 
         }
-        console.log('modal value', modal.value); 
             return(
                 <Modal 
                 name = {modal.value}
