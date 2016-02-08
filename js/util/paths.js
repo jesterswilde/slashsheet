@@ -12,6 +12,7 @@ const paths = {
 	BAB:{path:['BAB'], type:'stat', storeAs:'number'},
 	CMB:{path:['CMB'], type:'dependent', storeAs:'dependent'}, 
 	CMD:{path:['CMD'], type:'dependent', storeAs:'dependent'},
+	effects:{path:['effects']},
 	weapons:{path:['weapons'], type:'weapon', storeAs:'dependent'},
 	currentHP:{path:['HP','current'], type:'health', storeAs:'number'},
 	totalHP:{path:['HP','total'], type:'health', storeAs:'number'},

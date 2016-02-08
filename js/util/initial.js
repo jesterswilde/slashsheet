@@ -26,7 +26,7 @@ const initialState  = {
 		{use:{value:'stat'}, stat:{value:'dex'}, bonus:{value:'mod'}}, 
 		{use:{value:'flat'}, total:{value:10}, type:{value:'rule'}}
 	]},
-	status:[{
+	effects:[{
 			name:{value:'Berzerk Rage'},
 			type:{value:'Morale'},
 			stats:{

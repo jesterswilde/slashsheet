@@ -4,10 +4,10 @@ import store from '../redux/store.js';
 
 
 
-
 const calcUseFlat = function(useObj){
 	return useObj.total.value; 
 };
+
 
 const calcUseStat = function(useObj){
 	let {bonus:{value:bonus}, stat:{value:stat}} = useObj;
@@ -37,6 +37,7 @@ const getDepStat = function(depObj, noMod){
 	}else{
 		playerMod = playerMod || 0; 
 	}
+	return calcDepStat(statArray, playerMod); 
 	//sum flat numbers, and build an object of the different dice types. 
 	let values = statArray.reduce((total, current) =>{
 		let stat = calcValue(current); 
@@ -63,11 +64,37 @@ const getDepStat = function(depObj, noMod){
 	return result; 
 };
 
+const calcDepStat = function(statArray, startingValue = 0){
+	//sum flat numbers, and build an object of the different dice types. 
+	let values = statArray.reduce((total, current) =>{
+		let stat = calcValue(current); 
+		if(typeof stat === 'number'){
+			total.flat+=stat; 
+		}else{
+			total.dice[stat.die] = total.dice[stat.die] || 0; 
+			total.dice[stat.die] += stat.amount; 
+		}return total; 
+	}, {dice:{}, flat:startingValue});
+	//sort the dice types for easy printing, then start printing
+	let sortedDice = Object.keys(values.dice).sort((a,b) => b - a); 
+	let result = sortedDice.reduce((total, current) =>{
+		if(total !== ''){
+			total+='+'; 
+		}
+		return total+=values.dice[current] +'D'+current; 
+	}, ''); 
+	if(result !== '' && (values.flat + playerMod !== 0)){//if there are dice and flat
+		result +='+';
+	}if(values.flat + playerMod !== 0){//if there are flat
+		result += (values.flat + playerMod); 
+	}
+	return result; 
+};
+
 
 //creates an object used for easy update()
 //takes ['stat','str'] and returns {stat:{str:{}}}
 const buildPath = function(name, values){ 
-	console.log('build path', name);
 	if(typeof name === 'string'){
 		name = paths[name].path;
 	}
@@ -141,6 +168,136 @@ const useKeys = function(){
 	return results; 
 };
 
+const getWeaponValue = function(weaponObj, type, omitPlayerMod){
+	if(type === undefined){
+		throw "getWeaponValue was passed undefined for 'type' (2nd argument)";
+	}
+	if(weaponObj === undefined){
+		throw "getWeaponValue was passed undefined for weaponObj (1st argument)"; 
+	}
+	let amount = getTagTotal(weaponObj.tag, type); 
+	return combineValueObjs(amount, getDepValue(weaponObj[type], omitPlayerMod));
+};
+
+const getDepValue = function(depObj, omitPlayerMod){
+	if(depObj === undefined){
+		throw "getDepValue was passed undefined for depObj (1st argument)"; 
+	}
+	let {playerMod, dependsOn} = depObj;
+	dependsOn = dependsOn || []; 
+	playerMod = playerMod || 0; 
+	if(omitPlayerMod){
+		playerMod = 0; 
+	}
+	return dependsOn.reduce((total, current) => {
+		return combineValueObjs(total, routeUse(current)); 
+	},{flat: playerMod});
+};
+
+const printDepValue = function(depObj, omitPlayerMod){
+	return printValueObj(getDepValue(depObj, omitPlayerMod)); 
+};
+
+const getStatTotal = function(stat, useOnlyStat){
+	let statValue = {flat:getStatFromName(stat).value}; 
+	if(useOnlyStat){
+		return statValue;
+	}
+	let effectList = getStatFromName('effects')[stat];
+	for(let key in effectList){
+		statValue = combineValueObjs(statValue, effectList[key]); 
+	}
+	return statValue; 
+};
+
+const useFlat = function(useObj){
+	return {flat: useObj.total.value}; 
+};
+
+const useDie = function(useObj){
+	return {[useObj.die.value]: useObj.amount.value};
+};
+
+const routeUse = function(useObj){
+	switch (useObj.use.value){
+		case 'flat':
+			return useFlat(useObj); 
+		case 'die':
+			return useDie(useObj); 
+		case 'stat':
+			let {flat} = getStatTotal(useObj.stat.value); 
+			return {flat:bonuses[useObj.bonus.value](flat)};
+		default: 
+			return 'error'; 
+	}
+};
+
+const getTagTotal = function(tags, type){
+	tags = tags || []; 
+	if(type === undefined){
+		return {flat:0};
+	}
+	let usedAlready = {}; 
+	return tags.reduce((total, tag) => {
+		let effectList = getStatFromName('effects')[type][tag]; 
+		for(let key in effectList){
+			if(!usedAlready[key]){
+				total = combineValueObjs(total, effectList[key]); 
+				usedAlready[key] = true; 
+			}
+		}
+		return total; 
+	}, {flat:0}); 
+};
+
+const combineValueObjs = function(obj1 = {}, obj2 = {}){
+	for(let key in obj2){
+		let toMerge = obj2[key]; 
+		if(obj1[key] === undefined){
+			obj1[key] = toMerge; 
+		}else{
+			obj1[key] += toMerge; 
+		}
+	}
+	return obj1; 
+};
+
+
+const printValueObj = function(printObj){
+	//sorts the keys, and puts flat at the end.
+	let sortedDice = Object.keys(printObj).sort((a,b) =>{
+		if(isNaN(Number(b))){
+			return -1; 
+		}
+		if(isNaN(Number(a))){
+			return +1; 
+		}
+		return Number(b) - Number(a); 
+	}); 
+	return sortedDice.reduce((total, current) =>{
+		if(Number(printObj[current]) === 0){
+			return total; 
+		}
+		if(total !== ''){
+			total+='+'; 
+		}
+		if(current === 'flat'){
+			return total+=printObj[current]; 
+		}
+		return total+= printObj[current] +'D'+current; 
+	}, '') || "0"; 
+};
+
+const registerEffect = function(){
+
+};
+
+const removeEffect = function(){
+
+};
+
 
 export {getDepStat, buildPath, addPlus, calcValue,
-	statKeys, allStatKeys, bonusKeys, useKeys, statDefaults}; 
+	statKeys, allStatKeys, bonusKeys, useKeys, statDefaults,
+getStatTotal, getTagTotal, printValueObj, registerEffect, removeEffect,
+getWeaponValue, getDepStat, combineValueObjs, getDepValue}; 

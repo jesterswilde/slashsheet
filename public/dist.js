@@ -20891,7 +20891,7 @@
 	
 	var _modal2 = _interopRequireDefault(_modal);
 	
-	var _weapon = __webpack_require__(195);
+	var _weapon = __webpack_require__(196);
 	
 	var _weapon2 = _interopRequireDefault(_weapon);
 	
@@ -21185,6 +21185,7 @@
 		BAB: { path: ['BAB'], type: 'stat', storeAs: 'number' },
 		CMB: { path: ['CMB'], type: 'dependent', storeAs: 'dependent' },
 		CMD: { path: ['CMD'], type: 'dependent', storeAs: 'dependent' },
+		effects: { path: ['effects'] },
 		weapons: { path: ['weapons'], type: 'weapon', storeAs: 'dependent' },
 		currentHP: { path: ['HP', 'current'], type: 'health', storeAs: 'number' },
 		totalHP: { path: ['HP', 'total'], type: 'health', storeAs: 'number' },
@@ -21419,7 +21420,7 @@
 	Object.defineProperty(exports, "__esModule", {
 		value: true
 	});
-	exports.statDefaults = exports.useKeys = exports.bonusKeys = exports.allStatKeys = exports.statKeys = exports.calcValue = exports.addPlus = exports.buildPath = exports.getDepStat = undefined;
+	exports.getDepValue = exports.combineValueObjs = exports.getWeaponValue = exports.removeEffect = exports.registerEffect = exports.printValueObj = exports.getTagTotal = exports.getStatTotal = exports.statDefaults = exports.useKeys = exports.bonusKeys = exports.allStatKeys = exports.statKeys = exports.calcValue = exports.addPlus = exports.buildPath = exports.getDepStat = undefined;
 	
 	var _paths = __webpack_require__(179);
 	
@@ -21430,6 +21431,8 @@
 	var _store2 = _interopRequireDefault(_store);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 	
 	var calcUseFlat = function calcUseFlat(useObj) {
 		return useObj.total.value;
@@ -21468,6 +21471,7 @@
 		} else {
 				playerMod = playerMod || 0;
 			}
+		return calcDepStat(statArray, playerMod);
 		//sum flat numbers, and build an object of the different dice types.
 		var values = statArray.reduce(function (total, current) {
 			var stat = calcValue(current);
@@ -21498,10 +21502,42 @@
 		return result;
 	};
 	
+	var calcDepStat = function calcDepStat(statArray) {
+		var startingValue = arguments.length <= 1 || arguments[1] === undefined ? 0 : arguments[1];
+	
+		//sum flat numbers, and build an object of the different dice types.
+		var values = statArray.reduce(function (total, current) {
+			var stat = calcValue(current);
+			if (typeof stat === 'number') {
+				total.flat += stat;
+			} else {
+				total.dice[stat.die] = total.dice[stat.die] || 0;
+				total.dice[stat.die] += stat.amount;
+			}return total;
+		}, { dice: {}, flat: startingValue });
+		//sort the dice types for easy printing, then start printing
+		var sortedDice = Object.keys(values.dice).sort(function (a, b) {
+			return b - a;
+		});
+		var result = sortedDice.reduce(function (total, current) {
+			if (total !== '') {
+				total += '+';
+			}
+			return total += values.dice[current] + 'D' + current;
+		}, '');
+		if (result !== '' && values.flat + playerMod !== 0) {
+			//if there are dice and flat
+			result += '+';
+		}if (values.flat + playerMod !== 0) {
+			//if there are flat
+			result += values.flat + playerMod;
+		}
+		return result;
+	};
+	
 	//creates an object used for easy update()
 	//takes ['stat','str'] and returns {stat:{str:{}}}
 	var buildPath = function buildPath(name, values) {
-		console.log('build path', name);
 		if (typeof name === 'string') {
 			name = _paths2.default[name].path;
 		}
@@ -21567,6 +21603,137 @@
 		return results;
 	};
 	
+	var getWeaponValue = function getWeaponValue(weaponObj, type, omitPlayerMod) {
+		if (type === undefined) {
+			throw "getWeaponValue was passed undefined for 'type' (2nd argument)";
+		}
+		if (weaponObj === undefined) {
+			throw "getWeaponValue was passed undefined for weaponObj (1st argument)";
+		}
+		var amount = getTagTotal(weaponObj.tag, type);
+		return combineValueObjs(amount, getDepValue(weaponObj[type], omitPlayerMod));
+	};
+	
+	var getDepValue = function getDepValue(depObj, omitPlayerMod) {
+		if (depObj === undefined) {
+			throw "getDepValue was passed undefined for depObj (1st argument)";
+		}
+		var playerMod = depObj.playerMod;
+		var dependsOn = depObj.dependsOn;
+	
+		dependsOn = dependsOn || [];
+		playerMod = playerMod || 0;
+		if (omitPlayerMod) {
+			playerMod = 0;
+		}
+		return dependsOn.reduce(function (total, current) {
+			return combineValueObjs(total, routeUse(current));
+		}, { flat: playerMod });
+	};
+	
+	var printDepValue = function printDepValue(depObj, omitPlayerMod) {
+		return printValueObj(getDepValue(depObj, omitPlayerMod));
+	};
+	
+	var getStatTotal = function getStatTotal(stat, useOnlyStat) {
+		var statValue = { flat: (0, _paths.getStatFromName)(stat).value };
+		if (useOnlyStat) {
+			return statValue;
+		}
+		var effectList = (0, _paths.getStatFromName)('effects')[stat];
+		for (var key in effectList) {
+			statValue = combineValueObjs(statValue, effectList[key]);
+		}
+		return statValue;
+	};
+	
+	var useFlat = function useFlat(useObj) {
+		return { flat: useObj.total.value };
+	};
+	
+	var useDie = function useDie(useObj) {
+		return _defineProperty({}, useObj.die.value, useObj.amount.value);
+	};
+	
+	var routeUse = function routeUse(useObj) {
+		switch (useObj.use.value) {
+			case 'flat':
+				return useFlat(useObj);
+			case 'die':
+				return useDie(useObj);
+			case 'stat':
+				var _getStatTotal = getStatTotal(useObj.stat.value);
+	
+				var flat = _getStatTotal.flat;
+	
+				return { flat: _paths.bonuses[useObj.bonus.value](flat) };
+			default:
+				return 'error';
+		}
+	};
+	
+	var getTagTotal = function getTagTotal(tags, type) {
+		tags = tags || [];
+		if (type === undefined) {
+			return { flat: 0 };
+		}
+		var usedAlready = {};
+		return tags.reduce(function (total, tag) {
+			var effectList = (0, _paths.getStatFromName)('effects')[type][tag];
+			for (var key in effectList) {
+				if (!usedAlready[key]) {
+					total = combineValueObjs(total, effectList[key]);
+					usedAlready[key] = true;
+				}
+			}
+			return total;
+		}, { flat: 0 });
+	};
+	
+	var combineValueObjs = function combineValueObjs() {
+		var obj1 = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+		var obj2 = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+	
+		for (var key in obj2) {
+			var toMerge = obj2[key];
+			if (obj1[key] === undefined) {
+				obj1[key] = toMerge;
+			} else {
+				obj1[key] += toMerge;
+			}
+		}
+		return obj1;
+	};
+	
+	var printValueObj = function printValueObj(printObj) {
+		//sorts the keys, and puts flat at the end.
+		var sortedDice = Object.keys(printObj).sort(function (a, b) {
+			if (isNaN(Number(b))) {
+				return -1;
+			}
+			if (isNaN(Number(a))) {
+				return +1;
+			}
+			return Number(b) - Number(a);
+		});
+		return sortedDice.reduce(function (total, current) {
+			if (Number(printObj[current]) === 0) {
+				return total;
+			}
+			if (total !== '') {
+				total += '+';
+			}
+			if (current === 'flat') {
+				return total += printObj[current];
+			}
+			return total += printObj[current] + 'D' + current;
+		}, '') || "0";
+	};
+	
+	var registerEffect = function registerEffect() {};
+	
+	var removeEffect = function removeEffect() {};
+	
 	exports.getDepStat = getDepStat;
 	exports.buildPath = buildPath;
 	exports.addPlus = addPlus;
@@ -21576,6 +21743,15 @@
 	exports.bonusKeys = bonusKeys;
 	exports.useKeys = useKeys;
 	exports.statDefaults = statDefaults;
+	exports.getStatTotal = getStatTotal;
+	exports.getTagTotal = getTagTotal;
+	exports.printValueObj = printValueObj;
+	exports.registerEffect = registerEffect;
+	exports.removeEffect = removeEffect;
+	exports.getWeaponValue = getWeaponValue;
+	exports.getDepStat = getDepStat;
+	exports.combineValueObjs = combineValueObjs;
+	exports.getDepValue = getDepValue;
 
 /***/ },
 /* 183 */
@@ -21725,7 +21901,7 @@
 		BAB: { value: 8 },
 		CMB: { dependsOn: [{ use: { value: 'stat' }, stat: { value: 'BAB' }, bonus: { value: 'flat' } }, { use: { value: 'stat' }, stat: { value: 'str' }, bonus: { value: 'mod' } }] },
 		CMD: { dependsOn: [{ use: { value: 'stat' }, stat: { value: 'BAB' }, bonus: { value: 'flat' } }, { use: { value: 'stat' }, stat: { value: 'str' }, bonus: { value: 'mod' } }, { use: { value: 'stat' }, stat: { value: 'dex' }, bonus: { value: 'mod' } }, { use: { value: 'flat' }, total: { value: 10 }, type: { value: 'rule' } }] },
-		status: [{
+		effects: [{
 			name: { value: 'Berzerk Rage' },
 			type: { value: 'Morale' },
 			stats: {
@@ -22868,7 +23044,7 @@
 	
 	var _depStat2 = _interopRequireDefault(_depStat);
 	
-	var _editableList = __webpack_require__(196);
+	var _editableList = __webpack_require__(195);
 	
 	var _editableList2 = _interopRequireDefault(_editableList);
 	
@@ -23104,6 +23280,124 @@
 	
 	var _react2 = _interopRequireDefault(_react);
 	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	var EditableList = (function (_React$Component) {
+		_inherits(EditableList, _React$Component);
+	
+		function EditableList() {
+			_classCallCheck(this, EditableList);
+	
+			return _possibleConstructorReturn(this, Object.getPrototypeOf(EditableList).apply(this, arguments));
+		}
+	
+		_createClass(EditableList, [{
+			key: 'render',
+			value: function render() {
+				var _this2 = this;
+	
+				var _props = this.props;
+				var path = _props.path;
+				var _props$obj = _props.obj;
+				var editing = _props$obj.editing;
+				var value = _props$obj.value;
+	
+				if (!editing) {
+					return _react2.default.createElement(
+						'span',
+						{ id: this.getID(), style: this.style(),
+							onClick: function onClick() {
+								return _this2.props.editValue(path, value);
+							} },
+						value.join(', ')
+					);
+				}
+				return _react2.default.createElement(
+					'span',
+					null,
+					_react2.default.createElement('input', { type: 'text', size: this.props.size || 10,
+						defaultValue: value.join(', '), id: this.getID(),
+						onBlur: function onBlur() {
+							return _this2.saveString(path, _this2.getInput().value);
+						},
+						onKeyDown: function onKeyDown(event) {
+							return _this2.ifPressedEnter(event.keyCode, path, _this2.getInput().value);
+						},
+						id: this.getID(),
+						style: this.style() })
+				);
+			}
+		}, {
+			key: 'saveString',
+			value: function saveString(path, input) {
+				var results = input.split(',').map(function (string) {
+					return string.trim();
+				});
+				console.log('res', results);
+				this.props.saveValueEdit(path, results);
+			}
+		}, {
+			key: 'style',
+			value: function style() {
+				var results = {};
+				if (this.props.length) {
+					results.width = this.props.length + "em";
+				}
+				return results;
+			}
+		}, {
+			key: 'getID',
+			value: function getID() {
+				return this.props.path.join('-');
+			}
+		}, {
+			key: 'componentDidUpdate',
+			value: function componentDidUpdate() {
+				if (this.props.obj.editing) {
+					this.getInput().focus();
+				}
+			}
+		}, {
+			key: 'ifPressedEnter',
+			value: function ifPressedEnter(keycode, path, input) {
+				if (keycode === 13) {
+					this.saveString(path, input);
+				}
+			}
+		}, {
+			key: 'getInput',
+			value: function getInput() {
+				return document.getElementById(this.getID());
+			}
+		}]);
+	
+		return EditableList;
+	})(_react2.default.Component);
+	
+	exports.default = EditableList;
+
+/***/ },
+/* 196 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+	
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+	
+	var _react = __webpack_require__(1);
+	
+	var _react2 = _interopRequireDefault(_react);
+	
 	var _helpers = __webpack_require__(182);
 	
 	var _paths = __webpack_require__(179);
@@ -23214,124 +23508,6 @@
 	})(_react2.default.Component);
 	
 	exports.default = Weapon;
-
-/***/ },
-/* 196 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-	
-	Object.defineProperty(exports, "__esModule", {
-		value: true
-	});
-	
-	var _react = __webpack_require__(1);
-	
-	var _react2 = _interopRequireDefault(_react);
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-	
-	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-	
-	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-	
-	var EditableList = (function (_React$Component) {
-		_inherits(EditableList, _React$Component);
-	
-		function EditableList() {
-			_classCallCheck(this, EditableList);
-	
-			return _possibleConstructorReturn(this, Object.getPrototypeOf(EditableList).apply(this, arguments));
-		}
-	
-		_createClass(EditableList, [{
-			key: 'render',
-			value: function render() {
-				var _this2 = this;
-	
-				var _props = this.props;
-				var path = _props.path;
-				var _props$obj = _props.obj;
-				var editing = _props$obj.editing;
-				var value = _props$obj.value;
-	
-				if (!editing) {
-					return _react2.default.createElement(
-						'span',
-						{ id: this.getID(), style: this.style(),
-							onClick: function onClick() {
-								return _this2.props.editValue(path, value);
-							} },
-						value.join(', ')
-					);
-				}
-				return _react2.default.createElement(
-					'span',
-					null,
-					_react2.default.createElement('input', { type: 'text', size: this.props.size || 10,
-						defaultValue: value.join(', '), id: this.getID(),
-						onBlur: function onBlur() {
-							return _this2.saveString(path, _this2.getInput().value);
-						},
-						onKeyDown: function onKeyDown(event) {
-							return _this2.ifPressedEnter(event.keyCode, path, _this2.getInput().value);
-						},
-						id: this.getID(),
-						style: this.style() })
-				);
-			}
-		}, {
-			key: 'saveString',
-			value: function saveString(path, input) {
-				var results = input.split(',').map(function (string) {
-					return string.trim();
-				});
-				console.log('res', results);
-				this.props.saveValueEdit(path, results);
-			}
-		}, {
-			key: 'style',
-			value: function style() {
-				var results = {};
-				if (this.props.length) {
-					results.width = this.props.length + "em";
-				}
-				return results;
-			}
-		}, {
-			key: 'getID',
-			value: function getID() {
-				return this.props.path.join('-');
-			}
-		}, {
-			key: 'componentDidUpdate',
-			value: function componentDidUpdate() {
-				if (this.props.obj.editing) {
-					this.getInput().focus();
-				}
-			}
-		}, {
-			key: 'ifPressedEnter',
-			value: function ifPressedEnter(keycode, path, input) {
-				if (keycode === 13) {
-					this.saveString(path, input);
-				}
-			}
-		}, {
-			key: 'getInput',
-			value: function getInput() {
-				return document.getElementById(this.getID());
-			}
-		}]);
-	
-		return EditableList;
-	})(_react2.default.Component);
-	
-	exports.default = EditableList;
 
 /***/ }
 /******/ ]);
