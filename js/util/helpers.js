@@ -1,5 +1,5 @@
 import paths from './paths.js'; 
-import {bonuses, bonusTypes, getStatFromName} from './paths.js'; 
+import {bonuses, bonusTypes, getStatFromName, updatePath} from './paths.js'; 
 import store from '../redux/store.js'; 
 
 
@@ -94,14 +94,12 @@ const calcDepStat = function(statArray, startingValue = 0){
 
 //creates an object used for easy update()
 //takes ['stat','str'] and returns {stat:{str:{}}}
-const buildPath = function(name, values){ 
-	if(typeof name === 'string'){
-		name = paths[name].path;
-	}
-	let original = {}; 
+const buildPath = function(pathArray, values, original = {}){ 
+	pathArray = updatePath(pathArray); //convert to path, if it's a string
 	let current = original; 
-	for(var i = 0; i < name.length; i++){
-		current = current[name[i]] = {}; 
+	for(var i = 0; i < pathArray.length; i++){
+		//assign the next value to a blank object, unless it exists already.
+		current = current[pathArray[i]] = current[pathArray[i]] || {}; 
 	}
 	Object.assign(current, values); 
 	return original;
@@ -288,16 +286,50 @@ const printValueObj = function(printObj){
 	}, '') || "0"; 
 };
 
-const registerEffect = function(){
-
+const registerEffectModObj = function(name, effectArray, valueObj, type){
+	let clonedValueObj = cloneObj(valueObj); //this step might not be needed. 
+	if(type === undefined){
+		return effectArray.reduce((total, current) => {
+			return buildPath([current], {[name]:clonedValueObj}, total); 
+		},{});
+	}else{
+		return effectArray.reduce((total, current) => {
+			return buildPath([current], {[type]:{[name]:clonedValueObj}}, total); 
+		},{});
+	}
 };
 
-const removeEffect = function(){
-
+const removeEffectModObj = function(name, effectArray, type){
+	if(type === undefined){
+		return effectArray.reduce((total, current)=>{
+			return buildPath([current], {[name]:{$set:undefined}}, total);
+		},{});
+	}else{
+		return effectArray.reduce((total, current) =>{
+			return buildPath([current], {[type]:{[name]:{$set:undefined}}});
+		},{});
+	}
 };
 
+const cloneObj = function(copyObj, origObj = {}){
+	for(let key in copyObj){
+		if(copyObj.hasOwnProperty(key)){
+			let value = copyObj[key]; 
+			if(typeof value === 'object'){
+				if(Array.isArray(value)){
+					origObj[key] = cloneObj(value, []);
+				}else{
+					origObj[key] = cloneObj(value, {}); 
+				}
+			}else{
+				origObj[key] = value; 
+			}
+		}
+	}
+	return origObj; 
+};
 
 export {getDepStat, buildPath, addPlus, calcValue,
 	statKeys, allStatKeys, bonusKeys, useKeys, statDefaults,
-getStatTotal, getTagTotal, printValueObj, registerEffect, removeEffect,
-getWeaponValue, getDepStat, combineValueObjs, getDepValue}; 
+getStatTotal, getTagTotal, printValueObj, registerEffectModObj, removeEffectModObj,
+getWeaponValue, getDepStat, combineValueObjs, getDepValue, cloneObj}; 

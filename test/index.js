@@ -1,8 +1,12 @@
 let expect = require('chai').expect; 
 let sinon = require('sinon'); 
-import {getWeaponValue, getDepValue, getStatTotal, getTagTotal, combineValueObjs, printValueObj, registerEffect, removeEffect} from '../js/util/helpers.js';  
-
+import {getWeaponValue, getDepValue, getStatTotal, getTagTotal, combineValueObjs,
+ printValueObj, registerEffectModObj, removeEffectModObj, buildPath, cloneObj} from '../js/util/helpers.js';  
 import initial from '../js/util/initial.js'; 
+const update = require('react-addons-update');
+
+
+
 
 describe('combineValueObjs', function(){
 	it('should add flat values together', function(){
@@ -156,5 +160,67 @@ describe('getWeaponValue', function(){
 			{use:{value:'flat'}, total:{value:10}}
 		]}};
 		expect(getWeaponValue(wep, 'damage')).to.eql({2:2, 10:3, flat:31});
+	});
+});
+
+describe('buildPath', function(){
+	it('should build a path from an array', function(){
+		expect(buildPath(['one','two','three'], {set:{value:5}})).to.eql({one:{two:{three:{set:{value:5}}}}});
+	});
+	it('should build a path from a string', function(){
+		expect(buildPath('str', {what:'up'})).to.eql({stats:{str:{what:'up'}}});
+	});
+	it('should build a path with an independent merged object', function(){
+		let mergeObj = {a:{b:{c:0}}};
+		expect(buildPath(['one','two','three'], {value:10}, mergeObj)).to
+			.eql({a:{b:{c:0}},one:{two:{three:{value:10}}}});
+	});
+	it('should build a path with similar paths', function(){
+		let mergeObj = {a:{b:{c:10}}};
+		expect(buildPath(['a','b','d'], {value:10}, mergeObj)).to.eql({a:{b:{c:10, d:{value:10}}}});
+	});
+});
+describe('cloneObj', function(){
+	it('should clone simple objects', function(){
+		let obj = {a:'hello', b:2}; 
+		expect(cloneObj(obj)).to.eql({a:'hello', b:2});
+		expect(cloneObj(obj)).to.not.equal(obj); 
+	});
+	it('should clone complex objs with objs', function(){
+		let obj = {a:'hello', b:2, c:{d:3,e:{f:{g:4}}}};
+		expect(cloneObj(obj)).to.eql({a:'hello', b:2, c:{d:3,e:{f:{g:4}}}});
+		expect(cloneObj(obj)).to.not.equal(obj); 
+	});
+	it('should clone complex objs with arrays', function(){
+		let obj = {a:'hello', b:['c','d',{e:{f:['g','h'], i:['j'], k:'world'}}]};
+		expect(cloneObj(obj)).to.eql({a:'hello', b:['c','d',{e:{f:['g','h'], i:['j'], k:'world'}}]});
+		expect(cloneObj(obj)).to.not.equal(obj); 
+	});
+});
+describe('registerEffectModObj', function(){
+	it('should create an object for mutating stat effeects', function(){
+		expect(registerEffectModObj('wham', ['str', 'dex', 'con'], {use:'what', type:'up'}))
+			.to.eql({str:{wham:{use:'what', type:'up'}},
+					dex:{wham:{use:'what', type:'up'}},
+					con:{wham:{use:'what', type:'up'}}}); 
+	});
+	it('should create an object for mutating weapon effeects', function(){
+		expect(registerEffectModObj('slash', ['light', 'melee'], {use:'what', type:'up'}, 'damage'))
+			.to.eql({light:{damage:{slash:{use:'what', type:'up'}}},
+					melee:{damage:{slash:{use:'what', type:'up'}}}}); 
+	});
+});
+describe('removeEffectModObj', function(){
+	// it('should update',function(){
+	// 	let obj = {a:{b:'0'}}; 
+	// 	let other = update(obj, {c:{$set:'d'}});
+	// 	expect(update(obj, {c:{$set:'d'}})).to.not.equal(obj); 
+	// 	expect(other.a).to.equal(obj.a);
+	// });
+	it('should remove an effect from a stat', function(){
+		let obj = {str:{test:'hello', other:'world'}, dex:{test:'what', other:'up'}}; 
+		let modObj = removeEffectModObj('other', ['str', 'dex']);
+		expect(modObj).to.eql({str:{other:{$set:undefined}}, dex:{other:{$set:undefined}}});
+		expect(update(obj, modObj)).to.eql({str:{test:'hello', other:undefined}, dex:{test:'what', other:undefined}});
 	});
 });

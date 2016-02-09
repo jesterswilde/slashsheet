@@ -42,6 +42,9 @@ const getStatFromName = function(name){
 };
 
 const updatePath = function(path, ...args){
+	if(typeof path === 'object' && args.length === 0){
+		return path; 
+	}
 	if(typeof path !== 'object'){ 
 		path = getPathFromName(path); 
 	}
