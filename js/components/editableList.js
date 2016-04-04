@@ -25,7 +25,6 @@ export default class EditableList extends React.Component{
 	}
 	saveString(path, input){
 		let results = input.split(',').map((string)=>string.trim());
-		console.log('res', results); 
 		this.props.saveValueEdit(path, results);
 	}
 	style(){

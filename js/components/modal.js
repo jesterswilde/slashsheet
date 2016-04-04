@@ -9,7 +9,8 @@ export default class Modal extends React.Component{
 			onClick={this.props.closeModal}
 			onKeyDown={(event) => this.pressedKey(event.keycode)}>
 				<div className="modalActive"
-				onClick={(event)=>event.stopPropagation()}>
+				onClick={(event)=>event.stopPropagation()}
+				style={{overflow:'scroll'}}>
 					{this.renderModal()}
 				</div>
 			</div>

@@ -20895,6 +20895,10 @@
 	
 	var _weapon2 = _interopRequireDefault(_weapon);
 	
+	var _effect = __webpack_require__(197);
+	
+	var _effect2 = _interopRequireDefault(_effect);
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -20979,6 +20983,12 @@
 	                            weapons: this.props.weapons,
 	                            addDep: this.props.addDep,
 	                            removeDep: this.props.removeDep })
+	                    ),
+	                    _react2.default.createElement(
+	                        'div',
+	                        null,
+	                        _react2.default.createElement(_effect2.default, {
+	                            effects: this.props.effects })
 	                    )
 	                ),
 	                this.renderModal()
@@ -20991,10 +21001,9 @@
 	            if (modal.active) {
 	                var stats = undefined;
 	                if (Array.isArray(modal.value)) {
-	                    console.log('modal', modal);
-	                    stats = (0, _paths.getStatFromPath)(modal.value);
+	                    stats = (0, _paths.getValueObj)(modal.value);
 	                } else {
-	                    stats = (0, _paths.getStatFromName)(modal.value);
+	                    stats = (0, _paths.getValueObj)(modal.value);
 	                }
 	                return _react2.default.createElement(_modal2.default, {
 	                    name: modal.value,
@@ -21038,6 +21047,8 @@
 	var ADD_DEP = "ADD_DEP";
 	var REMOVE_DEP = "REMOVE_DEP";
 	var CHANGE_USE_TYPE = "CHANGE_USE_TYPE";
+	var ADD_EFFECT = "ADD_EFFECT";
+	var REMOVE_EFFECT = "REMOVE_EFFECT";
 	
 	var _editValue = function _editValue(path) {
 		return {
@@ -21113,6 +21124,25 @@
 		};
 	};
 	
+	var _addEffect = function _addEffect(name, effectArray, valueObj, subType) {
+		return {
+			type: ADD_EFFECT,
+			name: name,
+			effectArray: effectArray,
+			valueObj: valueObj,
+			subType: subType
+		};
+	};
+	
+	var _removeEffect = function _removeEffect(name, effectArray, subType) {
+		return {
+			type: REMOVE_EFFECT,
+			name: name,
+			effectArray: effectArray,
+			subType: subType
+		};
+	};
+	
 	function mapDispatchToProps(dispatch) {
 		return {
 			editValue: function editValue(path) {
@@ -21141,6 +21171,12 @@
 			},
 			changeUseType: function changeUseType(name, index, value) {
 				return dispatch(_changeUseType(name, index, value));
+			},
+			addEffect: function addEffect(name, effectArray, valueObj, subType) {
+				return dispatch(_addEffect(name, effectArray, valueObj, subType));
+			},
+			removeEffect: function removeEffect(name, effectArray, subType) {
+				return dispatch(_removeEffect(name, effectArray, subType));
 			}
 		};
 	}
@@ -21154,6 +21190,8 @@
 	exports.ADD_DEP = ADD_DEP;
 	exports.REMOVE_DEP = REMOVE_DEP;
 	exports.CHANGE_USE_TYPE = CHANGE_USE_TYPE;
+	exports.ADD_EFFECT = ADD_EFFECT;
+	exports.REMOVE_EFFECT = REMOVE_EFFECT;
 	exports.mapDispatchToProps = mapDispatchToProps;
 
 /***/ },
@@ -21165,7 +21203,7 @@
 	Object.defineProperty(exports, "__esModule", {
 		value: true
 	});
-	exports.updatePath = exports.getStatFromPath = exports.getStatFromName = exports.getTypeFromName = exports.getPathFromName = exports.bonuses = undefined;
+	exports.updatePath = exports.getValueObj = exports.bonuses = undefined;
 	
 	var _store = __webpack_require__(180);
 	
@@ -21214,16 +21252,26 @@
 		return getStatFromPath(path);
 	};
 	
-	var updatePath = function updatePath(path) {
-		if ((typeof path === 'undefined' ? 'undefined' : _typeof(path)) !== 'object') {
+	var getValueObj = function getValueObj(path) {
+		if (typeof path === 'string') {
 			path = getPathFromName(path);
 		}
-		path = path.slice();
+		return getStatFromPath(path);
+	};
 	
+	var updatePath = function updatePath(path) {
 		for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
 			args[_key - 1] = arguments[_key];
 		}
 	
+		if ((typeof path === 'undefined' ? 'undefined' : _typeof(path)) === 'object' && args.length === 0) {
+			return path;
+		}
+		if ((typeof path === 'undefined' ? 'undefined' : _typeof(path)) !== 'object') {
+			path = getPathFromName(path);
+		} else {
+			path = path.slice();
+		}
 		args.forEach(function (element) {
 			return path.push(element);
 		});
@@ -21247,10 +21295,7 @@
 	
 	exports.default = paths;
 	exports.bonuses = bonuses;
-	exports.getPathFromName = getPathFromName;
-	exports.getTypeFromName = getTypeFromName;
-	exports.getStatFromName = getStatFromName;
-	exports.getStatFromPath = getStatFromPath;
+	exports.getValueObj = getValueObj;
 	exports.updatePath = updatePath;
 
 /***/ },
@@ -21318,6 +21363,10 @@
 				return openModal(state, action);
 			case _actions.CLOSE_MODAL:
 				return closeModal(state, action);
+			case _actions.ADD_EFFECT:
+				return addEffect(state, actino);
+			case _actions.REMOVE_EFFECT:
+				return removeEffect(state, action);
 			default:
 				return identity(state);
 		}
@@ -21335,12 +21384,11 @@
 	var saveEditValue = function saveEditValue(state, action) {
 		var modState = (0, _helpers.buildPath)(action.path, { editing: { $set: null },
 			value: { $set: action.value } });
-		console.log('seveEdit', saveEditValue);
 		return update(state, modState);
 	};
 	
 	var saveDepValuEdit = function saveDepValuEdit(state, action) {
-		var depObj = (0, _paths.getStatFromName)(action.name);
+		var depObj = (0, _paths.getValueObj)(action.name);
 		var origTotal = (0, _helpers.getDepStat)(depObj, true);
 		var dif = action.value - origTotal;
 		var modState;
@@ -21373,7 +21421,7 @@
 	
 	var removeDep = function removeDep(state, action) {
 		var path = (0, _paths.updatePath)(action.path);
-		var newArray = (0, _paths.getStatFromPath)(path).slice();
+		var newArray = (0, _paths.getValueObj)(path).slice();
 		newArray.splice(action.index, 1);
 		var modState = (0, _helpers.buildPath)(path, { $set: newArray });
 		return update(state, modState);
@@ -21388,7 +21436,7 @@
 	
 		var path = (0, _paths.updatePath)(name, 'dependsOn', index);
 		var defaultObj = _helpers.statDefaults[value];
-		var currentObj = (0, _paths.getStatFromPath)(path);
+		var currentObj = (0, _paths.getValueObj)(path);
 		var mergedObj = { use: { value: { $set: value } } };
 		for (var key in defaultObj) {
 			if (currentObj[key] === undefined) {
@@ -21397,6 +21445,25 @@
 		}
 		var modState = (0, _helpers.buildPath)(path, mergedObj);
 		return update(state, modState);
+	};
+	
+	var addEffect = function addEffect(state, action) {
+		var name = action.name;
+		var effectArray = action.effectArray;
+		var valueObj = action.valueObj;
+		var type = action.subType;
+	
+		var modState = (0, _helpers.registerEffectModObj)(name, effectArray, value, type);
+		update(state, modState);
+	};
+	
+	var removeEffect = function removeEffect(state, action) {
+		var name = action.name;
+		var effectArray = action.effectArray;
+		var type = action.subType;
+	
+		var modState = (0, _helpers.removeEffectModObj)(name, effectArray, type);
+		update(state, modState);
 	};
 	
 	var openModal = function openModal(state, action) {
@@ -21420,7 +21487,7 @@
 	Object.defineProperty(exports, "__esModule", {
 		value: true
 	});
-	exports.getDepValue = exports.combineValueObjs = exports.getWeaponValue = exports.removeEffect = exports.registerEffect = exports.printValueObj = exports.getTagTotal = exports.getStatTotal = exports.statDefaults = exports.useKeys = exports.bonusKeys = exports.allStatKeys = exports.statKeys = exports.calcValue = exports.addPlus = exports.buildPath = exports.getDepStat = undefined;
+	exports.printStatValue = exports.printDepValue = exports.printWeaponValue = exports.cloneObj = exports.getDepTotal = exports.combineValueObjs = exports.getWeaponTotal = exports.removeEffectModObj = exports.registerEffectModObj = exports.printValueObj = exports.getTagTotal = exports.getStatTotal = exports.statDefaults = exports.useKeys = exports.bonusKeys = exports.allStatKeys = exports.statKeys = exports.addPlus = exports.buildPath = undefined;
 	
 	var _paths = __webpack_require__(179);
 	
@@ -21432,119 +21499,39 @@
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
+	function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.constructor === Symbol ? "symbol" : typeof obj; }
+	
 	function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 	
-	var calcUseFlat = function calcUseFlat(useObj) {
-		return useObj.total.value;
-	};
+	/*
+	Externally, only 'print[Type]' functions should be called.
+	All 'print' functions call a similarly named 'get[Type]Total' function. 
+	These 'get' functions accept a string, array (referred to as a path), or an object
+		If they are given a string or path, they use getValueObject to convert it to an object
+	getWeaponTotal relies on getDepTotal 
+	getDepTotal relies on getStatTotal
 	
-	var calcUseStat = function calcUseStat(useObj) {
-		var bonus = useObj.bonus.value;
-		var stat = useObj.stat.value;
+	Refer to statDefaults for valueObject shape (it depends on the type)
 	
-		return _paths.bonuses[bonus]((0, _paths.getStatFromName)(stat).value);
-	};
-	
-	var calcUseDie = function calcUseDie(useObj) {
-		return { amount: useObj.amount.value, die: useObj.die.value };
-	};
-	
-	var use = {
-		flat: calcUseFlat,
-		stat: calcUseStat,
-		die: calcUseDie
-	};
-	//returns the value of the associated stat
-	var calcValue = function calcValue(statObj) {
-		return use[statObj.use.value](statObj);
-	};
-	
-	//given an array of stat 	objects IE [{value:'str' type:'bonuses'} ...]
-	//will return the total value
-	var getDepStat = function getDepStat(depObj, noMod) {
-		var statArray = depObj.dependsOn;
-		var playerMod = depObj.playerMod;
-	
-		if (noMod) {
-			//players are allowed to modify a stat without deriving that value
-			playerMod = 0; //this is called playerod
-		} else {
-				playerMod = playerMod || 0;
-			}
-		return calcDepStat(statArray, playerMod);
-		//sum flat numbers, and build an object of the different dice types.
-		var values = statArray.reduce(function (total, current) {
-			var stat = calcValue(current);
-			if (typeof stat === 'number') {
-				total.flat += stat;
-			} else {
-				total.dice[stat.die] = total.dice[stat.die] || 0;
-				total.dice[stat.die] += stat.amount;
-			}return total;
-		}, { dice: {}, flat: 0 });
-		//sort the dice types for easy printing, then start printing
-		var sortedDice = Object.keys(values.dice).sort(function (a, b) {
-			return b - a;
-		});
-		var result = sortedDice.reduce(function (total, current) {
-			if (total !== '') {
-				total += '+';
-			}
-			return total += values.dice[current] + 'D' + current;
-		}, '');
-		if (result !== '' && values.flat + playerMod !== 0) {
-			//if there are dice and flat
-			result += '+';
-		}if (values.flat + playerMod !== 0) {
-			//if there are flat
-			result += values.flat + playerMod;
+	All get functions return an object in the from of:
+		{
+			flat: 10 //Flat defaults to 0
+			4: 6 //means 6D4
 		}
-		return result;
-	};
 	
-	var calcDepStat = function calcDepStat(statArray) {
-		var startingValue = arguments.length <= 1 || arguments[1] === undefined ? 0 : arguments[1];
-	
-		//sum flat numbers, and build an object of the different dice types.
-		var values = statArray.reduce(function (total, current) {
-			var stat = calcValue(current);
-			if (typeof stat === 'number') {
-				total.flat += stat;
-			} else {
-				total.dice[stat.die] = total.dice[stat.die] || 0;
-				total.dice[stat.die] += stat.amount;
-			}return total;
-		}, { dice: {}, flat: startingValue });
-		//sort the dice types for easy printing, then start printing
-		var sortedDice = Object.keys(values.dice).sort(function (a, b) {
-			return b - a;
-		});
-		var result = sortedDice.reduce(function (total, current) {
-			if (total !== '') {
-				total += '+';
-			}
-			return total += values.dice[current] + 'D' + current;
-		}, '');
-		if (result !== '' && values.flat + playerMod !== 0) {
-			//if there are dice and flat
-			result += '+';
-		}if (values.flat + playerMod !== 0) {
-			//if there are flat
-			result += values.flat + playerMod;
-		}
-		return result;
-	};
+	*/
 	
 	//creates an object used for easy update()
 	//takes ['stat','str'] and returns {stat:{str:{}}}
-	var buildPath = function buildPath(name, values) {
-		if (typeof name === 'string') {
-			name = _paths2.default[name].path;
-		}
-		var original = {};
+	//This is used in reducers, to update the store
+	var buildPath = function buildPath(pathArray, values) {
+		var original = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
+	
+		pathArray = (0, _paths.updatePath)(pathArray); //convert to path, if it's a string
 		var current = original;
-		for (var i = 0; i < name.length; i++) {
-			current = current[name[i]] = {};
+		for (var i = 0; i < pathArray.length; i++) {
+			//assign the next value to a blank object, unless it exists already.
+			current = current[pathArray[i]] = current[pathArray[i]] || {};
 		}
 		Object.assign(current, values);
 		return original;
@@ -21603,23 +21590,27 @@
 		return results;
 	};
 	
-	var getWeaponValue = function getWeaponValue(weaponObj, type, omitPlayerMod) {
+	var getWeaponTotal = function getWeaponTotal(weaponObj, type, omitPlayerMod) {
 		if (type === undefined) {
-			throw "getWeaponValue was passed undefined for 'type' (2nd argument)";
+			throw "getWeaponTotal was passed undefined for 'type' (2nd argument)";
 		}
 		if (weaponObj === undefined) {
-			throw "getWeaponValue was passed undefined for weaponObj (1st argument)";
+			throw "getWeaponTotal was passed undefined for weaponObj (1st argument)";
 		}
 		var amount = getTagTotal(weaponObj.tag, type);
-		return combineValueObjs(amount, getDepValue(weaponObj[type], omitPlayerMod));
+		return combineValueObjs(amount, getDepTotal(weaponObj[type], omitPlayerMod));
 	};
 	
-	var getDepValue = function getDepValue(depObj, omitPlayerMod) {
-		if (depObj === undefined) {
-			throw "getDepValue was passed undefined for depObj (1st argument)";
+	var getDepTotal = function getDepTotal(depObj, omitPlayerMod) {
+		if (typeof depObj === "string" || Array.isArray(depObj)) {
+			depObj = (0, _paths.getValueObj)(depObj);
 		}
-		var playerMod = depObj.playerMod;
-		var dependsOn = depObj.dependsOn;
+		if (depObj === undefined) {
+			throw "getDepTotal was passed undefined for depObj (1st argument)";
+		}
+		var _depObj = depObj;
+		var playerMod = _depObj.playerMod;
+		var dependsOn = _depObj.dependsOn;
 	
 		dependsOn = dependsOn || [];
 		playerMod = playerMod || 0;
@@ -21631,42 +21622,48 @@
 		}, { flat: playerMod });
 	};
 	
-	var printDepValue = function printDepValue(depObj, omitPlayerMod) {
-		return printValueObj(getDepValue(depObj, omitPlayerMod));
-	};
-	
 	var getStatTotal = function getStatTotal(stat, useOnlyStat) {
-		var statValue = { flat: (0, _paths.getStatFromName)(stat).value };
+		if (typeof stat === 'string') {
+			return getStatTotalFromName(stat, useOnlyStat);
+		} else {
+			return getStatTotalFromValueObj(stat, useOnlyStat);
+		}
+	};
+	
+	var getStatTotalFromName = function getStatTotalFromName(stat, useOnlyStat) {
+		var statObj = { flat: (0, _paths.getValueObj)(stat).value };
 		if (useOnlyStat) {
-			return statValue;
+			return statObj;
+		} else {
+			return combineStatWithEffects(stat, statObj);
 		}
-		var effectList = (0, _paths.getStatFromName)('effects')[stat];
+	};
+	
+	var getStatTotalFromValueObj = function getStatTotalFromValueObj(statObj, useOnlyStat) {
+		var name = statObj.stat.value;
+		var bonus = statObj.bonus.value;
+	
+		var statTotal = getStatTotalFromName(name);
+		statTotal.flat = _paths.bonuses[bonus](statTotal.flat);
+		return statTotal;
+	};
+	
+	var combineStatWithEffects = function combineStatWithEffects(statName, flatValueObj) {
+		var effectList = (0, _paths.getValueObj)('effects')[statName];
 		for (var key in effectList) {
-			statValue = combineValueObjs(statValue, effectList[key]);
+			flatValueObj = combineValueObjs(flatValueObj, effectList[key]);
 		}
-		return statValue;
-	};
-	
-	var useFlat = function useFlat(useObj) {
-		return { flat: useObj.total.value };
-	};
-	
-	var useDie = function useDie(useObj) {
-		return _defineProperty({}, useObj.die.value, useObj.amount.value);
+		return flatValueObj;
 	};
 	
 	var routeUse = function routeUse(useObj) {
 		switch (useObj.use.value) {
 			case 'flat':
-				return useFlat(useObj);
+				return { flat: useObj.total.value };
 			case 'die':
-				return useDie(useObj);
+				return _defineProperty({}, useObj.die.value, useObj.amount.value);
 			case 'stat':
-				var _getStatTotal = getStatTotal(useObj.stat.value);
-	
-				var flat = _getStatTotal.flat;
-	
-				return { flat: _paths.bonuses[useObj.bonus.value](flat) };
+				return getStatTotal(useObj);
 			default:
 				return 'error';
 		}
@@ -21679,7 +21676,7 @@
 		}
 		var usedAlready = {};
 		return tags.reduce(function (total, tag) {
-			var effectList = (0, _paths.getStatFromName)('effects')[type][tag];
+			var effectList = (0, _paths.getValueObj)('effects')[tag][type];
 			for (var key in effectList) {
 				if (!usedAlready[key]) {
 					total = combineValueObjs(total, effectList[key]);
@@ -21712,7 +21709,7 @@
 				return -1;
 			}
 			if (isNaN(Number(a))) {
-				return +1;
+				return 1;
 			}
 			return Number(b) - Number(a);
 		});
@@ -21730,14 +21727,68 @@
 		}, '') || "0";
 	};
 	
-	var registerEffect = function registerEffect() {};
+	var printStatValue = function printStatValue(stat, statOnly) {
+		return printValueObj(getStatTotal(stat, statOnly));
+	};
 	
-	var removeEffect = function removeEffect() {};
+	var printDepValue = function printDepValue(depObj, omitPlayerMod) {
+		return printValueObj(getDepTotal(depObj, omitPlayerMod));
+	};
 	
-	exports.getDepStat = getDepStat;
+	var printWeaponValue = function printWeaponValue(weaponObj, type, omitPlayerMod) {
+		return printValueObj(getWeaponTotal(weaponObj, type, omitPlayerMod));
+	};
+	
+	var registerEffectModObj = function registerEffectModObj(name, effectArray, valueObj, type) {
+		var clonedValueObj = cloneObj(valueObj); //this step might not be needed. but makes a new copy of obj
+		if (type === undefined) {
+			//non weapons
+			return effectArray.reduce(function (total, current) {
+				//merge them into one obj
+				return buildPath((0, _paths.updatePath)('effects', current), _defineProperty({}, name, clonedValueObj), total);
+			}, {});
+		} else {
+			return effectArray.reduce(function (total, current) {
+				return buildPath((0, _paths.updatePath)('effects'), { current: { $merge: _defineProperty({}, type, _defineProperty({}, name, clonedValueObj)) } }, total);
+			}, {});
+		}
+	};
+	
+	var removeEffectModObj = function removeEffectModObj(name, effectArray, type) {
+		//this leaves blank keys, consider a way to remove them.
+		if (type === undefined) {
+			return effectArray.reduce(function (total, current) {
+				return buildPath((0, _paths.updatePath)('effects', current), _defineProperty({}, name, { $set: undefined }), total);
+			}, {});
+		} else {
+			return effectArray.reduce(function (total, current) {
+				return buildPath((0, _paths.updatePath)('effects', current), _defineProperty({}, type, _defineProperty({}, name, { $set: undefined })));
+			}, {});
+		}
+	};
+	
+	var cloneObj = function cloneObj(copyObj) {
+		var origObj = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+	
+		for (var key in copyObj) {
+			if (copyObj.hasOwnProperty(key)) {
+				var value = copyObj[key];
+				if ((typeof value === 'undefined' ? 'undefined' : _typeof(value)) === 'object') {
+					if (Array.isArray(value)) {
+						origObj[key] = cloneObj(value, []);
+					} else {
+						origObj[key] = cloneObj(value, {});
+					}
+				} else {
+					origObj[key] = value;
+				}
+			}
+		}
+		return origObj;
+	};
+	
 	exports.buildPath = buildPath;
 	exports.addPlus = addPlus;
-	exports.calcValue = calcValue;
 	exports.statKeys = statKeys;
 	exports.allStatKeys = allStatKeys;
 	exports.bonusKeys = bonusKeys;
@@ -21746,12 +21797,15 @@
 	exports.getStatTotal = getStatTotal;
 	exports.getTagTotal = getTagTotal;
 	exports.printValueObj = printValueObj;
-	exports.registerEffect = registerEffect;
-	exports.removeEffect = removeEffect;
-	exports.getWeaponValue = getWeaponValue;
-	exports.getDepStat = getDepStat;
+	exports.registerEffectModObj = registerEffectModObj;
+	exports.removeEffectModObj = removeEffectModObj;
+	exports.getWeaponTotal = getWeaponTotal;
 	exports.combineValueObjs = combineValueObjs;
-	exports.getDepValue = getDepValue;
+	exports.getDepTotal = getDepTotal;
+	exports.cloneObj = cloneObj;
+	exports.printWeaponValue = printWeaponValue;
+	exports.printDepValue = printDepValue;
+	exports.printStatValue = printStatValue;
 
 /***/ },
 /* 183 */
@@ -21904,6 +21958,7 @@
 		effects: [{
 			name: { value: 'Berzerk Rage' },
 			type: { value: 'Morale' },
+			active: { value: false },
 			stats: {
 				str: { use: { value: 'flat' }, total: { value: 4 } },
 				con: { use: { value: 'flat' }, total: { value: 4 } }
@@ -21915,6 +21970,7 @@
 		}, {
 			name: { value: 'Weapon Specialization (Battle Axe)' },
 			type: { value: 'bonus' },
+			active: { value: 'false' },
 			weapons: {
 				affects: { value: ['battle axe'] },
 				toHit: { dependsOn: [{ use: { value: 'flat' }, total: { value: 1 } }] },
@@ -21970,6 +22026,8 @@
 	
 	var _paths2 = _interopRequireDefault(_paths);
 	
+	var _helpers = __webpack_require__(182);
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -22019,7 +22077,7 @@
 							null,
 							_react2.default.createElement(_editableValue2.default, {
 								key: statKey + "-stat",
-								value: statBlock[key].value,
+								value: (0, _helpers.printStatValue)(key),
 								editing: statBlock[key].editing,
 								input: 'number',
 								name: key,
@@ -22032,48 +22090,6 @@
 				}
 				return rows;
 			}
-	
-			// printStat(){
-			// 	if(!this.props.stat.editing){
-			// 		return (
-			// 			<tr onClick = {() =>this.props.editStat(this.props.name, this.props.stat.value)}>
-			// 		<td>
-			// 		<b> {this.props.name} </b>
-			// 		</td><td>
-			// 		{this.props.stat.value}
-			// 		</td>
-			// 		</tr>)
-			// 	}else{
-			// 			return (
-			// 				<tr>
-			// 					<td>
-			// 						{this.props.name}
-			// 					</td>
-			// 					<td className="form-group">
-			// 						<input className="form-control" type="number" max={99} size={2}
-			// 								defaultValue={this.props.stat.value} id={this.props.name}
-			// 								onBlur={() => this.props.saveStatEdit(this.props.name,this.getInput().value)}
-			// 								onKeyDown={(event) => this.ifPressedenter(event.keyCode,this.props.name, this.getInput().value)}/>
-			// 					</td>
-			// 				<tr>
-			// 				)
-			// 	}
-			// }
-			// 	componentDidUpdate(){
-			// 		if(this.props.stat.editing){
-			// 			this.getInput().focus();
-			// 		}
-			// 	}
-			// 	ifPressedenter(keycode, name, value){
-			// 		if(keycode===13){
-			// 			this.props.saveStatEdit(name, value); 	
-			// 		}
-			// 	}
-			// 	getInput(){
-			// 		console.log('input', document.getElementById(this.props.name).value);
-			// 		return document.getElementById(this.props.name);
-			// 	}
-	
 		}]);
 	
 		return StatBlock;
@@ -22265,7 +22281,7 @@
 									'td',
 									null,
 									_react2.default.createElement(_editableValue2.default, {
-										value: this.props.BAB.value,
+										value: (0, _helpers.printStatValue)('BAB'),
 										editing: this.props.BAB.editing,
 										input: 'number',
 										name: 'BAB',
@@ -22288,7 +22304,7 @@
 								_react2.default.createElement(
 									'td',
 									null,
-									(0, _helpers.getDepStat)(this.props.CMB)
+									(0, _helpers.printDepValue)(this.props.CMB)
 								)
 							),
 							_react2.default.createElement(
@@ -22304,7 +22320,7 @@
 								_react2.default.createElement(
 									'td',
 									null,
-									(0, _helpers.getDepStat)(this.props.CMD)
+									(0, _helpers.printDepValue)(this.props.CMD)
 								)
 							)
 						)
@@ -22337,6 +22353,8 @@
 	var _editableValue = __webpack_require__(187);
 	
 	var _editableValue2 = _interopRequireDefault(_editableValue);
+	
+	var _helpers = __webpack_require__(182);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -22385,7 +22403,7 @@
 								'td',
 								null,
 								_react2.default.createElement(_editableValue2.default, {
-									value: this.props.HP.current.value,
+									value: (0, _helpers.printStatValue)('currentHP'),
 									editing: this.props.HP.current.editing,
 									input: 'number',
 									name: 'currentHP',
@@ -22402,7 +22420,7 @@
 								'td',
 								null,
 								_react2.default.createElement(_editableValue2.default, {
-									value: this.props.HP.total.value,
+									value: (0, _helpers.printStatValue)('totalHP'),
 									editing: this.props.HP.total.editing,
 									input: 'number',
 									name: 'totalHP',
@@ -22487,7 +22505,8 @@
 						{ className: 'modalActive',
 							onClick: function onClick(event) {
 								return event.stopPropagation();
-							} },
+							},
+							style: { overflow: 'scroll' } },
 						this.renderModal()
 					)
 				);
@@ -22619,7 +22638,7 @@
 									'td',
 									null,
 									_react2.default.createElement(_editableValue2.default, {
-										value: (0, _helpers.getDepStat)(statObj),
+										value: (0, _helpers.printDepValue)(statObj),
 										editing: statObj.editing,
 										input: 'number',
 										editValue: editValue,
@@ -22742,8 +22761,6 @@
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
-	function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.constructor === Symbol ? "symbol" : typeof obj; }
-	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
 	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
@@ -22765,16 +22782,13 @@
 				var _props = this.props;
 				var obj = _props.obj;
 				var index = _props.index;
+				var path = _props.name;
 	
-				return this.printDep(obj, index);
+				return this.printDep(obj, index, path);
 			}
 		}, {
 			key: 'printDep',
-			value: function printDep(obj, index) {
-				var path = this.props.name;
-				if ((typeof path === 'undefined' ? 'undefined' : _typeof(path)) !== 'object') {
-					path = (0, _paths.getPathFromName)(path);
-				}
+			value: function printDep(obj, index, path) {
 				var use = obj.use.value;
 				switch (use) {
 					case 'stat':
@@ -22790,6 +22804,7 @@
 			value: function printStat(obj, index, path) {
 				var _this2 = this;
 	
+				path = (0, _paths.updatePath)(path);
 				return _react2.default.createElement(
 					'tr',
 					null,
@@ -22823,7 +22838,7 @@
 					_react2.default.createElement(
 						'td',
 						null,
-						(0, _helpers.calcValue)(obj)
+						(0, _helpers.printStatValue)(obj)
 					),
 					this.printRemoveButton((0, _paths.updatePath)(path, 'dependsOn'), index)
 				);
@@ -22832,10 +22847,8 @@
 			key: 'printFlat',
 			value: function printFlat(obj, index, path) {
 				//this seems a bit inconsistent, consider a better approach
-				var totalPath = path.slice();
-				totalPath.push('dependsOn', index, 'total');
-				var typePath = path.slice();
-				typePath.push('dependsOn', index, 'type');
+				var totalPath = (0, _paths.updatePath)(path, 'dependsOn', index, 'total');
+				var typePath = (0, _paths.updatePath)(path, 'dependsOn', index, 'type');
 				return _react2.default.createElement(
 					'tr',
 					{ key: index + "-flat-" + this.props.name },
@@ -22872,10 +22885,8 @@
 		}, {
 			key: 'printDie',
 			value: function printDie(obj, index, path) {
-				var diePath = path.slice();
-				diePath.push('dependsOn', index, 'die');
-				var amountPath = path.slice();
-				amountPath.push('dependsOn', index, 'amount');
+				var diePath = (0, _paths.updatePath)(path, 'dependsOn', index, 'die');
+				var amountPath = (0, _paths.updatePath)(path, 'dependsOn', index, 'amount');
 				return _react2.default.createElement(
 					'tr',
 					null,
@@ -22930,13 +22941,17 @@
 			value: function printRemoveButton(path, index) {
 				var _this4 = this;
 	
-				if ((0, _paths.getStatFromPath)(path).length > 1) {
+				if ((0, _paths.getValueObj)(path)[1]) {
 					return _react2.default.createElement(
 						'td',
 						{ onClick: function onClick() {
 								return _this4.props.removeDep(path, index);
 							} },
-						'X'
+						_react2.default.createElement(
+							'button',
+							{ className: 'btn' },
+							' X '
+						)
 					);
 				}
 			}
@@ -23076,7 +23091,9 @@
 				var name = _props.name;
 				var path = _props.path;
 				var modal = _props.modal;
+				var addDep = _props.addDep;
 	
+				console.log('path', path, 'valueObj', (0, _paths.getValueObj)((0, _paths.updatePath)(path, 'toHit')));
 				var truncPath = path.slice(-1);
 				// let toHitPath = updatePath(path, 'toHit');
 				// let damagePath = updatePath(path, 'damage');
@@ -23111,6 +23128,7 @@
 										editValue: this.props.editValue,
 										saveValueEdit: this.props.saveValueEdit,
 										obj: modal.tags,
+										size: 50,
 										path: (0, _paths.updatePath)(path, 'tags') })
 								)
 							)
@@ -23129,7 +23147,7 @@
 									"td",
 									null,
 									" To Hit: ",
-									(0, _helpers.getDepStat)(modal.toHit),
+									(0, _helpers.printWeaponValue)(modal, 'toHit'),
 									" "
 								)
 							)
@@ -23137,7 +23155,23 @@
 						_react2.default.createElement(
 							"tbody",
 							null,
-							this.printDeps(modal.toHit.dependsOn, (0, _paths.updatePath)(path, 'toHit'))
+							this.printDeps(modal.toHit.dependsOn, (0, _paths.updatePath)(path, 'toHit')),
+							_react2.default.createElement(
+								"tr",
+								null,
+								_react2.default.createElement(
+									"td",
+									null,
+									_react2.default.createElement(
+										"button",
+										{ className: "btn btn-primary",
+											onClick: function onClick() {
+												return addDep((0, _paths.updatePath)(path, 'toHit', 'dependsOn'));
+											} },
+										"Add"
+									)
+								)
+							)
 						)
 					),
 					_react2.default.createElement(
@@ -23153,14 +23187,30 @@
 									"td",
 									null,
 									"Damage: ",
-									(0, _helpers.getDepStat)(modal.damage)
+									(0, _helpers.printWeaponValue)(modal, 'damage')
 								)
 							)
 						),
 						_react2.default.createElement(
 							"tbody",
 							null,
-							this.printDeps(modal.damage.dependsOn, (0, _paths.updatePath)(path, 'damage'))
+							this.printDeps(modal.damage.dependsOn, (0, _paths.updatePath)(path, 'damage')),
+							_react2.default.createElement(
+								"tr",
+								null,
+								_react2.default.createElement(
+									"td",
+									null,
+									_react2.default.createElement(
+										"button",
+										{ className: "btn btn-primary",
+											onClick: function onClick() {
+												return addDep((0, _paths.updatePath)(path, 'damage', 'dependsOn'));
+											} },
+										"Add"
+									)
+								)
+							)
 						)
 					)
 				);
@@ -23180,81 +23230,6 @@
 						removeDep: _this2.props.removeDep,
 						modifyDep: _this2.props.modifyDep,
 						changeUseType: _this2.props.changeUseType });
-				});
-			}
-		}, {
-			key: "printToHitDep",
-			value: function printToHitDep() {
-				return this.props.modal.toHit.dependsOn.map(function (stat, index) {
-					return _react2.default.createElement(
-						"tr",
-						{ key: index + "-weapon-stat-dropdown" },
-						_react2.default.createElement(
-							"td",
-							null,
-							stat.name
-						),
-						_react2.default.createElement(
-							"td",
-							null,
-							stat.type
-						),
-						_react2.default.createElement(
-							"td",
-							null,
-							(0, _helpers.getValue)(stat)
-						)
-					);
-				});
-			}
-		}, {
-			key: "printDamage",
-			value: function printDamage() {
-				return this.props.modal.damage.map(function (source, index) {
-					return _react2.default.createElement(
-						"tr",
-						{ key: index + "damage-weapon-modal" },
-						_react2.default.createElement(
-							"td",
-							null,
-							source.amount.value
-						),
-						_react2.default.createElement(
-							"td",
-							null,
-							source.die.value
-						),
-						_react2.default.createElement(
-							"td",
-							null,
-							source.type.value
-						)
-					);
-				});
-			}
-		}, {
-			key: "printDamageMod",
-			value: function printDamageMod() {
-				return this.props.modal.damageMod.dependsOn.map(function (source, index) {
-					return _react2.default.createElement(
-						"tr",
-						{ key: index + "-damage-mod-modal" },
-						_react2.default.createElement(
-							"td",
-							null,
-							source.name
-						),
-						_react2.default.createElement(
-							"td",
-							null,
-							source.type
-						),
-						_react2.default.createElement(
-							"td",
-							null,
-							(0, _helpers.getValue)(source)
-						)
-					);
 				});
 			}
 		}]);
@@ -23339,7 +23314,6 @@
 				var results = input.split(',').map(function (string) {
 					return string.trim();
 				});
-				console.log('res', results);
 				this.props.saveValueEdit(path, results);
 			}
 		}, {
@@ -23401,6 +23375,10 @@
 	var _helpers = __webpack_require__(182);
 	
 	var _paths = __webpack_require__(179);
+	
+	var _store = __webpack_require__(180);
+	
+	var _store2 = _interopRequireDefault(_store);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -23470,10 +23448,17 @@
 								_react2.default.createElement(
 									'th',
 									{ onClick: function onClick(event) {
+											var original = _store2.default.getState().weapons;
 											event.stopPropagation();
 											_this3.props.removeDep((0, _paths.updatePath)('weapons'), index);
+											console.log(original === _store2.default.getState().weapons);
+											console.log(_store2.default.getState());
 										} },
-									'X'
+									_react2.default.createElement(
+										'button',
+										{ className: 'btn' },
+										' X '
+									)
 								)
 							)
 						),
@@ -23486,15 +23471,15 @@
 								_react2.default.createElement(
 									'td',
 									null,
-									'To Hit: ',
-									(0, _helpers.addPlus)((0, _helpers.getDepStat)(weapon.toHit)),
+									' To Hit: ',
+									(0, _helpers.addPlus)((0, _helpers.printWeaponValue)(weapon, 'toHit')),
 									' '
 								),
 								_react2.default.createElement(
 									'td',
 									null,
 									' Damage: ',
-									(0, _helpers.getDepStat)(weapon.damage),
+									(0, _helpers.printWeaponValue)(weapon, 'damage'),
 									' '
 								)
 							)
@@ -23508,6 +23493,97 @@
 	})(_react2.default.Component);
 	
 	exports.default = Weapon;
+
+/***/ },
+/* 197 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+	
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+	
+	var _react = __webpack_require__(1);
+	
+	var _react2 = _interopRequireDefault(_react);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	var Effect = (function (_React$Component) {
+		_inherits(Effect, _React$Component);
+	
+		function Effect() {
+			_classCallCheck(this, Effect);
+	
+			return _possibleConstructorReturn(this, Object.getPrototypeOf(Effect).apply(this, arguments));
+		}
+	
+		_createClass(Effect, [{
+			key: 'render',
+			value: function render() {
+				var _this2 = this;
+	
+				var effects = this.props.effects;
+	
+				var effectsArray = effects.map(function (effect, index) {
+					return _this2.renderEffect(effect, index);
+				});
+				return _react2.default.createElement(
+					'div',
+					null,
+					effectsArray
+				);
+			}
+		}, {
+			key: 'renderEffect',
+			value: function renderEffect(effect, index) {
+				var name = effect.name.value;
+				var type = effect.type.value;
+				var active = effect.active.value;
+	
+				return _react2.default.createElement(
+					'table',
+					{ key: index + '-' + name + '-' + effect, className: 'table' },
+					_react2.default.createElement(
+						'tbody',
+						null,
+						_react2.default.createElement(
+							'tr',
+							null,
+							_react2.default.createElement(
+								'td',
+								null,
+								_react2.default.createElement(
+									'b',
+									null,
+									name
+								)
+							),
+							_react2.default.createElement(
+								'td',
+								null,
+								'Type:',
+								type
+							)
+						)
+					)
+				);
+			}
+		}]);
+	
+		return Effect;
+	})(_react2.default.Component);
+	
+	exports.default = Effect;
 
 /***/ }
 /******/ ]);

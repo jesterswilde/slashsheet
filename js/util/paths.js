@@ -41,14 +41,22 @@ const getStatFromName = function(name){
 	return getStatFromPath(path);
 };
 
+const getValueObj = function(path){
+	if(typeof path === 'string'){
+		path = getPathFromName(path); 
+	}
+	return getStatFromPath(path); 
+};
+
 const updatePath = function(path, ...args){
 	if(typeof path === 'object' && args.length === 0){
 		return path; 
 	}
 	if(typeof path !== 'object'){ 
 		path = getPathFromName(path); 
+	}else{
+		path = path.slice(); 
 	}
-	path = path.slice(); 
 	args.forEach((element)=>path.push(element)); 
 	return path; 
 };
@@ -65,4 +73,4 @@ const bonuses = {
 
 export default paths;
 
-export {bonuses, getPathFromName, getTypeFromName, getStatFromName, getStatFromPath, updatePath}; 
+export {bonuses, getValueObj, updatePath}; 

@@ -1,10 +1,10 @@
 import React from 'react'; 
-import {getStatFromPath} from '../util/helpers.js'; 
+import {getUseObj} from '../util/helpers.js'; 
 export default class StatProp extends React.Component{
 	render(){
 		let {left, right, path} = this.props; 
 		let style = {left:left+'px', top:top+'px'};
-		let stat = getStatFromPath(path); 
+		let stat = getUseObj(path); 
 		return(
 			<div className="popup" style={style}>
 

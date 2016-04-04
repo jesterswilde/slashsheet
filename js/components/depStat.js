@@ -1,20 +1,16 @@
 import React from 'react'; 
 import path from '../util/paths.js'; 
-import {useKeys, statKeys, bonusKeys, calcValue} from '../util/helpers.js'; 
-import {getPathFromName, getStatFromPath, updatePath} from '../util/paths.js'; 
+import {printStatValue, useKeys, statKeys, bonusKeys} from '../util/helpers.js'; 
+import {updatePath, getValueObj} from '../util/paths.js'; 
 import EditableValue from './editableValue.js'; 
 
 export default class depStat extends React.Component{
 	render(){
-		let {obj, index} = this.props; 
-		return this.printDep(obj, index);
+		let {obj, index, name:path} = this.props; 
+		return this.printDep(obj, index, path);
 	}
-	printDep(obj, index){
-		let path = this.props.name;
-		if(typeof path !== 'object'){
-			path = getPathFromName(path); 
-		}
-		let use = obj.use.value; 
+	printDep(obj, index, path){
+		let use = obj.use.value;
 		switch(use){
 			case 'stat':
 				return this.printStat(obj, index, path); 
@@ -25,6 +21,7 @@ export default class depStat extends React.Component{
 		}
 	}
 	printStat(obj, index, path){
+		path = updatePath(path); 
 		return(
 			<tr>
 				{this.useSelect(obj, index, path)}
@@ -43,19 +40,17 @@ export default class depStat extends React.Component{
 					</select>
 				</td>
 				<td>
-					{calcValue(obj)}
+					{printStatValue(obj)}
+					
 				</td>
 				{this.printRemoveButton(updatePath(path,'dependsOn'), index)}
 			</tr>
 		);
-
 	}
 	printFlat(obj, index, path){
 		//this seems a bit inconsistent, consider a better approach
-		let totalPath = path.slice();
-		totalPath.push('dependsOn', index, 'total');
-		let typePath = path.slice();
-		typePath.push('dependsOn', index, 'type'); 
+		let totalPath = updatePath(path, 'dependsOn', index, 'total'); 
+		let typePath = updatePath(path, 'dependsOn', index, 'type'); 
 		return(
 			<tr key={index+"-flat-"+this.props.name}>
 				{this.useSelect(obj, index, path)}
@@ -86,10 +81,8 @@ export default class depStat extends React.Component{
 		)  
 	}
 	printDie(obj, index, path){
-		let diePath = path.slice();
-		diePath.push('dependsOn', index,'die');
-		let amountPath = path.slice();
-		amountPath.push('dependsOn', index, 'amount'); 
+		let diePath = updatePath(path, 'dependsOn', index,'die');
+		let amountPath = updatePath(path, 'dependsOn', index, 'amount'); 
 		return(
 			<tr>
 			{this.useSelect(obj, index, path)}
@@ -130,10 +123,10 @@ export default class depStat extends React.Component{
 		)
 	}
 	printRemoveButton(path, index){ 
-		if(getStatFromPath(path).length > 1){
+		if(getValueObj(path)[1]){
 			return(
 				 <td onClick={()=>this.props.removeDep(path, index)}>
-				 	X
+				 	<button className="btn"> X </button>
 				 </td>
 			)
 		}

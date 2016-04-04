@@ -1,13 +1,14 @@
 import React from 'react'; 
 import {connect} from 'react-redux'; 
 import {mapDispatchToProps} from '../redux/actions.js'; 
-import {getStatFromName, getStatFromPath} from '../util/paths.js'; 
+import {getValueObj} from '../util/paths.js'; 
 import StatBlock from './stat.js'; 
 import EditableValue from './editableValue.js'; 
 import CombatManeuver from './combatManeuver.js'; 
 import Health from './health.js'; 
 import Modal from './modal.js';
 import Weapon from './weapon.js';
+import Effect from './effect.js'; 
 
 
 class SlashSheet extends React.Component{
@@ -58,6 +59,10 @@ class SlashSheet extends React.Component{
                         addDep={this.props.addDep}
                         removeDep={this.props.removeDep} />
                 </div>
+                <div>
+                    <Effect
+                        effects={this.props.effects} />
+                </div>
               </div>
               {this.renderModal()}
 			</div>
@@ -66,27 +71,26 @@ class SlashSheet extends React.Component{
     renderModal(){
         const modal = this.props.modal; 
         if(modal.active){
-        let stats;
-        if(Array.isArray(modal.value)){
-            console.log('modal', modal);
-            stats= getStatFromPath(modal.value);
-        }else{
-            stats = getStatFromName(modal.value); 
-        }
+            let stats;
+            if(Array.isArray(modal.value)){
+                stats= getValueObj(modal.value);
+            }else{
+                stats = getValueObj(modal.value); 
+            }
             return(
                 <Modal 
-                name = {modal.value}
-                modalType = {modal.modalType}
-                modal = {stats}
-                path = {modal.value}
-                addDep = {this.props.addDep}
-                removeDep = {this.props.removeDep}
-                saveValueEdit = {this.props.saveValueEdit}
-                saveDepValueEdit = {this.props.saveDepValueEdit}
-                editValue = {this.props.editValue}
-                modifyDep = {this.props.modifyDep}
-                changeUseType = {this.props.changeUseType}
-                closeModal={this.props.closeModal} />
+                    name = {modal.value}
+                    modalType = {modal.modalType}
+                    modal = {stats}
+                    path = {modal.value}
+                    addDep = {this.props.addDep}
+                    removeDep = {this.props.removeDep}
+                    saveValueEdit = {this.props.saveValueEdit}
+                    saveDepValueEdit = {this.props.saveDepValueEdit}
+                    editValue = {this.props.editValue}
+                    modifyDep = {this.props.modifyDep}
+                    changeUseType = {this.props.changeUseType}
+                    closeModal={this.props.closeModal} />
             )
         }   
     }

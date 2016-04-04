@@ -29,6 +29,7 @@ const initialState  = {
 	effects:[{
 			name:{value:'Berzerk Rage'},
 			type:{value:'Morale'},
+			active:{value:false},
 			stats:{
 				str:{use:{value:'flat'}, total:{value:4}},
 				con:{use:{value:'flat'}, total:{value:4}},
@@ -43,6 +44,7 @@ const initialState  = {
 		{
 			name:{value:'Weapon Specialization (Battle Axe)'},
 			type:{value:'bonus'},
+			active:{value:'false'}, 
 			weapons:{
 				affects:{value:['battle axe']},
 				toHit:{dependsOn:[

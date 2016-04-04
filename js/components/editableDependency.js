@@ -1,6 +1,6 @@
 
 import React from 'react';
-import {getDepStat} from '../util/helpers.js';
+import {printDepValue} from '../util/helpers.js';
 
 export default class EditableDependency extends React.Component{
 	render(){
@@ -11,7 +11,7 @@ export default class EditableDependency extends React.Component{
 					<input
 						type="number">
 						style={this.props.style()}
-						defaulValue={getDepStat(statArray)}
+						defaulValue={printDepValue(this.props.depObj)}
 						id=this.getID()
 						
 				</div>

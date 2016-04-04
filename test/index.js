@@ -1,11 +1,9 @@
 let expect = require('chai').expect; 
 let sinon = require('sinon'); 
-import {getWeaponValue, getDepValue, getStatTotal, getTagTotal, combineValueObjs,
+import {getWeaponTotal, getDepTotal, getStatTotal, getTagTotal, combineValueObjs,
  printValueObj, registerEffectModObj, removeEffectModObj, buildPath, cloneObj} from '../js/util/helpers.js';  
 import initial from '../js/util/initial.js'; 
 const update = require('react-addons-update');
-
-
 
 
 describe('combineValueObjs', function(){
@@ -39,13 +37,13 @@ describe('getStatTotal',function(){
 
 describe('getTagTotal',function(){
 	it('should look up tags', function(){
-		initial.effects = {toHit:{melee:{other:{flat:4, 4:4}},
-									light:{hello:{flat:10}}}};
+		initial.effects = {melee:{toHit:{other:{flat:4, 4:4}}},
+									light:{toHit:{hello:{flat:10}}}};
 		expect(getTagTotal(['light','melee'], 'toHit')).to.eql({flat:14, 4:4});
 	});
 	it('should ignore duplicate tags', function(){
-		initial.effects = {toHit:{melee:{other:{flat:4, 4:4}},
-									light:{other:{flat:4, 4:4}}}};
+		initial.effects = {melee:{toHit:{other:{flat:4, 4:4}}},
+									light:{toHit:{other:{flat:4, 4:4}}}};
 		expect(getTagTotal(['light','melee'], 'toHit')).to.eql({flat:4, 4:4});
 	});
 	it('should function when passed no arguments', function(){
@@ -72,14 +70,14 @@ describe('printValueObj', function(){
 	});
 });
 
-describe('getDepValue', function(){
+describe('getDepTotal', function(){
 	it('should get dep values, from just stat', function(){
 		initial.stats = {str:{value:12}, dex:{value:4}}; 
 		let dep = {dependsOn:[
 				{use:{value:'stat'}, stat:{value:'str'}, bonus:{value:'mod'}},
 				{use:{value:'stat'}, stat:{value:'dex'}, bonus:{value:'flat'}}
 		]};
-		expect(getDepValue(dep)).to.eql({flat:5}); 
+		expect(getDepTotal(dep)).to.eql({flat:5}); 
 	});
 	it('should get dep values, from just die', function(){
 		let dep = {dependsOn:[
@@ -87,13 +85,13 @@ describe('getDepValue', function(){
 			{use:{value:'die'}, amount:{value:8}, die:{value:6}},
 			{use:{value:'die'}, amount:{value:2}, die:{value:4}},
 		]};
-		expect(getDepValue(dep)).to.eql({4:6, 6:8, flat:0});
+		expect(getDepTotal(dep)).to.eql({4:6, 6:8, flat:0});
 	});
 	it('should get dep values, from just flat', function(){
 		let dep = {dependsOn:[
 			{use:{value:'flat'}, total:{value:10}}
 		]};
-		expect(getDepValue(dep)).to.eql({flat:10}); 
+		expect(getDepTotal(dep)).to.eql({flat:10}); 
 	});
 	it('should get dep values from a mix', function(){
 		initial.stats = {str:{value:14}, dex:{value:8}}; 
@@ -106,28 +104,28 @@ describe('getDepValue', function(){
 			{use:{value:'flat'}, total:{value:12}},
 			{use:{value:'flat'}, total:{value:10}}
 		]};
-		expect(getDepValue(dep)).to.eql({2:3, 4:2, flat:35});
+		expect(getDepTotal(dep)).to.eql({2:3, 4:2, flat:35});
 	});
 	it('should omit player mod if passed true for second argument', function(){
 		let dep = {playerMod:-5, dependsOn:[
 			{use:{value:'flat'}, total:{value:20}}
 		]};
-		expect(getDepValue(dep, true)).to.eql({flat:20}); 
+		expect(getDepTotal(dep, true)).to.eql({flat:20}); 
 	});
 	it('should use player mod if not omitting', function(){
 		let dep = {playerMod:6, dependsOn:[
 			{use:{value:'flat'}, total:{value:4}}
 		]};
-		expect(getDepValue(dep)).to.eql({flat:10}); 
+		expect(getDepTotal(dep)).to.eql({flat:10}); 
 	});
 });
 
-describe('getWeaponValue', function(){
+describe('getWeaponTotal', function(){
 	it('should work with flat values only', function(){
 		let wep = {toHit:{dependsOn:[
 			{use:{value:'flat'}, total:{value:10}}
 		]}};
-		expect(getWeaponValue(wep, 'toHit')).to.eql({flat:10}); 
+		expect(getWeaponTotal(wep, 'toHit')).to.eql({flat:10}); 
 	});
 	it('should work with stat values only', function(){
 		initial.stats = {str:{value:12}, dex:{value:4}}; 
@@ -135,7 +133,7 @@ describe('getWeaponValue', function(){
 				{use:{value:'stat'}, stat:{value:'str'}, bonus:{value:'mod'}},
 				{use:{value:'stat'}, stat:{value:'dex'}, bonus:{value:'flat'}}
 		]}};
-		expect(getWeaponValue(wep, 'damage')).to.eql({flat:5});
+		expect(getWeaponTotal(wep, 'damage')).to.eql({flat:5});
 	});
 	it('should get wep values, from just dice', function(){
 		let wep = {toHit:{dependsOn:[
@@ -146,7 +144,7 @@ describe('getWeaponValue', function(){
 			{use:{value:'die'}, amount:{value:12}, die:{value:8}},
 			{use:{value:'die'}, amount:{value:2}, die:{value:8}},
 		]}};
-		expect(getWeaponValue(wep, 'toHit')).to.eql({4:6, 6:8, 10:5, 8:14, flat:0});
+		expect(getWeaponTotal(wep, 'toHit')).to.eql({4:6, 6:8, 10:5, 8:14, flat:0});
 	});
 	it('should get weapon values from a mix', function(){
 		initial.stats = {str:{value:20}, dex:{value:4}}; 
@@ -159,7 +157,7 @@ describe('getWeaponValue', function(){
 			{use:{value:'flat'}, total:{value:12}},
 			{use:{value:'flat'}, total:{value:10}}
 		]}};
-		expect(getWeaponValue(wep, 'damage')).to.eql({2:2, 10:3, flat:31});
+		expect(getWeaponTotal(wep, 'damage')).to.eql({2:2, 10:3, flat:31});
 	});
 });
 
@@ -200,27 +198,21 @@ describe('cloneObj', function(){
 describe('registerEffectModObj', function(){
 	it('should create an object for mutating stat effeects', function(){
 		expect(registerEffectModObj('wham', ['str', 'dex', 'con'], {use:'what', type:'up'}))
-			.to.eql({str:{wham:{use:'what', type:'up'}},
+			.to.eql({effects:{str:{wham:{use:'what', type:'up'}},
 					dex:{wham:{use:'what', type:'up'}},
-					con:{wham:{use:'what', type:'up'}}}); 
+					con:{wham:{use:'what', type:'up'}}}}); 
 	});
 	it('should create an object for mutating weapon effeects', function(){
 		expect(registerEffectModObj('slash', ['light', 'melee'], {use:'what', type:'up'}, 'damage'))
-			.to.eql({light:{damage:{slash:{use:'what', type:'up'}}},
-					melee:{damage:{slash:{use:'what', type:'up'}}}}); 
+			.to.eql({effects:{light:{damage:{slash:{use:'what', type:'up'}}},
+					melee:{damage:{slash:{use:'what', type:'up'}}}}}); 
 	});
 });
 describe('removeEffectModObj', function(){
-	// it('should update',function(){
-	// 	let obj = {a:{b:'0'}}; 
-	// 	let other = update(obj, {c:{$set:'d'}});
-	// 	expect(update(obj, {c:{$set:'d'}})).to.not.equal(obj); 
-	// 	expect(other.a).to.equal(obj.a);
-	// });
 	it('should remove an effect from a stat', function(){
-		let obj = {str:{test:'hello', other:'world'}, dex:{test:'what', other:'up'}}; 
+		let obj = {effects:{str:{test:'hello', other:'world'}, dex:{test:'what', other:'up'}}}; 
 		let modObj = removeEffectModObj('other', ['str', 'dex']);
-		expect(modObj).to.eql({str:{other:{$set:undefined}}, dex:{other:{$set:undefined}}});
-		expect(update(obj, modObj)).to.eql({str:{test:'hello', other:undefined}, dex:{test:'what', other:undefined}});
+		expect(modObj).to.eql({effects:{str:{other:{$set:undefined}}, dex:{other:{$set:undefined}}}});
+		expect(update(obj, modObj)).to.eql({effects:{str:{test:'hello', other:undefined}, dex:{test:'what', other:undefined}}});
 	});
 });

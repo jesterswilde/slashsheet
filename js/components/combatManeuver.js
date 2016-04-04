@@ -1,5 +1,5 @@
 import React from 'react'; 
-import {getDepStat} from '../util/helpers.js'; 
+import {printStatValue, printDepValue} from '../util/helpers.js'; 
 import EditableValue from './editableValue.js'; 
 
 export default class CombatManeuver extends React.Component{
@@ -12,7 +12,7 @@ export default class CombatManeuver extends React.Component{
 					<tr>
 						<td>BAB</td>
 						<td><EditableValue 
-			  				value={this.props.BAB.value}
+			  				value={printStatValue('BAB')}
 			  				editing={this.props.BAB.editing}
 			  				input="number"
 			  				name="BAB"
@@ -24,11 +24,11 @@ export default class CombatManeuver extends React.Component{
 					</tr>
 					<tr onClick={()=>this.props.openModal('CMB','dependent')}>
 						<td>CMB:</td>
-						<td>{getDepStat(this.props.CMB)}</td>
+						<td>{printDepValue(this.props.CMB)}</td>
 					</tr>
 					<tr>
 						<td onClick={()=>this.props.openModal('CMD','dependent')}>CMD:</td>
-						<td>{getDepStat(this.props.CMD)}</td>
+						<td>{printDepValue(this.props.CMD)}</td>
 					</tr>
 
 					</tbody>

@@ -1,5 +1,5 @@
 import React from 'react'; 
-import {getDepStat, getValue, addPlus, bonusKeys, modKeys, calcValue, useKeys} from '../util/helpers.js'; 
+import {printDepValue, printStatValue, addPlus, bonusKeys, modKeys, useKeys} from '../util/helpers.js'; 
 import {getStatFromName, getPathFromName, updatePath} from '../util/paths.js';
 import EditableValue from './editableValue.js'; 
 import DepStat from './depStat.js'; 
@@ -19,7 +19,7 @@ export default class dependentStatModal extends React.Component{
 						{/* Stat Name */} 
 						<td>
 			  				<EditableValue 
-				  				value={getDepStat(statObj)}
+				  				value={printDepValue(statObj)}
 				  				editing={statObj.editing}
 				  				input="number"	
 					            editValue={editValue}

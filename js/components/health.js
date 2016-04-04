@@ -1,5 +1,6 @@
 import React from 'react'; 
 import EditableValue from './editableValue.js'; 
+import {printStatValue} from '../util/helpers.js'; 
 
 export default class Health extends React.Component{
 	render(){
@@ -13,7 +14,7 @@ export default class Health extends React.Component{
 					<tr>
 						<td>
 							<EditableValue 
-				  				value={this.props.HP.current.value}
+				  				value={printStatValue('currentHP')}
 				  				editing={this.props.HP.current.editing}
 				  				input="number"	
 				  				name='currentHP'
@@ -26,7 +27,7 @@ export default class Health extends React.Component{
 					<tr>
 						<td>
 							<EditableValue 
-				  				value={this.props.HP.total.value}
+				  				value={printStatValue('totalHP')}
 				  				editing={this.props.HP.total.editing}
 				  				input="number"	
 				  				name="totalHP"
