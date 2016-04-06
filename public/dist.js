@@ -21224,6 +21224,8 @@
 		CMB: { path: ['CMB'], type: 'dependent', storeAs: 'dependent' },
 		CMD: { path: ['CMD'], type: 'dependent', storeAs: 'dependent' },
 		effects: { path: ['effects'] },
+		tagEffects: { path: ['activeEffects', 'tag'] },
+		statEffects: { path: ['activeEffects', 'stats'] },
 		weapons: { path: ['weapons'], type: 'weapon', storeAs: 'dependent' },
 		currentHP: { path: ['HP', 'current'], type: 'health', storeAs: 'number' },
 		totalHP: { path: ['HP', 'total'], type: 'health', storeAs: 'number' },
@@ -21487,7 +21489,7 @@
 	Object.defineProperty(exports, "__esModule", {
 		value: true
 	});
-	exports.printStatValue = exports.printDepValue = exports.printWeaponValue = exports.cloneObj = exports.getDepTotal = exports.combineValueObjs = exports.getWeaponTotal = exports.removeEffectModObj = exports.registerEffectModObj = exports.printValueObj = exports.getTagTotal = exports.getStatTotal = exports.statDefaults = exports.useKeys = exports.bonusKeys = exports.allStatKeys = exports.statKeys = exports.addPlus = exports.buildPath = undefined;
+	exports.printStatValue = exports.printDepValue = exports.printWeaponValue = exports.cloneObj = exports.getDepTotal = exports.combineValueObjs = exports.getWeaponTotal = exports.printValueObj = exports.getTagTotal = exports.getStatTotal = exports.statDefaults = exports.useKeys = exports.bonusKeys = exports.allStatKeys = exports.statKeys = exports.addPlus = exports.buildPath = undefined;
 	
 	var _paths = __webpack_require__(179);
 	
@@ -21739,18 +21741,33 @@
 		return printValueObj(getWeaponTotal(weaponObj, type, omitPlayerMod));
 	};
 	
-	var registerEffectModObj = function registerEffectModObj(name, effectArray, valueObj, type) {
+	var registerEffect = function registerEffect(path) {
+		var effectObj = (0, _paths.getValueObj)(path);
+		var name = effectObj.name.value;
+		var _effectObj$weapon = effectObj.weapon;
+		var tags = _effectObj$weapon.tags.value;
+		var stats = _effectObj$weapon.stats;
+		var toHit = _effectObj$weapon.toHit;
+		var damage = _effectObj$weapon.damage;
+	
+		var mergeObj = buildEffectMergeObj(name, stats, null);
+		mergeObj = buildEffectMergeObj(name, tags);
+	};
+	
+	var buildEffectMergeObj = function buildEffectMergeObj(name, effectArray, type) {
+		var valueObj = arguments.length <= 3 || arguments[3] === undefined ? {} : arguments[3];
+	
 		var clonedValueObj = cloneObj(valueObj); //this step might not be needed. but makes a new copy of obj
-		if (type === undefined) {
+		if (type === undefined || type === null) {
 			//non weapons
 			return effectArray.reduce(function (total, current) {
 				//merge them into one obj
 				return buildPath((0, _paths.updatePath)('effects', current), _defineProperty({}, name, clonedValueObj), total);
-			}, {});
+			}, mergeObj);
 		} else {
 			return effectArray.reduce(function (total, current) {
 				return buildPath((0, _paths.updatePath)('effects'), { current: { $merge: _defineProperty({}, type, _defineProperty({}, name, clonedValueObj)) } }, total);
-			}, {});
+			}, mergeObj);
 		}
 	};
 	
@@ -21797,8 +21814,6 @@
 	exports.getStatTotal = getStatTotal;
 	exports.getTagTotal = getTagTotal;
 	exports.printValueObj = printValueObj;
-	exports.registerEffectModObj = registerEffectModObj;
-	exports.removeEffectModObj = removeEffectModObj;
 	exports.getWeaponTotal = getWeaponTotal;
 	exports.combineValueObjs = combineValueObjs;
 	exports.getDepTotal = getDepTotal;
@@ -21964,7 +21979,7 @@
 				con: { use: { value: 'flat' }, total: { value: 4 } }
 			},
 			weapons: {
-				affects: { value: ['melee'] },
+				tags: { value: ['melee'] },
 				toHit: { dependsOn: [{ use: { value: 'flat' }, total: { value: 2 } }] }
 			}
 		}, {
@@ -21972,11 +21987,15 @@
 			type: { value: 'bonus' },
 			active: { value: 'false' },
 			weapons: {
-				affects: { value: ['battle axe'] },
+				tags: { value: ['battle axe'] },
 				toHit: { dependsOn: [{ use: { value: 'flat' }, total: { value: 1 } }] },
 				damage: { dependsOn: [{ use: { value: 'flat' }, total: { value: 2 } }] }
 			}
 		}],
+		activeEffects: {
+			tags: {},
+			stats: {}
+		},
 		weapons: [{
 			name: { value: 'Crunk\'s Battle Axe' },
 			tags: { value: ['battle axe', 'melee'] },

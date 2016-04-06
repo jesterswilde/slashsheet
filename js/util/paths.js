@@ -13,6 +13,8 @@ const paths = {
 	CMB:{path:['CMB'], type:'dependent', storeAs:'dependent'}, 
 	CMD:{path:['CMD'], type:'dependent', storeAs:'dependent'},
 	effects:{path:['effects']},
+	tagEffects:{path:['activeEffects', 'tag']},
+	statEffects:{path:['activeEffects', 'stats']},
 	weapons:{path:['weapons'], type:'weapon', storeAs:'dependent'},
 	currentHP:{path:['HP','current'], type:'health', storeAs:'number'},
 	totalHP:{path:['HP','total'], type:'health', storeAs:'number'},

@@ -239,16 +239,23 @@ const printWeaponValue = function(weaponObj, type, omitPlayerMod){
 	return printValueObj(getWeaponTotal(weaponObj, type, omitPlayerMod)); 
 };
 
-const registerEffectModObj = function(name, effectArray, valueObj, type){
+const registerEffect = function(path){
+	let effectObj = getValueObj(path); 
+	let {name:{value:name}, weapon:{tags:{value:tags}, stats, toHit, damage}} = effectObj;
+ 	let mergeObj = buildEffectMergeObj(name, stats, null); 
+ 	mergeObj = buildEffectMergeObj(name, tags)
+};
+
+const buildEffectMergeObj = function(name, effectArray, type, valueObj = {}){
 	let clonedValueObj = cloneObj(valueObj); //this step might not be needed. but makes a new copy of obj
-	if(type === undefined){//non weapons
+	if(type === undefined || type === null){//non weapons
 		return effectArray.reduce((total, current) => {//merge them into one obj
 			return buildPath(updatePath('effects', current), {[name]:clonedValueObj}, total); 
-		},{});
+		},mergeObj);
 	}else{
 		return effectArray.reduce((total, current) => {
 			return buildPath(updatePath('effects'), {current:{$merge:{[type]:{[name]:clonedValueObj}}}}, total); 
-		},{});
+		},mergeObj);
 	}
 };
 
@@ -284,6 +291,6 @@ const cloneObj = function(copyObj, origObj = {}){
 };
 
 export {buildPath, addPlus, statKeys, allStatKeys, bonusKeys, useKeys, statDefaults,
-getStatTotal, getTagTotal, printValueObj, registerEffectModObj, removeEffectModObj,
+getStatTotal, getTagTotal, printValueObj,
 getWeaponTotal, combineValueObjs, getDepTotal, cloneObj,
 printWeaponValue, printDepValue, printStatValue}; 

@@ -35,7 +35,7 @@ const initialState  = {
 				con:{use:{value:'flat'}, total:{value:4}},
 			},
 			weapons:{
-				affects:{value:['melee']},
+				tags:{value:['melee']},
 				toHit:{dependsOn:[
 					{use:{value:'flat'}, total:{value:2}}
 				]}
@@ -46,7 +46,7 @@ const initialState  = {
 			type:{value:'bonus'},
 			active:{value:'false'}, 
 			weapons:{
-				affects:{value:['battle axe']},
+				tags:{value:['battle axe']},
 				toHit:{dependsOn:[
 					{use:{value:'flat'}, total:{value:1}}
 				]},
@@ -55,6 +55,10 @@ const initialState  = {
 				]}
 			}
 		}],
+	activeEffects:{
+		tags:{},
+		stats:{}
+	},
 	weapons:[{
 		name:{value:'Crunk\'s Battle Axe'},
 		tags:{value:['battle axe', 'melee']}, 
